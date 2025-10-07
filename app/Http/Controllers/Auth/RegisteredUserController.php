@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use Illuminate\Validation\Rules\Password;
 
 class RegisteredUserController extends Controller
 {
@@ -31,14 +32,21 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'usuario' => ['required', 'string', 'max:15', 'unique:usuarios'],
-            'contrasena' => ['required', 'confirmed', Rules\Password::defaults()],
-            'correo' => ['required', 'string', 'lowercase', 'email', 'max:45', 'unique:usuarios'],
-            'nombre_1' => ['required', 'string', 'max:15'],
-            'nombre_2' => ['nullable', 'string', 'max:15'], // Regla para campo opcional
-            'apellido_1' => ['required', 'string', 'max:15'],
-            'apellido_2' => ['nullable', 'string', 'max:15'], // Regla para campo opcional
-            'telefono' => ['required', 'string', 'max:15'],
+            'usuario' => ['required', 'string', 'lowercase', 'between:3,15', 'unique:usuarios', 'regex:/^\S*$/'],
+            'contrasena' => ['required','confirmed',
+                Password::min(8)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
+                ->uncompromised(), // Opcional: comprueba si la contraseña ha sido filtrada
+            ],
+            'correo' => ['required', 'string', 'lowercase', 'email', 'max:45', 'unique:usuarios', 'before_or_equal:' . now()->subYears(8)->format('Y-m-d')],
+            'nombre_1' => ['required', 'string', 'alpha', 'max:15'],
+            'nombre_2' => ['nullable', 'string', 'alpha', 'max:15'], // Regla para campo opcional
+            'apellido_1' => ['required', 'string', 'alpha', 'max:15'],
+            'apellido_2' => ['nullable', 'string', 'alpha', 'max:15'], // Regla para campo opcional
+            'telefono' => ['required', 'numeric', 'digits_between:7,15'],
             'fecha_nacimiento' => ['required', 'date'],
             
             

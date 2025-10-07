@@ -57,4 +57,13 @@ class User extends Authenticatable
             'contrasena' => 'hashed',
         ];
     }
+    /**
+     * Get the password for the user.
+     *
+     * @return string
+     */
+    public function getAuthPassword()
+    {
+        return $this->contrasena;
+    }
 }
