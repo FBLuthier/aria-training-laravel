@@ -35,6 +35,8 @@ class UserFactory extends Factory
             'fecha_nacimiento' => fake()->date(),
             'estado' => 1,
             'id_tipo_usuario' => 3, // Por defecto, crea Atletas
+            'remember_token' => Str::random(10), // <-- AÑADE ESTA LÍNEA DE NUEVO
+
             
         ];
     }

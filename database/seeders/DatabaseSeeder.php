@@ -56,6 +56,8 @@ class DatabaseSeeder extends Seeder
                 'estado' => 1,
                 'id_tipo_usuario' => 1, // ID de Administrador
             ]);
+            // Crea 25 equipos de prueba usando el factory
+            \App\Models\Equipo::factory(25)->create();
         }
     }
 }

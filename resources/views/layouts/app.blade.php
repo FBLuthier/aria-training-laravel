@@ -13,7 +13,13 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <style>
+            [x-cloak] {
+                display: none !important;
+            }
+        </style>
     </head>
+    
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             @include('layouts.navigation')
@@ -26,6 +32,16 @@
                     </div>
                 </header>
             @endisset
+
+            {{-- INICIO: Bloque de Mensaje Flash a pegar --}}
+            @if (session('status'))
+                <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
+                    <div class="p-4 bg-green-100 dark:bg-green-800 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-200 rounded relative" role="alert">
+                        <span class="block sm:inline">{{ session('status') }}</span>
+                    </div>
+                </div>
+            @endif
+            {{-- FIN: Bloque de Mensaje Flash a pegar --}}            
 
             <!-- Page Content -->
             <main>

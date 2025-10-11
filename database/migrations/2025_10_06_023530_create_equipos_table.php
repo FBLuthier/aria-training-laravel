@@ -11,6 +11,8 @@ return new class extends Migration
         Schema::create('equipos', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 45)->unique();
+            $table->softDeletes();
+
         });
     }
 
