@@ -1,13 +1,14 @@
-# Documento de Definición del Proyecto: Aria Training
+# Documento de Definición del Proyecto: Aria Training (v1.1)
 
 ## Resumen Ejecutivo
 
-El presente documento define el proyecto "Aria Training", una plataforma web diseñada para solucionar la ineficiencia en la gestión de entrenamientos entre entrenadores personales y sus atletas. El problema actual radica en el uso de herramientas desconectadas (hojas de cálculo, mensajería, cuadernos), lo que dificulta el seguimiento y la personalización. "Aria Training" centraliza este flujo de trabajo, permitiendo a los entrenadores crear y asignar rutinas de forma eficiente, y a los atletas registrar su progreso de manera clara y motivadora. La primera versión (MVP) se enfocará en las funcionalidades esenciales de gestión de usuarios, creación de rutinas y registro de entrenamientos. El sistema se construirá con el framework Laravel bajo una arquitectura "API-first", garantizando la escalabilidad futura para el desarrollo de aplicaciones nativas para escritorio y móviles.
+El presente documento define el proyecto "Aria Training", una plataforma web diseñada para solucionar la ineficiencia en la gestión de entrenamientos entre entrenadores personales y sus atletas. El problema actual radica en el uso de herramientas desconectadas (hojas de cálculo, mensajería, cuadernos), lo que dificulta el seguimiento y la personalización. "Aria Training" centraliza este flujo de trabajo, permitiendo a los entrenadores crear y asignar rutinas de forma eficiente, y a los atletas registrar su progreso de manera clara y motivadora. La primera versión (MVP) se enfoca en las funcionalidades esenciales de gestión de usuarios, creación de rutinas y registro de entrenamientos. El sistema se construye con el framework Laravel, **utilizando una arquitectura moderna con Livewire para ofrecer una experiencia de usuario rica y reactiva, sentando las bases** para una futura escalabilidad hacia aplicaciones nativas.
 
 ### Historial de Versiones
 | Versión | Fecha | Autor | Cambios Realizados |
 | :--- | :--- | :--- | :--- |
-| 1.0 | 2025-10-05 | Fernando Botero. | Creación inicial del documento. Definición completa del alcance, requisitos y arquitectura para el MVP. |
+| 1.0 | 2025-10-05 | Fernando Botero | Creación inicial del documento. Definición completa del alcance, requisitos y arquitectura para el MVP. |
+| **1.1** | **2025-10-11** | **Fernando Botero** | **Refactorización arquitectónica. Se migra la implementación del frontend de Blade tradicional a una arquitectura basada en componentes con Laravel Livewire. Se actualizan las secciones de Alcance, Requisitos No Funcionales, Stack Tecnológico y Arquitectura para reflejar la nueva implementación de tipo SPA (Single Page Application) en los módulos de gestión.** |
 
 ---
 
@@ -17,7 +18,7 @@ El presente documento define el proyecto "Aria Training", una plataforma web dis
 El propósito de este documento es definir y especificar los requisitos funcionales, no funcionales, el alcance y la arquitectura técnica para el desarrollo de la primera versión (MVP) del software "Aria Training". Este documento servirá como la **única fuente de la verdad** para el equipo de desarrollo, estableciendo un entendimiento común de los objetivos del proyecto.
 
 ### 1.2. Alcance del Proyecto
-**Alcance del MVP (Versión 1):** La versión inicial del proyecto consistirá en una **aplicación web monolítica**, accesible a través de navegadores de escritorio modernos. Esta aplicación cubrirá todas las funcionalidades definidas para los actores Atleta, Entrenador y Administrador. El frontend se renderizará en el servidor utilizando el sistema de plantillas Laravel Blade.
+**Alcance del MVP (Versión 1):** La versión inicial del proyecto consistirá en una **aplicación web monolítica**, accesible a través de navegadores de escritorio modernos. Esta aplicación cubrirá todas las funcionalidades definidas para los actores Atleta, Entrenador y Administrador. **Las interfaces de gestión (paneles de administración) se construirán utilizando Laravel Livewire para proporcionar una experiencia de usuario altamente interactiva y reactiva, similar a una Single Page Application (SPA), minimizando las recargas de página completas.** Las vistas más estáticas seguirán utilizando el sistema de plantillas Laravel Blade.
 
 **Visión y Alcance a Futuro (Post-MVP):** La arquitectura del sistema se diseña bajo un enfoque **"API-first"**. El núcleo de la aplicación (backend) se construye como un servicio independiente que expone sus funcionalidades a través de una API RESTful. Esta decisión estratégica garantiza la futura escalabilidad del producto, permitiendo el desarrollo de clientes nativos para **Windows, iOS y Android** en versiones posteriores, los cuales consumirán esta misma API central.
 
@@ -82,7 +83,8 @@ El Administrador será responsable de la gestión de las cuentas de los Entrenad
 Esta sección define los atributos de calidad, los estándares técnicos y las restricciones operativas del sistema.
 
 ### 4.1. Rendimiento
-* El tiempo de carga de cualquier página no deberá exceder los **3 segundos**.
+* El tiempo de carga inicial de cualquier página no deberá exceder los **3 segundos**.
+* **Las interacciones del usuario dentro de los módulos de gestión (ordenar tablas, buscar, paginar, abrir modales) deben tener una respuesta visual en menos de 300 milisegundos, gracias a las actualizaciones parciales de Livewire.**
 * Las operaciones de base de datos comunes deben ejecutarse en menos de **500 milisegundos**.
 
 ### 4.2. Seguridad
@@ -92,6 +94,7 @@ Esta sección define los atributos de calidad, los estándares técnicos y las r
 
 ### 4.3. Usabilidad
 * La interfaz debe ser intuitiva, clara y fácil de navegar.
+* **La arquitectura de modales y componentes dinámicos debe proporcionar un flujo de trabajo sin interrupciones (sin recargas de página) en las tareas de gestión.**
 * El flujo para registrar un entrenamiento debe ser rápido y eficiente.
 * Todo el texto de la aplicación estará en español.
 
@@ -116,7 +119,7 @@ Esta sección define los atributos de calidad, los estándares técnicos y las r
 
 ### 5.1. Stack Tecnológico
 * **Backend:** PHP 8.1+ con Laravel 10+.
-* **Frontend:** Laravel Blade.
+* **Frontend:** **Laravel Livewire y Alpine.js sobre plantillas Blade.**
 * **Base de Datos:** MariaDB.
 * **Servidor de Desarrollo:** XAMPP.
 * **Gestor de Dependencias:** Composer.
@@ -124,13 +127,11 @@ Esta sección define los atributos de calidad, los estándares técnicos y las r
 ### 5.2. Patrón de Arquitectura
 * **Aplicación Monolítica (MVP):** El backend y el frontend residen en la misma base de código de Laravel.
 * **API-first y RESTful:** La lógica de negocio se expondrá a través de una API RESTful para garantizar la escalabilidad futura.
-* **Modelo-Vista-Controlador (MVC):** Se aprovechará el patrón MVC nativo de Laravel para separar responsabilidades.
+* **Modelo-Vista-Controlador (MVC) y Component-Based:** Se aprovechará el patrón MVC nativo de Laravel para la estructura general, **pero las interfaces de usuario interactivas se construirán siguiendo una Arquitectura Basada en Componentes con Livewire.**
 
 ### 5.3. Modelo de Datos
 El diseño de la base de datos se visualiza en el siguiente Diagrama Entidad-Relación (DER).
 > *(Nota: no olvidar actualizar el schema de la base de datos, la version antigua está en la carpeta `db`)*
-
-
 
 ---
 
@@ -158,6 +159,9 @@ El diseño de la base de datos se visualiza en el siguiente Diagrama Entidad-Rel
 * **Stakeholder:** Persona o grupo con interés en el proyecto.
 * **Bcrypt:** Algoritmo de hashing seguro para proteger contraseñas.
 * **PSR-12:** Estándar de estilo de código para PHP.
+* **Livewire:** **Framework full-stack para Laravel que permite construir interfaces dinámicas y reactivas escribiendo principalmente código PHP.**
+* **Alpine.js:** **Framework de JavaScript minimalista utilizado para manejar interacciones del lado del cliente, como mostrar u ocultar menús y modales.**
+* **SPA (Single Page Application):** **Aplicación web que carga una única página HTML y actualiza su contenido dinámicamente, proporcionando una experiencia de usuario más fluida y rápida. Nuestra implementación con Livewire es de tipo "SPA-like".**
 
 ### Apéndice B: Wireframes de la Interfaz (Pendiente)
 Bocetos visuales de las pantallas principales del sistema. Vistas prioritarias a diseñar:
