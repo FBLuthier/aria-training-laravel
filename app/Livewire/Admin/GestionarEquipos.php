@@ -2,159 +2,95 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\SortDirection;
 use App\Models\Equipo;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Layout;
+use App\Livewire\Traits\WithModalManagement;
+use App\Livewire\Traits\WithBulkActions;
+use App\Livewire\Traits\WithCustomPagination;
+use Illuminate\Validation\Rule;
 
 #[Layout('layouts.app')]
 class GestionarEquipos extends Component
 {
-    use WithPagination;
+    use WithPagination, WithModalManagement, WithBulkActions, WithCustomPagination;
 
     // =======================================================================
     //  PROPIEDADES DE ESTADO Y BÚSQUEDA
     // =======================================================================
-
-    /** @var string Búsqueda principal del componente */
     public string $search = '';
-
-    /** @var string Columna por la que se ordena la tabla */
     public string $sortField = 'id';
-
-    /** @var string Dirección del ordenamiento (asc o desc) */
-    public string $sortDirection = 'asc';
-
-    /** @var bool Controla la visibilidad de la papelera */
+    public SortDirection $sortDirection = SortDirection::ASC;
     public bool $showingTrash = false;
-    
-    /** @var ?Equipo Almacena el equipo recién creado para resaltarlo temporalmente */
     public ?Equipo $equipoRecienCreado = null;
 
-
     // =======================================================================
-    //  PROPIEDADES PARA MODALES
-    // =======================================================================
-
-    /** @var bool Controla la visibilidad del modal de creación */
-    public bool $showingCrearModal = false;
-
-    /** @var ?Equipo Almacena el modelo a editar para el modal de edición */
-    public ?Equipo $equipoParaEditar = null;
-    
-    /** @var ?int Almacena el ID del equipo para el modal de borrado suave */
-    public ?int $equipoParaEliminarId = null;
-
-    /** @var ?int Almacena el ID del equipo para el modal de restauración */
-    public ?int $equipoParaRestaurarId = null;
-
-    /** @var ?int Almacena el ID del equipo para el modal de borrado forzado */
-    public ?int $equipoParaBorradoForzadoId = null;
-
-
-    // =======================================================================
-    //  PROPIEDADES PARA ACCIONES EN LOTE (BULK ACTIONS)
-    // =======================================================================
-
-    /** @var array Almacena los IDs de los equipos seleccionados */
-    public array $selectedEquipos = [];
-
-    /** @var bool Controla el estado del checkbox "Seleccionar Todo" */
-    public bool $selectAll = false;
-
-    /** @var bool Controla la visibilidad del modal de confirmación de borrado en lote */
-    public bool $confirmingBulkDelete = false;
-    
-    /** @var bool Controla la visibilidad del modal de confirmación de restauración en lote */
-    public bool $confirmingBulkRestore = false;
-
-    /** @var bool Controla la visibilidad del modal de confirmación de borrado forzado en lote */
-    public bool $confirmingBulkForceDelete = false;
-
-
-    // =======================================================================
-    //  PROPIEDADES DEL FORMULARIO (para data-binding)
-    // =======================================================================
-
-    /** @var string Vinculada al campo 'nombre' del formulario de creación */
-    public string $nombreNuevoEquipo = '';
-
-    /** @var string Vinculada al campo 'nombre' del formulario de edición */
-    public string $nombreEquipoEnEdicion = '';
-
-
-    // =======================================================================
-    //  LISTENERS DE EVENTOS
+    //  PROPIEDADES PARA EL MODAL UNIFICADO
     // =======================================================================
     
-    /** @var array Escucha eventos para refrescar el componente */
+    /**
+     * @var bool Controla la visibilidad del modal de creación/edición.
+     */
+    public bool $showModal = false;
+
+    /**
+     * @var Equipo Instancia del modelo Equipo que se está creando o editando.
+     * Funciona como un "Form Object" para vincular datos en el formulario del modal.
+     */
+    public Equipo $form;
+
+    // =======================================================================
+    //  LISTENERS Y HOOKS DEL CICLO DE VIDA
+    // =======================================================================
     protected $listeners = ['equipoDeleted' => '$refresh', 'equipoRestored' => '$refresh'];
-
+    
+    /**
+     * Hook que se ejecuta cuando se inicializa el componente.
+     * Prepara el 'Form Object' con una instancia vacía de Equipo.
+     */
+    public function mount(): void
+    {
+        $this->form = new Equipo();
+    }
+    
+    /**
+     * Hook que se ejecuta antes de cambiar de página de paginación.
+     * Limpia el resaltado del equipo recién creado/actualizado.
+     */
+    public function updatingPage(): void 
+    {
+        $this->equipoRecienCreado = null;
+    }
 
     // =======================================================================
-    //  REGLAS DE VALIDACIÓN
+    //  REGLAS DE VALIDACIÓN PARA EL FORMULARIO
     // =======================================================================
 
     /**
-     * Define las reglas de validación para los formularios de creación y edición.
+     * Define las reglas de validación para el formulario.
+     * Se aplican a la propiedad `$form`.
      *
      * @return array
      */
-    protected function rules()
+    protected function rules(): array
     {
         return [
-            'nombreEquipoEnEdicion' => 'required|string|min:3|max:255',
-            'nombreNuevoEquipo' => 'required|string|min:3|max:255|unique:equipos,nombre',
+            'form.nombre' => [
+                'required',
+                'string',
+                'min:3',
+                'max:255',
+                // Regla 'unique' que ignora el ID del propio modelo al editar.
+                Rule::unique('equipos', 'nombre')->ignore($this->form->id),
+            ],
         ];
     }
-
-
-    // =======================================================================
-    //  LIFECYCLE HOOKS (Se ejecutan en respuesta a actualizaciones)
-    // =======================================================================
-    
-    /**
-     * Resetea el equipo recién creado cuando el usuario busca, para que el resaltado desaparezca.
-     */
-    public function updatingSearch(): void
-    {
-        $this->equipoRecienCreado = null;
-    }
-
-    /**
-     * Resetea el equipo recién creado cuando el usuario cambia de página.
-     */
-    public function updatingPage(): void
-    {
-        $this->equipoRecienCreado = null;
-    }
-
-    /**
-     * Gestiona la lógica de "Seleccionar Todo". Se activa cuando la propiedad $selectAll cambia.
-     *
-     * @param bool $value El nuevo valor de $selectAll
-     */
-    public function updatedSelectAll($value)
-    {
-        if ($value) {
-            $query = Equipo::query()
-                ->when($this->showingTrash, fn($q) => $q->onlyTrashed())
-                ->when($this->search, fn($q) => $q->where('nombre', 'like', '%' . $this->search . '%'));
-
-            $this->selectedEquipos = $query->pluck('id')->map(fn($id) => (string) $id)->toArray();
-        } else {
-            $this->selectedEquipos = [];
-        }
-    }
-
 
     // =======================================================================
     //  MÉTODOS DE MANIPULACIÓN DE VISTAS Y ORDENAMIENTO
     // =======================================================================
-
-    /**
-     * Cambia entre la vista de equipos activos y la papelera.
-     */
     public function toggleTrash(): void
     {
         $this->equipoRecienCreado = null;
@@ -162,197 +98,98 @@ class GestionarEquipos extends Component
         $this->showingTrash = !$this->showingTrash;
     }
 
-    /**
-     * Cambia la columna y la dirección del ordenamiento.
-     *
-     * @param string $field La columna por la que ordenar
-     */
     public function sortBy(string $field): void
     {
         $this->equipoRecienCreado = null;
+        $this->resetPage();
         if ($this->sortField === $field) {
-            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+            $this->sortDirection = $this->sortDirection->opposite();
         } else {
-            $this->sortDirection = 'asc';
+            $this->sortDirection = SortDirection::ASC;
         }
         $this->sortField = $field;
     }
-
-
-    // =======================================================================
-    //  MÉTODOS PARA MODAL DE CREACIÓN
-    // =======================================================================
-
-    public function crearEquipo(): void
-    {
-        $this->showingCrearModal = true;
-        $this->equipoRecienCreado = null;
-    }
-
-    public function cancelarCreacion(): void
-    {
-        $this->showingCrearModal = false;
-        $this->reset('nombreNuevoEquipo');
-    }
-
-    public function storeEquipo(): void
-    {
-        $validated = $this->validate(['nombreNuevoEquipo' => 'required|string|min:3|max:255|unique:equipos,nombre']);
-        $equipo = Equipo::create(['nombre' => $validated['nombreNuevoEquipo']]);
-        $this->equipoRecienCreado = $equipo;
-        $this->cancelarCreacion();
-    }
-
-
-    // =======================================================================
-    //  MÉTODOS PARA MODAL DE EDICIÓN
-    // =======================================================================
     
-    public function editarEquipo(Equipo $equipo): void
-    {
-        $this->equipoParaEditar = $equipo;
-        $this->nombreEquipoEnEdicion = $equipo->nombre;
-    }
-
-    public function cancelarEdicion(): void
-    {
-        $this->equipoParaEditar = null;
-        $this->reset('nombreEquipoEnEdicion');
-    }
-
-    public function updateEquipo(): void
-    {
-        $validated = $this->validate(['nombreEquipoEnEdicion' => 'required|string|min:3|max:255']);
-        $this->equipoParaEditar->nombre = $validated['nombreEquipoEnEdicion'];
-        $this->equipoParaEditar->save();
-        $this->cancelarEdicion();
-    }
-
-
     // =======================================================================
-    //  MÉTODOS PARA MODALES DE ACCIONES INDIVIDUALES (Eliminar, Restaurar, etc.)
+    //  MÉTODOS PARA EL MODAL UNIFICADO (CREAR Y EDITAR)
     // =======================================================================
 
-    public function confirmarEliminacion(int $id): void
+    /**
+     * Prepara el modal para crear un nuevo equipo.
+     */
+    public function crear(): void
     {
-        $this->equipoParaEliminarId = $id;
+        $this->form = new Equipo(); // Prepara un modelo vacío
+        $this->resetErrorBag();
+        $this->showModal = true;
     }
 
-    public function cancelarEliminacion(): void
+    /**
+     * Prepara el modal para editar un equipo existente.
+     *
+     * @param Equipo $equipo El equipo a editar, inyectado por Livewire.
+     */
+    public function editar(Equipo $equipo): void
     {
-        $this->equipoParaEliminarId = null;
+        $this->form = $equipo; // Carga el modelo existente en el formulario
+        $this->resetErrorBag();
+        $this->showModal = true;
     }
 
+    /**
+     * Guarda el equipo (tanto para creación como para edición).
+     * El método `save` del modelo Eloquent se encarga de diferenciar
+     * entre `INSERT` y `UPDATE` basado en si el modelo existe.
+     */
+    public function save(): void
+    {
+        $this->validate();
+        
+        $this->form->save();
+
+        $this->equipoRecienCreado = $this->form; // Resalta la fila en la tabla
+        $this->showModal = false;
+    }
+    
+    // =======================================================================
+    //  MÉTODOS DE ACCIÓN (Llamados por el Trait de Modales de Confirmación)
+    // =======================================================================
     public function deleteEquipo(): void
     {
-        if ($this->equipoParaEliminarId) {
-            Equipo::find($this->equipoParaEliminarId)->delete();
-            $this->cancelarEliminacion();
+        if ($this->modalConfirmingId) {
+            Equipo::find($this->modalConfirmingId)->delete();
             $this->dispatch('equipoDeleted');
+            $this->cancelAction();
         }
-    }
-    
-    public function confirmarRestauracion(int $id): void
-    {
-        $this->equipoParaRestaurarId = $id;
-    }
-
-    public function cancelarRestauracion(): void
-    {
-        $this->equipoParaRestaurarId = null;
     }
     
     public function restoreEquipo(): void
     {
-        if ($this->equipoParaRestaurarId) {
-            Equipo::withTrashed()->find($this->equipoParaRestaurarId)->restore();
-            $this->cancelarRestauracion(); // Cierra el modal y resetea
+        if ($this->modalConfirmingId) {
+            Equipo::withTrashed()->find($this->modalConfirmingId)->restore();
             $this->dispatch('equipoRestored');
+            $this->cancelAction();
         }
-    }
-
-    public function confirmarBorradoForzado(int $id): void
-    {
-        $this->equipoParaBorradoForzadoId = $id;
-    }
-    
-    public function cancelarBorradoForzado(): void
-    {
-        $this->equipoParaBorradoForzadoId = null;
     }
 
     public function forceDeleteEquipo(): void
     {
-        if ($this->equipoParaBorradoForzadoId) {
-            Equipo::withTrashed()->find($this->equipoParaBorradoForzadoId)->forceDelete();
-            $this->cancelarBorradoForzado(); // Cierra el modal y resetea
+        if ($this->modalConfirmingId) {
+            Equipo::withTrashed()->find($this->modalConfirmingId)->forceDelete();
             $this->dispatch('$refresh');
+            $this->cancelAction();
         }
     }
-
     
     // =======================================================================
-    //  MÉTODOS PARA ACCIONES EN LOTE (BULK ACTIONS)
+    //  MÉTODO RENDER
     // =======================================================================
-
-    public function confirmDeleteSelected()
-    {
-        $this->confirmingBulkDelete = true;
-    }
-
-    public function deleteSelected()
-    {
-        Equipo::whereIn('id', $this->selectedEquipos)->delete();
-        $this->confirmingBulkDelete = false;
-        $this->selectedEquipos = [];
-        $this->selectAll = false;
-        $this->dispatch('equipoDeleted');
-    }
-
-    public function confirmRestoreSelected()
-    {
-        $this->confirmingBulkRestore = true;
-    }
-
-    public function restoreSelected()
-    {
-        Equipo::whereIn('id', $this->selectedEquipos)->withTrashed()->restore();
-        $this->confirmingBulkRestore = false;
-        $this->selectedEquipos = [];
-        $this->selectAll = false;
-        $this->dispatch('equipoRestored');
-    }
-
-    public function confirmForceDeleteSelected()
-    {
-        $this->confirmingBulkForceDelete = true;
-    }
-
-    public function forceDeleteSelected()
-    {
-        Equipo::whereIn('id', $this->selectedEquipos)->withTrashed()->forceDelete();
-        $this->confirmingBulkForceDelete = false;
-        $this->selectedEquipos = [];
-        $this->selectAll = false;
-        $this->dispatch('$refresh');
-    }
-
-
-    // =======================================================================
-    //  MÉTODO RENDER (Renderiza el componente)
-    // =======================================================================
-
-    /**
-     * Renderiza la vista del componente con los datos necesarios.
-     *
-     * @return \Illuminate\View\View
-     */
     public function render()
     {
         $equipos = Equipo::query()
             ->when($this->search, fn($query) => $query->where('nombre', 'like', '%' . $this->search . '%'))
             ->when($this->showingTrash, fn($query) => $query->onlyTrashed())
-            ->orderBy($this->sortField, $this->sortDirection)
+            ->orderBy($this->sortField, $this->sortDirection->value)
             ->paginate(10);
 
         return view('livewire.admin.gestionar-equipos', [
