@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('rutina_dias', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_rutina')->constrained('rutinas')->onDelete('cascade');
+            $table->foreignId('rutina_id')->constrained('rutinas')->onDelete('cascade');
             $table->tinyInteger('numero_dia');
             $table->string('nombre_dia', 30);
             $table->timestamps();

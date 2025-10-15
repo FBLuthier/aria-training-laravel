@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ejercicios_x_grupo_muscular', function (Blueprint $table) {
-            $table->foreignId('id_ejercicio')->constrained('ejercicios')->onDelete('cascade');
-            $table->foreignId('id_grupo_muscular')->constrained('grupos_musculares')->onDelete('cascade');
-            $table->primary(['id_ejercicio', 'id_grupo_muscular']);
+            $table->foreignId('ejercicio_id')->constrained('ejercicios')->onDelete('cascade');
+            $table->foreignId('grupo_muscular_id')->constrained('grupos_musculares')->onDelete('cascade');
+            $table->primary(['ejercicio_id', 'grupo_muscular_id']);
         });
     }
 

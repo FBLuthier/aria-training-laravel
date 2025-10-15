@@ -13,8 +13,8 @@ class RegistroSerie extends Model
     protected $table = 'registro_series';
 
     protected $fillable = [
-        'id_rutina_ejercicio',
-        'id_unidad_medida',
+        'rutina_ejercicio_id',
+        'unidad_medida_id',
         'numero_serie',
         'valor_registrado',
         'repeticiones_realizadas',
@@ -26,7 +26,7 @@ class RegistroSerie extends Model
      */
     public function rutinaEjercicio(): BelongsTo
     {
-        return $this->belongsTo(RutinaEjercicio::class, 'id_rutina_ejercicio');
+        return $this->belongsTo(RutinaEjercicio::class, 'rutina_ejercicio_id');
     }
 
     /**
@@ -34,6 +34,6 @@ class RegistroSerie extends Model
      */
     public function unidadMedida(): BelongsTo
     {
-        return $this->belongsTo(UnidadMedida::class, 'id_unidad_medida');
+        return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id');
     }
 }

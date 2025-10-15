@@ -19,6 +19,6 @@ class GrupoMuscular extends Model
      */
     public function ejercicios(): BelongsToMany // 2. La función ahora está DENTRO de la clase
     {
-        return $this->belongsToMany(Ejercicio::class, 'ejercicios_x_grupo_muscular', 'id_grupo_muscular', 'id_ejercicio');
+        return $this->belongsToMany(Ejercicio::class, 'ejercicios_x_grupo_muscular', 'grupo_muscular_id', 'ejercicio_id');
     }
 }

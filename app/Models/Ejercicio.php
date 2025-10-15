@@ -16,7 +16,7 @@ class Ejercicio extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
-        'id_equipo',
+        'equipo_id',
         'estado',
     ];
 
@@ -25,7 +25,7 @@ class Ejercicio extends Model
      */
     public function equipo(): BelongsTo
     {
-        return $this->belongsTo(Equipo::class, 'id_equipo');
+        return $this->belongsTo(Equipo::class, 'equipo_id');
     }
 
     /**
@@ -33,6 +33,6 @@ class Ejercicio extends Model
      */
     public function gruposMusculares(): BelongsToMany
     {
-        return $this->belongsToMany(GrupoMuscular::class, 'ejercicios_x_grupo_muscular', 'id_ejercicio', 'id_grupo_muscular');
+        return $this->belongsToMany(GrupoMuscular::class, 'ejercicios_x_grupo_muscular', 'ejercicio_id', 'grupo_muscular_id');
     }
 }

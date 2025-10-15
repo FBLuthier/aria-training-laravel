@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
                 'telefono' => '1234567890',
                 'fecha_nacimiento' => '2000-01-01',
                 'estado' => 1,
-                'id_tipo_usuario' => 3, // ID de Atleta
+                'tipo_usuario_id' => 3, // ID de Atleta
             ]);
 
             // Crea nuestro usuario de prueba "Entrenador"
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
                 'telefono' => '1234567890',
                 'fecha_nacimiento' => '2000-01-01',
                 'estado' => 1,
-                'id_tipo_usuario' => 2, // ID de Entrenador
+                'tipo_usuario_id' => 2, // ID de Entrenador
             ]);
 
             // Crea nuestro usuario de prueba "Administrador"
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
                 'telefono' => '1234567890',
                 'fecha_nacimiento' => '2000-01-01',
                 'estado' => 1,
-                'id_tipo_usuario' => 1, // ID de Administrador
+                'tipo_usuario_id' => 1, // ID de Administrador
             ]);
             // Crea 25 equipos de prueba usando el factory
             \App\Models\Equipo::factory(25)->create();

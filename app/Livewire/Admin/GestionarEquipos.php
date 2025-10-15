@@ -165,6 +165,8 @@ class GestionarEquipos extends Component
      */
     public function create(): void
     {
+        $this->authorize('create', Equipo::class);
+        
         $this->form->reset();
         $this->showFormModal = true;
         $this->equipoRecienCreado = null;
@@ -176,6 +178,8 @@ class GestionarEquipos extends Component
     public function edit(int $equipoId): void
     {
         $equipo = Equipo::findOrFail($equipoId);
+        $this->authorize('update', $equipo);
+        
         $this->form->setEquipo($equipo);
         $this->showFormModal = true;
     }
@@ -185,6 +189,13 @@ class GestionarEquipos extends Component
      */
     public function save(): void
     {
+        // Autorización para crear o actualizar
+        if ($this->form->equipo && $this->form->equipo->exists) {
+            $this->authorize('update', $this->form->equipo);
+        } else {
+            $this->authorize('create', Equipo::class);
+        }
+        
         $message = $this->form->save();
 
         // Si es un equipo nuevo, lo guardamos para resaltarlo
@@ -249,6 +260,9 @@ class GestionarEquipos extends Component
      */
     public function delete(int $id): void
     {
+        $equipo = Equipo::findOrFail($id);
+        $this->authorize('delete', $equipo);
+        
         $this->deletingId = $id;
     }
 
@@ -258,7 +272,10 @@ class GestionarEquipos extends Component
     public function performDelete(): void
     {
         if ($this->deletingId) {
-            Equipo::findOrFail($this->deletingId)->delete();
+            $equipo = Equipo::findOrFail($this->deletingId);
+            $this->authorize('delete', $equipo);
+            
+            $equipo->delete();
             $this->deletingId = null;
             $this->dispatch('notify', message: 'Equipo enviado a la papelera.', type: 'success');
         }
@@ -269,6 +286,9 @@ class GestionarEquipos extends Component
      */
     public function restore(int $id): void
     {
+        $equipo = Equipo::withTrashed()->findOrFail($id);
+        $this->authorize('restore', $equipo);
+        
         $this->restoringId = $id;
     }
 
@@ -278,7 +298,10 @@ class GestionarEquipos extends Component
     public function performRestore(): void
     {
         if ($this->restoringId) {
-            Equipo::withTrashed()->findOrFail($this->restoringId)->restore();
+            $equipo = Equipo::withTrashed()->findOrFail($this->restoringId);
+            $this->authorize('restore', $equipo);
+            
+            $equipo->restore();
             $this->restoringId = null;
             $this->dispatch('notify', message: 'Equipo restaurado exitosamente.', type: 'success');
         }
@@ -289,6 +312,9 @@ class GestionarEquipos extends Component
      */
     public function forceDelete(int $id): void
     {
+        $equipo = Equipo::withTrashed()->findOrFail($id);
+        $this->authorize('forceDelete', $equipo);
+        
         $this->forceDeleteingId = $id;
     }
 
@@ -298,7 +324,10 @@ class GestionarEquipos extends Component
     public function performForceDelete(): void
     {
         if ($this->forceDeleteingId) {
-            Equipo::withTrashed()->findOrFail($this->forceDeleteingId)->forceDelete();
+            $equipo = Equipo::withTrashed()->findOrFail($this->forceDeleteingId);
+            $this->authorize('forceDelete', $equipo);
+            
+            $equipo->forceDelete();
             $this->forceDeleteingId = null;
             $this->dispatch('notify', message: 'Equipo eliminado permanentemente.', type: 'error');
         }
@@ -334,6 +363,12 @@ class GestionarEquipos extends Component
      */
     public function deleteSelected(): void
     {
+        // Verificar autorización para cada equipo
+        $equipos = Equipo::whereIn('id', $this->selectedItems)->get();
+        foreach ($equipos as $equipo) {
+            $this->authorize('delete', $equipo);
+        }
+        
         Equipo::whereIn('id', $this->selectedItems)->delete();
         $this->confirmingBulkDelete = false;
         $this->clearSelections();
@@ -353,6 +388,12 @@ class GestionarEquipos extends Component
      */
     public function restoreSelected(): void
     {
+        // Verificar autorización para cada equipo
+        $equipos = Equipo::withTrashed()->whereIn('id', $this->selectedItems)->get();
+        foreach ($equipos as $equipo) {
+            $this->authorize('restore', $equipo);
+        }
+        
         Equipo::withTrashed()->whereIn('id', $this->selectedItems)->restore();
         $this->confirmingBulkRestore = false;
         $this->clearSelections();
@@ -372,6 +413,12 @@ class GestionarEquipos extends Component
      */
     public function forceDeleteSelected(): void
     {
+        // Verificar autorización para cada equipo
+        $equipos = Equipo::withTrashed()->whereIn('id', $this->selectedItems)->get();
+        foreach ($equipos as $equipo) {
+            $this->authorize('forceDelete', $equipo);
+        }
+        
         Equipo::withTrashed()->whereIn('id', $this->selectedItems)->forceDelete();
         $this->confirmingBulkForceDelete = false;
         $this->clearSelections();
@@ -387,6 +434,9 @@ class GestionarEquipos extends Component
      */
     public function render()
     {
+        // Verificar autorización para ver la lista de equipos
+        $this->authorize('viewAny', Equipo::class);
+        
         $equipos = Equipo::query()
             ->when($this->search, fn($query) => $query->where('nombre', 'like', '%' . $this->search . '%'))
             ->when($this->showingTrash, fn($query) => $query->onlyTrashed())

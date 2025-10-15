@@ -14,9 +14,9 @@ class RutinaEjercicio extends Model
     protected $table = 'rutina_ejercicios';
 
     protected $fillable = [
-        'id_rutina_dia',
-        'id_ejercicio',
-        'id_bloque',
+        'rutina_dia_id',
+        'ejercicio_id',
+        'bloque_id',
         'series',
         'repeticiones',
         'indicaciones',
@@ -29,7 +29,7 @@ class RutinaEjercicio extends Model
      */
     public function rutinaDia(): BelongsTo
     {
-        return $this->belongsTo(RutinaDia::class, 'id_rutina_dia');
+        return $this->belongsTo(RutinaDia::class, 'rutina_dia_id');
     }
 
     /**
@@ -37,7 +37,7 @@ class RutinaEjercicio extends Model
      */
     public function ejercicio(): BelongsTo
     {
-        return $this->belongsTo(Ejercicio::class, 'id_ejercicio');
+        return $this->belongsTo(Ejercicio::class, 'ejercicio_id');
     }
 
     /**
@@ -45,7 +45,7 @@ class RutinaEjercicio extends Model
      */
     public function bloque(): BelongsTo
     {
-        return $this->belongsTo(BloqueEjercicioDia::class, 'id_bloque');
+        return $this->belongsTo(BloqueEjercicioDia::class, 'bloque_id');
     }
 
     /**
@@ -53,6 +53,6 @@ class RutinaEjercicio extends Model
      */
     public function registros(): HasMany
     {
-        return $this->hasMany(RegistroSerie::class, 'id_rutina_ejercicio');
+        return $this->hasMany(RegistroSerie::class, 'rutina_ejercicio_id');
     }
 }

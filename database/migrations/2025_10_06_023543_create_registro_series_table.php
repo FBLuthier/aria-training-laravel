@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('registro_series', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_rutina_ejercicio')->constrained('rutina_ejercicios')->onDelete('cascade');
-            $table->foreignId('id_unidad_medida')->constrained('unidades_medida');
+            $table->foreignId('rutina_ejercicio_id')->constrained('rutina_ejercicios')->onDelete('cascade');
+            $table->foreignId('unidad_medida_id')->constrained('unidades_medida');
             $table->integer('numero_serie');
             $table->decimal('valor_registrado', 10, 2);
             $table->integer('repeticiones_realizadas');

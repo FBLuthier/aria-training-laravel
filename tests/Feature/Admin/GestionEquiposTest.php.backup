@@ -1,0 +1,323 @@
+<?php
+
+// Archivo: tests/Feature/Admin/GestionEquiposTest.php
+
+// 1. NAMESPACE - Laravel lo busca automáticamente aquí
+namespace Tests\Feature\Admin;
+
+// 2. IMPORTS - Bibliotecas que necesitamos
+use App\Models\User;                    // Para crear usuarios de prueba
+use App\Models\Equipo;                   // Para trabajar con equipos
+use App\Models\TipoUsuario;             // Para tipos de usuario
+use Illuminate\Foundation\Testing\RefreshDatabase; // Limpia BD entre pruebas
+use App\Livewire\Admin\GestionarEquipos; // Para probar el componente Livewire
+use Tests\TestCase;                      // Clase base de Laravel
+
+// 3. CLASE DE PRUEBA - Hereda de TestCase (PHPUnit + Laravel)
+class GestionEquiposTest extends TestCase
+{
+    // 4. TRAIT PARA BASE DE DATOS - Limpia la BD antes de cada prueba
+    use RefreshDatabase;
+
+    // 5. PRIMERA PRUEBA - Verificar que admin puede acceder
+    public function test_administrador_puede_ver_gestion_equipos(): void
+    {
+        // PASO 1: Crear tipos de usuario primero
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+        TipoUsuario::create(['id' => 2, 'rol' => 'Entrenador']);
+        TipoUsuario::create(['id' => 3, 'rol' => 'Atleta']);
+
+        // PASO 2: Crear usuario administrador
+        $admin = User::factory()->create([
+            'tipo_usuario_id' => 1  // Tipo administrador
+        ]);
+
+        // PASO 3: Hacer petición como ese usuario
+        $response = $this->actingAs($admin)  // "Actuar como" el admin
+                        ->get('/admin/equipos');  // Intentar acceder
+
+        // PASO 4: Verificar que puede acceder (código 200 = éxito)
+        $response->assertStatus(200);  // HTTP 200 OK
+    }
+
+    // 6. SEGUNDA PRUEBA - Verificar que NO admin NO puede acceder
+    public function test_usuario_normal_no_puede_ver_gestion_equipos(): void
+    {
+        // PASO 1: Crear tipos de usuario primero
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+        TipoUsuario::create(['id' => 2, 'rol' => 'Entrenador']);
+        TipoUsuario::create(['id' => 3, 'rol' => 'Atleta']);
+
+        // PASO 2: Crear usuario normal (atleta)
+        $atleta = User::factory()->create([
+            'tipo_usuario_id' => 3  // Tipo atleta
+        ]);
+
+        // PASO 3: Intentar acceder como atleta
+        $response = $this->actingAs($atleta)->get('/admin/equipos');
+
+        // PASO 4: Verificar que es redirigido (código 302 = redirección)
+        $response->assertRedirect('/dashboard');  // Debe ir al dashboard
+    }
+
+    // 7. TERCERA PRUEBA - Verificar que entrenadores NO pueden acceder
+    public function test_entrenador_no_puede_ver_gestion_equipos(): void
+    {
+        // PASO 1: Crear tipos de usuario primero
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+        TipoUsuario::create(['id' => 2, 'rol' => 'Entrenador']);
+        TipoUsuario::create(['id' => 3, 'rol' => 'Atleta']);
+
+        // PASO 2: Crear usuario entrenador
+        $entrenador = User::factory()->create([
+            'tipo_usuario_id' => 2  // Tipo entrenador
+        ]);
+
+        // PASO 3: Intentar acceder como entrenador
+        $response = $this->actingAs($entrenador)->get('/admin/equipos');
+
+        // PASO 4: Verificar que es redirigido (código 302 = redirección)
+        $response->assertRedirect('/dashboard');  // Debe ir al dashboard
+    }
+
+    // 8. CUARTA PRUEBA - Verificar que usuarios no autenticados son redirigidos
+    public function test_usuario_no_autenticado_es_redirigido_a_login(): void
+    {
+        // PASO 1: Hacer petición sin autenticación
+        $response = $this->get('/admin/equipos');
+
+        // PASO 2: Verificar que es redirigido al login (código 302 = redirección)
+        $response->assertRedirect('/login');  // Laravel redirige automáticamente a login
+    }
+
+    // =======================================================================
+    //  PRUEBAS DE AUTORIZACIÓN - CRUD COMPLETO
+    // =======================================================================
+    // 9. PRUEBA - Administrador puede crear equipos
+    public function test_administrador_puede_crear_equipos(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')  // Abre modal de crear
+                ->set('form.nombre', 'Mancuernas 10kg')  // Establece el nombre
+                ->call('save')    // Guarda el equipo
+                ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('equipos', ['nombre' => 'Mancuernas 10kg']);
+    }
+
+    // 10. PRUEBA - Atleta NO puede crear equipos
+    public function test_atleta_no_puede_crear_equipos(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+        TipoUsuario::create(['id' => 3, 'rol' => 'Atleta']);
+
+        $atleta = User::factory()->create(['tipo_usuario_id' => 3]);
+
+        Livewire::actingAs($atleta)
+                ->test(GestionarEquipos::class)
+                ->call('create')  // Intenta abrir modal de crear
+                ->assertForbidden();  // Debe ser denegado por autorización
+
+        $this->assertDatabaseMissing('equipos', ['nombre' => 'Mancuernas 10kg']);
+    }
+
+    // 11. PRUEBA - Entrenador NO puede crear equipos
+    public function test_entrenador_no_puede_crear_equipos(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+        TipoUsuario::create(['id' => 2, 'rol' => 'Entrenador']);
+
+        $entrenador = User::factory()->create(['tipo_usuario_id' => 2]);
+
+        Livewire::actingAs($entrenador)
+                ->test(GestionarEquipos::class)
+                ->call('create')  // Intenta abrir modal de crear
+                ->assertForbidden();  // Debe ser denegado por autorización
+
+        $this->assertDatabaseMissing('equipos', ['nombre' => 'Mancuernas 10kg']);
+    }
+
+    // =======================================================================
+    //  PRUEBAS DE FUNCIONALIDAD CRUD
+    // =======================================================================
+
+    // 12. PRUEBA - Crear equipo con nombre válido funciona
+    public function test_crear_equipo_con_nombre_valido(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', 'Banca olímpica')
+                ->call('save')
+                ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('equipos', ['nombre' => 'Banca olímpica']);
+    }
+
+    // 13. PRUEBA - No se pueden crear equipos duplicados
+    public function test_no_crear_equipos_con_nombres_duplicados(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        // Crear primer equipo
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', 'Mancuernas 10kg')
+                ->call('save');
+
+        // Intentar crear duplicado
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', 'Mancuernas 10kg')
+                ->call('save')
+                ->assertHasErrors(['form.nombre']);  // Debe tener errores de validación
+    }
+
+    // 14. PRUEBA - Editar equipo cambia nombre correctamente
+    public function test_editar_equipo_cambia_nombre_correctamente(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+        $equipo = Equipo::factory()->create(['nombre' => 'Equipo viejo']);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('edit', $equipo->id)  // Abre modal de editar
+                ->set('form.nombre', 'Equipo nuevo')  // Cambia el nombre
+                ->call('save')    // Guarda los cambios
+                ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('equipos', ['nombre' => 'Equipo nuevo']);
+        $this->assertDatabaseMissing('equipos', ['nombre' => 'Equipo viejo']);
+    }
+
+    // 15. PRUEBA - Eliminar equipo lo mueve a papelera
+    public function test_eliminar_equipo_lo_mueve_a_papelera(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+        $equipo = Equipo::factory()->create(['nombre' => 'Equipo a eliminar']);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('delete', $equipo->id)  // Confirma eliminación
+                ->call('performDelete')        // Ejecuta eliminación
+                ->assertHasNoErrors();
+
+        $this->assertSoftDeleted('equipos', ['nombre' => 'Equipo a eliminar']);
+    }
+
+    // =======================================================================
+    //  PRUEBAS DE VALIDACIÓN
+    // =======================================================================
+
+    // 16. PRUEBA - No crear equipo sin nombre
+    public function test_no_crear_equipo_sin_nombre(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', '')  // Nombre vacío
+                ->call('save')
+                ->assertHasErrors(['form.nombre']);  // Debe tener errores de validación
+
+        $this->assertDatabaseMissing('equipos', ['nombre' => '']);
+    }
+
+    // 17. PRUEBA - No crear equipo con nombre vacío (solo espacios)
+    public function test_no_crear_equipo_con_nombre_vacio(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', '   ')  // Solo espacios
+                ->call('save')
+                ->assertHasErrors(['form.nombre']);  // Debe tener errores de validación
+
+        $this->assertDatabaseMissing('equipos', ['nombre' => '   ']);
+    }
+
+    // 18. PRUEBA - No crear equipo con nombre demasiado largo
+    public function test_no_crear_equipo_con_nombre_demasiado_largo(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        $nombreLargo = str_repeat('a', 46); // Más de 45 caracteres
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', $nombreLargo)  // Nombre muy largo
+                ->call('save')
+                ->assertHasErrors(['form.nombre']);  // Debe tener errores de validación
+
+        $this->assertDatabaseMissing('equipos', ['nombre' => $nombreLargo]);
+    }
+
+    // =======================================================================
+    //  PRUEBAS DE CASOS EXTREMOS
+    // =======================================================================
+
+    // 19. PRUEBA - Crear equipo con caracteres especiales
+    public function test_crear_equipo_con_caracteres_especiales(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', 'Equipo con números 123 y símbolos @#$%')
+                ->call('save')
+                ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('equipos', [
+            'nombre' => 'Equipo con números 123 y símbolos @#$%'
+        ]);
+    }
+
+    // 20. PRUEBA - Crear equipo con caracteres unicode
+    public function test_crear_equipo_con_caracteres_unicode(): void
+    {
+        TipoUsuario::create(['id' => 1, 'rol' => 'Administrador']);
+
+        $admin = User::factory()->create(['tipo_usuario_id' => 1]);
+
+        Livewire::actingAs($admin)
+                ->test(GestionarEquipos::class)
+                ->call('create')
+                ->set('form.nombre', 'Equipo con ñ, á, é, í, ó, ú')
+                ->call('save')
+                ->assertHasNoErrors();
+
+        $this->assertDatabaseHas('equipos', [
+            'nombre' => 'Equipo con ñ, á, é, í, ó, ú'
+        ]);
+    }
+}

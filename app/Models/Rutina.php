@@ -15,8 +15,8 @@ class Rutina extends Model
 
     protected $fillable = [
         'nombre',
-        'id_objetivo',
-        'id_usuario',
+        'objetivo_id',
+        'usuario_id',
         'estado',
     ];
 
@@ -25,7 +25,7 @@ class Rutina extends Model
      */
     public function usuario(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'id_usuario');
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 
     /**
@@ -33,7 +33,7 @@ class Rutina extends Model
      */
     public function objetivo(): BelongsTo
     {
-        return $this->belongsTo(Objetivo::class, 'id_objetivo');
+        return $this->belongsTo(Objetivo::class, 'objetivo_id');
     }
 
     /**
@@ -41,6 +41,6 @@ class Rutina extends Model
      */
     public function dias(): HasMany
     {
-        return $this->hasMany(RutinaDia::class, 'id_rutina');
+        return $this->hasMany(RutinaDia::class, 'rutina_id');
     }
 }

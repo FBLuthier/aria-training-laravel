@@ -65,7 +65,7 @@ class RegisteredUserController extends Controller
 
             // --- VALORES POR DEFECTO ---
             'estado' => 1, // 1 = Activo
-            'id_tipo_usuario' => 3, // Asumimos ID 3 = Atleta
+            'tipo_usuario_id' => 3, // Asumimos ID 3 = Atleta
         ]);
 
         event(new Registered($user));

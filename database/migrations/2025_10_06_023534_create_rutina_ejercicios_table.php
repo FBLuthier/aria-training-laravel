@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('rutina_ejercicios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_rutina_dia')->constrained('rutina_dias')->onDelete('cascade');
-            $table->foreignId('id_ejercicio')->constrained('ejercicios')->onDelete('cascade');
-            $table->foreignId('id_bloque')->nullable()->constrained('bloques_ejercicios_dias')->onDelete('set null');
+            $table->foreignId('rutina_dia_id')->constrained('rutina_dias')->onDelete('cascade');
+            $table->foreignId('ejercicio_id')->constrained('ejercicios')->onDelete('cascade');
+            $table->foreignId('bloque_id')->nullable()->constrained('bloques_ejercicios_dias')->onDelete('set null');
             $table->integer('series');
             $table->integer('repeticiones');
             $table->text('indicaciones')->nullable();
