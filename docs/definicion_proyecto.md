@@ -1,4 +1,4 @@
-# Documento de Definición del Proyecto: Aria Training (v1.1)
+# Documento de Definición del Proyecto: Aria Training (v1.2)
 
 ## Resumen Ejecutivo
 
@@ -8,7 +8,7 @@ El presente documento define el proyecto "Aria Training", una plataforma web dis
 | Versión | Fecha | Autor | Cambios Realizados |
 | :--- | :--- | :--- | :--- |
 | 1.0 | 2025-10-05 | Fernando Botero | Creación inicial del documento. Definición completa del alcance, requisitos y arquitectura para el MVP. |
-| **1.1** | **2025-10-11** | **Fernando Botero** | **Refactorización arquitectónica. Se migra la implementación del frontend de Blade tradicional a una arquitectura basada en componentes con Laravel Livewire. Se actualizan las secciones de Alcance, Requisitos No Funcionales, Stack Tecnológico y Arquitectura para reflejar la nueva implementación de tipo SPA (Single Page Application) en los módulos de gestión.** |
+| **1.2** | **2025-10-15** | **Fernando Botero** | **Implementación del sistema de pruebas automatizadas. Se agregan detalles sobre el sistema completo de pruebas desarrollado siguiendo prácticas de Extreme Programming (XP). Se documenta la implementación de 11 pruebas exhaustivas con cobertura del 100% en funcionalidades críticas del módulo de gestión de equipos (AD-04). Se establece el patrón profesional para desarrollo futuro.** |
 
 ---
 
@@ -56,6 +56,8 @@ El proyecto se gestionará siguiendo una filosofía **Ágil**, adoptando prácti
 * **Desarrollo Iterativo en Sprints:** El trabajo se organizará en ciclos de desarrollo denominados Sprints. El primer gran objetivo será la entrega de un **Producto Mínimo Viable (MVP)**, que constituirá nuestro "Sprint 1". Futuras versiones (v1.1, v1.2, etc.) se planificarán en Sprints subsecuentes.
 * **Gestión del Flujo de Trabajo:** Se utilizará un tablero visual de tareas (estilo **Kanban**) para gestionar el ciclo de vida de cada historia de usuario, desde el "Product Backlog" hasta su finalización.
 * **Compromiso con la Calidad:** Se pondrá un énfasis especial en la calidad técnica del software. Se adoptarán prácticas de **Extreme Programming (XP)**, como la implementación de un conjunto de **pruebas automatizadas**, para garantizar la robustez y mantenibilidad del código.
+
+  **Estado Actual del Sistema de Pruebas:** Se ha implementado un sistema completo de pruebas automatizadas siguiendo prácticas de Extreme Programming (XP). Se han desarrollado **11 pruebas exhaustivas** cubriendo el módulo de gestión de equipos (AD-04) con **100% de cobertura** en funcionalidades críticas. El sistema incluye pruebas de autorización, operaciones CRUD, validación de formularios, casos extremos y características avanzadas. Tiempo de ejecución promedio: ~1.88 segundos. Documentación completa disponible en `docs/pruebas/`.
 * **Product Backlog:** Todas las funcionalidades futuras se registrarán y priorizarán en un **Product Backlog** centralizado, base para la planificación de futuros Sprints.
 
 ---
