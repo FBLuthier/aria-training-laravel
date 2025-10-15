@@ -3,9 +3,11 @@
 ## 🛠️ Mantenimiento y Operaciones
 
 ### Información General
-**Versión del sistema:** 1.2
+**Versión del sistema:** 1.3
 **Fecha de documentación:** Octubre 2025
 **Responsable de operaciones:** Equipo de desarrollo Aria Training
+
+**Última actualización:** Implementación del Sistema de Exportación de Auditoría con soporte para CSV, XLSX y PDF nativos.
 
 ## 📋 Procedimientos de Mantenimiento
 

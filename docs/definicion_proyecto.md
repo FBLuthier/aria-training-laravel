@@ -1,4 +1,4 @@
-# Documento de Definición del Proyecto: Aria Training (v1.2)
+# Documento de Definición del Proyecto: Aria Training (v1.3)
 
 ## Resumen Ejecutivo
 
@@ -8,7 +8,8 @@ El presente documento define el proyecto "Aria Training", una plataforma web dis
 | Versión | Fecha | Autor | Cambios Realizados |
 | :--- | :--- | :--- | :--- |
 | 1.0 | 2025-10-05 | Fernando Botero | Creación inicial del documento. Definición completa del alcance, requisitos y arquitectura para el MVP. |
-| **1.2** | **2025-10-15** | **Fernando Botero** | **Implementación del sistema de pruebas automatizadas. Se agregan detalles sobre el sistema completo de pruebas desarrollado siguiendo prácticas de Extreme Programming (XP). Se documenta la implementación de 11 pruebas exhaustivas con cobertura del 100% en funcionalidades críticas del módulo de gestión de equipos (AD-04). Se establece el patrón profesional para desarrollo futuro.** |
+| 1.2 | 2025-10-15 | Fernando Botero | Implementación del sistema de pruebas automatizadas. Se agregan detalles sobre el sistema completo de pruebas desarrollado siguiendo prácticas de Extreme Programming (XP). Se documenta la implementación de 11 pruebas exhaustivas con cobertura del 100% en funcionalidades críticas del módulo de gestión de equipos (AD-04). Se establece el patrón profesional para desarrollo futuro. |
+| **1.3** | **2025-10-15** | **Fernando Botero** | **Implementación completa del Sistema Avanzado de Exportación de Auditoría. Se añade funcionalidad de exportación en múltiples formatos (CSV, XLSX, PDF) con selección granular de campos. Se integra PhpSpreadsheet para generación nativa de archivos Excel. Se documenta la arquitectura de componentes Livewire con Alpine.js para el modal de exportación. Se eliminan dependencias obsoletas mejorando la seguridad del sistema (0 vulnerabilidades). Actualización del stack tecnológico del proyecto.** |
 
 ---
 
