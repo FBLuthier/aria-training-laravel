@@ -25,7 +25,10 @@
 
         {{-- Scripts y Estilos: Utiliza Vite, el compilador de assets moderno de Laravel, para incluir los archivos CSS y JS compilados. --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        
+
+        {{-- Estilos de Livewire (necesarios para componentes Livewire) --}}
+        @livewireStyles
+
         {{-- Estilo para x-cloak de Alpine.js: Evita el "parpadeo" de los elementos de Alpine.js al cargar la página, ocultándolos hasta que Alpine esté listo. --}}
         <style>
             [x-cloak] {
@@ -71,5 +74,8 @@
                 {{ $slot }}
             </main>
         </div>
+
+        {{-- Scripts de Livewire (necesarios para componentes Livewire) --}}
+        @livewireScripts
     </body>
 </html>
