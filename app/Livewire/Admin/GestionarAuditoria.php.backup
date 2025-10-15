@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Livewire\Admin;
+
+use App\Models\AuditLog;
+use App\Models\User;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Livewire\Attributes\Layout;
+
+#[Layout('layouts.app')]
+class GestionarAuditoria extends Component
+{
+    use WithPagination;
+
+    // =======================================================================
+    //  PROPIEDADES DE FILTRADO Y BÚSQUEDA
+    // =======================================================================
+
+    /** @var string Búsqueda general */
+    public string $search = '';
+
+    public string $actionFilter = '';
+
+    /** @var string Tipo de modelo para filtrar */
+    public string $modelFilter = '';
+
+    /**
+     * Hook que se ejecuta al actualizar la búsqueda.
+     * Cambia la columna y dirección del ordenamiento.
+     */
+    public function sortBy(string $field): void
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortDirection = 'asc';
+        }
+
+        $this->sortField = $field;
+    }
+
+    // =======================================================================
+    //  MÉTODOS DE VISUALIZACIÓN DE DETALLES
+    // =======================================================================
+
+    /**
+     * Muestra los detalles de un log específico.
+     */
+    public function showDetailsFor(int $logId): void
+    {
+        // Si ya está mostrando detalles de este log, ocultarlos
+        if ($this->detailId === $logId) {
+            $this->detailId = null;
+        } else {
+            // Mostrar detalles del log seleccionado (solo uno a la vez)
+            $this->detailId = $logId;
+        }
+    }
+
+    /**
+     * Limpia la búsqueda y filtros.
+     */
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->actionFilter = '';
+        $this->modelFilter = '';
+        $this->userFilter = null;
+        $this->startDate = '';
+        $this->endDate = '';
+        $this->detailId = null; // También limpiar detalles mostrados
+        $this->resetPage();
+        $this->dispatch('notify', message: 'Filtros limpiados correctamente.', type: 'success');
+    }
+
+    // =======================================================================
+    //  MÉTODOS DE EXPORTACIÓN (futuro)
+    // =======================================================================
+
+    /**
+     * Placeholder para futura funcionalidad de exportación.
+     */
+    public function exportLogs(): void
+    {
+        // TODO: Implementar exportación a Excel/PDF
+        $this->dispatch('notify', message: 'Funcionalidad de exportación próximamente.', type: 'info');
+    }
+
+    // =======================================================================
+    //  MÉTODO RENDER
+    // =======================================================================
+
+    /**
+     * Renderiza la vista del componente.
+     */
+    public function render()
+    {
+        // Verificar autorización para ver logs de auditoría
+        $this->authorize('viewAny', AuditLog::class);
+
+        $query = AuditLog::query()
+            ->with('user:id,nombre_1,apellido_1,correo') // Cargar relación con usuario usando campos correctos
+            ->when($this->search, function($q) {
+                $q->where(function($query) {
+                    $query->where('action', 'like', '%' . $this->search . '%')
+                          ->orWhere('model_type', 'like', '%' . $this->search . '%')
+                          ->orWhere('ip_address', 'like', '%' . $this->search . '%')
+                          ->orWhereHas('user', function($q) {
+                              $q->where('nombre_1', 'like', '%' . $this->search . '%')
+                                ->orWhere('apellido_1', 'like', '%' . $this->search . '%')
+                                ->orWhere('correo', 'like', '%' . $this->search . '%');
+                          });
+                });
+            })
+            ->when($this->actionFilter, fn($q) => $q->where('action', $this->actionFilter))
+            ->when($this->modelFilter, fn($q) => $q->where('model_type', 'like', '%' . $this->modelFilter . '%'))
+            ->when($this->userFilter, fn($q) => $q->where('user_id', $this->userFilter))
+            ->when($this->startDate, fn($q) => $q->whereDate('created_at', '>=', $this->startDate))
+            ->when($this->endDate, fn($q) => $q->whereDate('created_at', '<=', $this->endDate))
+            ->orderBy($this->sortField, $this->sortDirection)
+            ->paginate(15);
+
+        // Obtener opciones para filtros
+        $actions = ['create' => 'Crear', 'update' => 'Actualizar', 'delete' => 'Eliminar', 'restore' => 'Restaurar', 'force_delete' => 'Eliminar Permanentemente'];
+        $models = AuditLog::distinct('model_type')->pluck('model_type')->filter()->values();
+        $users = User::select('id', 'nombre_1', 'apellido_1')->orderBy('nombre_1')->get();
+
+        return view('livewire.admin.gestionar-auditoria', [
+            'auditLogs' => $query,
+            'actions' => $actions,
+            'models' => $models,
+            'users' => $users,
+        ]);
+    }
+}

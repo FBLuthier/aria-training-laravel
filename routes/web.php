@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditoriaController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\GestionarEquipos;
+use App\Livewire\Admin\GestionarAuditoria;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,6 +56,24 @@ Route::middleware('auth')->group(function () {
          * Esto simplifica enormemente el mapa de rutas y centraliza la funcionalidad.
          */
         Route::get('equipos', GestionarEquipos::class)->name('equipos.index');
+
+        // =======================================================================
+        //  GESTIÓN DE AUDITORÍA
+        // =======================================================================
+
+        /**
+         * RUTA PARA LA GESTIÓN DE AUDITORÍA.
+         * Esta ruta permite a los administradores ver el registro completo de todas las acciones
+         * realizadas en el sistema. Incluye funcionalidades de filtrado, búsqueda y visualización
+         * detallada de cambios.
+         */
+        Route::get('auditoria', GestionarAuditoria::class)->name('auditoria.index');
+
+        /**
+         * RUTA PARA LA EXPORTACIÓN DE AUDITORÍA.
+         * Permite descargar los logs de auditoría en formato CSV según los filtros aplicados.
+         */
+        Route::get('auditoria/export', [AuditoriaController::class, 'export'])->name('auditoria.export');
 
     });
     

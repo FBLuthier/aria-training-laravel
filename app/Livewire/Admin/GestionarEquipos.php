@@ -3,6 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\SortDirection;
+use App\Events\ModelAudited;
 use App\Livewire\Forms\EquipoForm;
 use App\Livewire\Traits\WithBulkActions;
 use App\Models\Equipo;
@@ -196,7 +197,21 @@ class GestionarEquipos extends Component
             $this->authorize('create', Equipo::class);
         }
         
+        // Guardar valores anteriores para auditoría en caso de actualización
+        $oldValues = $this->form->equipo && $this->form->equipo->exists
+            ? $this->form->equipo->toArray()
+            : null;
+
         $message = $this->form->save();
+
+        // Determinar si es creación o actualización para la auditoría
+        if ($this->form->equipo->wasRecentlyCreated) {
+            // Es una creación - solo pasamos newValues
+            ModelAudited::dispatch('create', $this->form->equipo, null, $this->form->equipo->toArray());
+        } else {
+            // Es una actualización - pasamos oldValues y newValues
+            ModelAudited::dispatch('update', $this->form->equipo, $oldValues, $this->form->equipo->toArray());
+        }
 
         // Si es un equipo nuevo, lo guardamos para resaltarlo
         if (!$this->form->equipo->wasRecentlyCreated) {
@@ -274,8 +289,15 @@ class GestionarEquipos extends Component
         if ($this->deletingId) {
             $equipo = Equipo::findOrFail($this->deletingId);
             $this->authorize('delete', $equipo);
-            
+
+            // ✅ Capturar valores ANTES de eliminar para auditoría
+            $equipoValues = $equipo->toArray();
+
             $equipo->delete();
+
+            // Auditoría de eliminación suave con valores correctos
+            ModelAudited::dispatch('delete', $equipo, $equipoValues, null);
+
             $this->deletingId = null;
             $this->dispatch('notify', message: 'Equipo enviado a la papelera.', type: 'success');
         }
@@ -300,8 +322,15 @@ class GestionarEquipos extends Component
         if ($this->restoringId) {
             $equipo = Equipo::withTrashed()->findOrFail($this->restoringId);
             $this->authorize('restore', $equipo);
-            
+
+            // ✅ Capturar valores ANTES de restaurar para auditoría
+            $equipoValues = $equipo->toArray();
+
             $equipo->restore();
+
+            // Auditoría de restauración con valores correctos
+            ModelAudited::dispatch('restore', $equipo, null, $equipoValues);
+
             $this->restoringId = null;
             $this->dispatch('notify', message: 'Equipo restaurado exitosamente.', type: 'success');
         }
@@ -326,8 +355,15 @@ class GestionarEquipos extends Component
         if ($this->forceDeleteingId) {
             $equipo = Equipo::withTrashed()->findOrFail($this->forceDeleteingId);
             $this->authorize('forceDelete', $equipo);
-            
+
+            // ✅ Capturar valores ANTES de eliminar permanentemente para auditoría
+            $equipoValues = $equipo->toArray();
+
             $equipo->forceDelete();
+
+            // Auditoría de eliminación permanente con valores correctos
+            ModelAudited::dispatch('force_delete', $equipo, $equipoValues, null);
+
             $this->forceDeleteingId = null;
             $this->dispatch('notify', message: 'Equipo eliminado permanentemente.', type: 'error');
         }
@@ -368,8 +404,20 @@ class GestionarEquipos extends Component
         foreach ($equipos as $equipo) {
             $this->authorize('delete', $equipo);
         }
-        
-        Equipo::whereIn('id', $this->selectedItems)->delete();
+
+        // ✅ Capturar valores ANTES de eliminar para auditoría
+        $equiposData = [];
+        foreach ($equipos as $equipo) {
+            $equiposData[$equipo->id] = $equipo->toArray();
+        }
+
+        $deletedCount = Equipo::whereIn('id', $this->selectedItems)->delete();
+
+        // Auditoría para cada equipo eliminado con valores correctos
+        foreach ($equipos as $equipo) {
+            ModelAudited::dispatch('delete', $equipo, $equiposData[$equipo->id], null);
+        }
+
         $this->confirmingBulkDelete = false;
         $this->clearSelections();
         $this->dispatch('notify', message: 'Equipos enviados a la papelera.', type: 'success');
@@ -393,8 +441,20 @@ class GestionarEquipos extends Component
         foreach ($equipos as $equipo) {
             $this->authorize('restore', $equipo);
         }
-        
-        Equipo::withTrashed()->whereIn('id', $this->selectedItems)->restore();
+
+        // ✅ Capturar valores ANTES de restaurar para auditoría
+        $equiposData = [];
+        foreach ($equipos as $equipo) {
+            $equiposData[$equipo->id] = $equipo->toArray();
+        }
+
+        $restoredCount = Equipo::withTrashed()->whereIn('id', $this->selectedItems)->restore();
+
+        // Auditoría para cada equipo restaurado con valores correctos
+        foreach ($equipos as $equipo) {
+            ModelAudited::dispatch('restore', $equipo, null, $equiposData[$equipo->id]);
+        }
+
         $this->confirmingBulkRestore = false;
         $this->clearSelections();
         $this->dispatch('notify', message: 'Equipos restaurados exitosamente.', type: 'success');
@@ -418,8 +478,20 @@ class GestionarEquipos extends Component
         foreach ($equipos as $equipo) {
             $this->authorize('forceDelete', $equipo);
         }
-        
-        Equipo::withTrashed()->whereIn('id', $this->selectedItems)->forceDelete();
+
+        // ✅ Capturar valores ANTES de eliminar permanentemente para auditoría
+        $equiposData = [];
+        foreach ($equipos as $equipo) {
+            $equiposData[$equipo->id] = $equipo->toArray();
+        }
+
+        $forceDeletedCount = Equipo::withTrashed()->whereIn('id', $this->selectedItems)->forceDelete();
+
+        // Auditoría para cada equipo eliminado permanentemente con valores correctos
+        foreach ($equipos as $equipo) {
+            ModelAudited::dispatch('force_delete', $equipo, $equiposData[$equipo->id], null);
+        }
+
         $this->confirmingBulkForceDelete = false;
         $this->clearSelections();
         $this->dispatch('notify', message: 'Equipos eliminados permanentemente.', type: 'error');
