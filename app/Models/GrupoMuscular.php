@@ -21,4 +21,12 @@ class GrupoMuscular extends Model
     {
         return $this->belongsToMany(Ejercicio::class, 'ejercicios_x_grupo_muscular', 'grupo_muscular_id', 'ejercicio_id');
     }
+
+    /**
+     * Scope para cargar todas las relaciones con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with('ejercicios.equipo');
+    }
 }

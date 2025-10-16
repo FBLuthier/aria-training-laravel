@@ -75,7 +75,7 @@ return redirect()->back()->with([
 |-----------|------|---------|-------------|
 | `message` | string | - | Mensaje a mostrar (requerido) |
 | `type` | string | 'success' | Tipo de notificación |
-| `duration` | number | 5000 | Duración en ms (0 = sin auto-dismiss) |
+| `duration` | number | 2000 | Duración en ms (0 = sin auto-dismiss) |
 
 ## 💡 Ejemplos Comunes
 
@@ -139,7 +139,7 @@ class="fixed top-4 left-1/2 -translate-x-1/2"
 ### Cambiar Duración Default
 ```javascript
 // En toast-container.blade.php
-@notify.window="addToast(..., duration || 5000)" // ← Cambiar 5000
+@notify.window="addToast(..., duration || 2000)" // ← Cambiar 2000
 ```
 
 ### Limitar Cantidad

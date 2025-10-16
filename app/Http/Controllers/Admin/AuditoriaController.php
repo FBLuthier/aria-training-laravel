@@ -281,13 +281,13 @@ class AuditoriaController extends Controller
 
         // Construir la consulta con los filtros
         $query = AuditLog::query()
-            ->with('user:id,nombre_1,apellido_1,correo')
-            ->when($search, function($q) {
-                $q->where(function($query) {
+            ->withRelations() // Usar scope para eager loading
+            ->when($search, function($q) use ($search) {
+                $q->where(function($query) use ($search) {
                     $query->where('action', 'like', '%' . $search . '%')
                           ->orWhere('model_type', 'like', '%' . $search . '%')
                           ->orWhere('ip_address', 'like', '%' . $search . '%')
-                          ->orWhereHas('user', function($q) {
+                          ->orWhereHas('user', function($q) use ($search) {
                               $q->where('nombre_1', 'like', '%' . $search . '%')
                                 ->orWhere('apellido_1', 'like', '%' . $search . '%')
                                 ->orWhere('correo', 'like', '%' . $search . '%');

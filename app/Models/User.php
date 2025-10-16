@@ -72,4 +72,20 @@ class User extends Authenticatable
     {
         return $this->belongsTo(TipoUsuario::class, 'tipo_usuario_id');
     }
+
+    /**
+     * Un Usuario puede tener muchas Rutinas (como entrenador).
+     */
+    public function rutinas()
+    {
+        return $this->hasMany(Rutina::class, 'usuario_id');
+    }
+
+    /**
+     * Un Usuario puede tener muchos registros de auditoría.
+     */
+    public function auditLogs()
+    {
+        return $this->hasMany(AuditLog::class, 'user_id');
+    }
 }

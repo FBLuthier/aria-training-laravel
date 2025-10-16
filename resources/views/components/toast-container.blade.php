@@ -13,7 +13,7 @@
         nextId: 0,
         
         // Agregar un nuevo toast
-        addToast(message, type = 'success', duration = 5000) {
+        addToast(message, type = 'success', duration = 2000) {
             const id = this.nextId++;
             const toast = {
                 id,
@@ -72,7 +72,7 @@
             return titles[type] || titles.info;
         }
     }"
-    @notify.window="addToast($event.detail.message, $event.detail.type || 'success', $event.detail.duration || 4000)"
+    @notify.window="addToast($event.detail.message, $event.detail.type || 'success', $event.detail.duration || 2000)"
     class="fixed top-4 right-4 z-50 space-y-3 pointer-events-none"
     style="max-width: 420px;"
 >
@@ -147,7 +147,7 @@
                         :class="getBgColor(toast.type)"
                         x-data="{ width: 100 }"
                         x-init="
-                            const duration = 4000;
+                            const duration = 2000;
                             const interval = 50;
                             const step = 100 / (duration / interval);
                             const timer = setInterval(() => {

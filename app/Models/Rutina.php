@@ -43,4 +43,26 @@ class Rutina extends Model
     {
         return $this->hasMany(RutinaDia::class, 'rutina_id');
     }
+
+    /**
+     * Scope para cargar todas las relaciones básicas con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['usuario:id,nombre_1,apellido_1', 'objetivo:id,nombre']);
+    }
+
+    /**
+     * Scope para cargar rutina completa con todos sus días y ejercicios.
+     */
+    public function scopeWithFullDetails($query)
+    {
+        return $query->with([
+            'usuario:id,nombre_1,apellido_1',
+            'objetivo:id,nombre',
+            'dias.rutinaEjercicios.ejercicio.equipo',
+            'dias.rutinaEjercicios.ejercicio.gruposMusculares',
+            'dias.bloques.tipoBloque'
+        ]);
+    }
 }

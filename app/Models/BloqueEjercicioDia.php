@@ -41,6 +41,19 @@ class BloqueEjercicioDia extends Model
      */
     public function rutinaEjercicios(): HasMany
     {
-        return $this->hasMany(RutinaEjercicio::class, 'id_bloque');
+        return $this->hasMany(RutinaEjercicio::class, 'bloque_id');
+    }
+
+    /**
+     * Scope para cargar todas las relaciones con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with([
+            'rutinaDia.rutina',
+            'tipoBloque',
+            'rutinaEjercicios.ejercicio.equipo',
+            'rutinaEjercicios.ejercicio.gruposMusculares'
+        ]);
     }
 }

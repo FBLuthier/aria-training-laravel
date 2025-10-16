@@ -36,4 +36,16 @@ class RegistroSerie extends Model
     {
         return $this->belongsTo(UnidadMedida::class, 'unidad_medida_id');
     }
+
+    /**
+     * Scope para cargar todas las relaciones con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with([
+            'rutinaEjercicio.ejercicio.equipo',
+            'rutinaEjercicio.rutinaDia.rutina',
+            'unidadMedida'
+        ]);
+    }
 }

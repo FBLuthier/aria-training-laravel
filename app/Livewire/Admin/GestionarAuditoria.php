@@ -169,7 +169,7 @@ class GestionarAuditoria extends Component
         // $this->authorize('viewAny', AuditLog::class);
 
         $query = AuditLog::query()
-            ->with('user:id,nombre_1,apellido_1,correo')
+            ->withRelations() // Usar scope para eager loading
             ->when($this->search, function($q) {
                 $q->where(function($query) {
                     $query->where('action', 'like', '%' . $this->search . '%')

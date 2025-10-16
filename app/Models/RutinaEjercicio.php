@@ -55,4 +55,18 @@ class RutinaEjercicio extends Model
     {
         return $this->hasMany(RegistroSerie::class, 'rutina_ejercicio_id');
     }
+
+    /**
+     * Scope para cargar todas las relaciones con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with([
+            'rutinaDia.rutina',
+            'ejercicio.equipo',
+            'ejercicio.gruposMusculares',
+            'bloque.tipoBloque',
+            'registros.unidadMedida'
+        ]);
+    }
 }

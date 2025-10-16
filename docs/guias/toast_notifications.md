@@ -47,7 +47,7 @@ Usa los helpers globales disponibles:
 
 ```javascript
 // Método principal
-notify('Mensaje de éxito', 'success', 5000);
+notify('Mensaje de éxito', 'success', 2000);
 
 // Atajos específicos por tipo
 notifySuccess('Operación exitosa');
@@ -298,7 +298,7 @@ public function deleteSelected()
 En el componente `toast-container.blade.php`, cambia el valor por defecto:
 
 ```javascript
-@notify.window="addToast($event.detail.message, $event.detail.type || 'success', $event.detail.duration || 5000)"
+@notify.window="addToast($event.detail.message, $event.detail.type || 'success', $event.detail.duration || 2000)"
 //                                                                                                    ^^^^^ Cambiar aquí
 ```
 
@@ -353,7 +353,7 @@ window.notify = function(message, type = 'success', duration = 0) { // ← durat
 
 ```javascript
 // En toast-container.blade.php, en la función addToast
-addToast(message, type = 'success', duration = 5000) {
+addToast(message, type = 'success', duration = 2000) {
     // ... código existente ...
     
     // Reproducir sonido según el tipo
@@ -533,7 +533,7 @@ Esto es normal y esperado. Para limitar:
 
 ```javascript
 // En toast-container.blade.php, modificar addToast
-addToast(message, type = 'success', duration = 5000) {
+addToast(message, type = 'success', duration = 2000) {
     // Limitar a máximo 3 toasts
     if (this.toasts.length >= 3) {
         this.removeToast(this.toasts[0].id);

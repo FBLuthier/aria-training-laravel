@@ -21,4 +21,12 @@ class TipoUsuario extends Model
     {
         return $this->hasMany(User::class, 'tipo_usuario_id');
     }
+
+    /**
+     * Scope para cargar todas las relaciones con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with('usuarios');
+    }
 }

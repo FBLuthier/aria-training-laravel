@@ -139,4 +139,12 @@ class AuditLog extends Model
     {
         return static::log('force_delete', $model, $model->toArray(), null);
     }
+
+    /**
+     * Scope para cargar relaciones comunes con eager loading.
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with('user:id,nombre_1,apellido_1,correo');
+    }
 }
