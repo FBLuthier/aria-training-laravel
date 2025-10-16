@@ -4,7 +4,7 @@
 
 **Nombre del módulo:** Gestión de Catálogo de Equipamiento
 **Código del caso de uso:** AD-04
-**Versión implementada:** 1.2 (Sistema completo implementado)
+**Versión implementada:** 1.4 (Arquitectura modular implementada)
 **Estado actual:** ✅ **100% funcional y probado**
 
 ## 📋 Funcionalidades Implementadas
@@ -12,11 +12,12 @@
 ### Funcionalidades Principales
 El módulo permite al **Administrador** gestionar completamente el catálogo de equipamiento disponible en el sistema Aria Training.
 
-### Operaciones CRUD Disponibles
-1. **Crear:** Añadir nuevos equipos al catálogo
-2. **Leer:** Visualizar lista completa de equipos con funcionalidades avanzadas
-3. **Actualizar:** Modificar información de equipos existentes
-4. **Eliminar:** Remover equipos del catálogo (soft delete)
+### Funcionalidades Avanzadas Implementadas (v1.4)
+1. **Arquitectura Modular:** Implementación completa de componentes reutilizables
+2. **Selección Múltiple:** Sistema avanzado con paginación y estado global
+3. **Optimización de Consultas:** Eager loading automático (reducción 97% queries)
+4. **Sistema de Notificaciones:** Toast notifications para feedback visual
+5. **Estados de Carga:** Loading states avanzados en todas las operaciones
 
 ### Características Avanzadas Implementadas
 - **Búsqueda en tiempo real:** Filtrar equipos por nombre

@@ -1,5 +1,55 @@
 # Sistema de Loading States (Estados de Carga)
 
+## 🚀 Quick Reference (Referencia Rápida)
+
+### Uso Más Común
+
+```blade
+{{-- Spinner simple en botón --}}
+<x-spinner size="sm" wire:loading wire:target="action" />
+
+{{-- Botón con loading automático --}}
+<x-primary-button wire:click="save" loadingTarget="save">
+    Guardar
+</x-primary-button>
+
+{{-- Input de búsqueda con spinner --}}
+<div class="relative w-full">
+    <input wire:model.live="search" />
+    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+        <x-spinner size="sm" wire:loading wire:target="search" />
+    </div>
+</div>
+
+{{-- Loading state para tabla --}}
+<x-loading-state target="search,filter,sort" message="Cargando datos..." />
+<div wire:loading.remove wire:target="search,filter,sort">
+    <!-- Contenido -->
+</div>
+
+{{-- Overlay para operaciones largas --}}
+<x-loading-overlay target="exportData" message="Exportando..." />
+```
+
+### Componentes Disponibles
+
+| Componente | Uso | Props Principales |
+|------------|-----|-------------------|
+| `<x-spinner>` | Indicador giratorio | `size`, `color`, `wire:target` |
+| `<x-loading-state>` | Mensaje de carga | `target`, `message`, `inline` |
+| `<x-loading-overlay>` | Overlay pantalla completa | `target`, `message` |
+| `<x-primary-button>` | Botón con loading | `loadingTarget` |
+
+### Tamaños de Spinner
+
+`xs`, `sm`, `md` (default), `lg`, `xl`
+
+### Colores de Spinner
+
+`current` (default), `white`, `gray`, `primary`, `red`
+
+---
+
 ## 📋 Descripción General
 
 El sistema de loading states proporciona feedback visual al usuario durante operaciones asíncronas, mejorando significativamente la experiencia de usuario (UX) al indicar que una acción está en proceso.

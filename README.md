@@ -1,61 +1,173 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Aria Training
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema de gestión de rutinas de entrenamiento personalizado para gimnasios y entrenadores.
 
-## About Laravel
+## 📋 Descripción
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Aria Training es una aplicación web que permite a entrenadores crear y gestionar rutinas de ejercicio personalizadas para sus atletas, con seguimiento de progreso, auditoría completa de acciones y gestión integral de equipamiento y ejercicios.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🚀 Stack Tecnológico
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- **Backend:** Laravel 11
+- **Frontend:** Livewire 3, Alpine.js, TailwindCSS
+- **Base de datos:** MySQL 8.0
+- **PHP:** 8.2+
 
-## Learning Laravel
+## ✨ Características Principales
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- ✅ Gestión completa de usuarios (Administradores, Entrenadores, Atletas)
+- ✅ CRUD de equipos, ejercicios, rutinas y registros de series
+- ✅ Sistema de auditoría completo con exportación avanzada
+- ✅ Selección masiva optimizada para grandes volúmenes de datos
+- ✅ Arquitectura modular con componentes reutilizables
+- ✅ Query optimization con eager loading (prevención N+1)
+- ✅ Autorización granular con políticas de Laravel
+- ✅ UI responsive con dark mode
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 📚 Documentación
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+La documentación completa del proyecto está en la carpeta `/docs`:
 
-## Laravel Sponsors
+- **[Índice de Documentación](docs/INDICE.md)** - Punto de entrada a toda la documentación
+- **[Definición del Proyecto](docs/definicion_proyecto.md)** - Visión general y alcance
+- **[Crear Nuevo CRUD](docs/desarrollo/crear_nuevo_crud.md)** - Guía práctica
+- **[Componentes Reutilizables](docs/arquitectura/componentes_reutilizables.md)** - Referencia de Actions, Traits, Builders
+- **[Buenas Prácticas](docs/desarrollo/buenas_practicas.md)** - Filosofía y patrones del código
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🛠️ Instalación
 
-### Premium Partners
+### Requisitos Previos
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- PHP 8.2 o superior
+- Composer
+- Node.js y NPM
+- MySQL 8.0+
+- XAMPP (opcional, para desarrollo local)
 
-## Contributing
+### Pasos de Instalación
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Clonar el repositorio**
+```bash
+git clone <url-del-repositorio>
+cd aria-training
+```
 
-## Code of Conduct
+2. **Instalar dependencias**
+```bash
+composer install
+npm install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Configurar el entorno**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+4. **Configurar base de datos**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Edita el archivo `.env` con tus credenciales de base de datos:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=aria_training
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## License
+5. **Ejecutar migraciones y seeders**
+```bash
+php artisan migrate --seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+6. **Compilar assets**
+```bash
+npm run dev
+```
+
+7. **Iniciar el servidor**
+```bash
+php artisan serve
+```
+
+La aplicación estará disponible en `http://localhost:8000`
+
+### Usuarios de Prueba
+
+Después de ejecutar los seeders:
+
+- **Administrador:**
+  - Email: `admin@aria.com`
+  - Password: `password`
+
+## 🏗️ Arquitectura del Sistema
+
+El sistema utiliza una arquitectura modular con componentes reutilizables:
+
+- **Actions:** Lógica de negocio encapsulada (Delete, Restore, ForceDelete)
+- **Traits:** Funcionalidad compartida (WithCrudOperations, WithAuditLogging, WithBulkActions)
+- **Query Builders:** Queries reutilizables y optimizadas
+- **Componentes Blade:** UI consistente y reutilizable
+
+Ver [Componentes Reutilizables](docs/arquitectura/componentes_reutilizables.md) para más detalles.
+
+## 📦 Estructura del Proyecto
+
+```
+aria-training/
+├── app/
+│   ├── Actions/              # Lógica de negocio reutilizable
+│   ├── Livewire/
+│   │   ├── Forms/           # Forms de Livewire
+│   │   └── Traits/          # Traits compartidos
+│   ├── Models/
+│   │   └── Builders/        # Query Builders personalizados
+│   └── Policies/            # Autorización
+├── docs/                    # Documentación completa
+│   ├── arquitectura/        # Docs de arquitectura
+│   ├── desarrollo/          # Guías de desarrollo
+│   ├── funcionalidades/     # Docs de features
+│   └── INDICE.md           # Índice maestro
+├── resources/
+│   └── views/
+│       ├── components/      # Componentes Blade reutilizables
+│       └── livewire/        # Vistas de componentes Livewire
+└── tests/                   # Tests unitarios y de integración
+```
+
+## 🧪 Testing
+
+```bash
+# Ejecutar todos los tests
+php artisan test
+
+# Ejecutar tests con coverage
+php artisan test --coverage
+```
+
+## 🤝 Contribuir
+
+1. Lee la [documentación de desarrollo](docs/desarrollo/)
+2. Revisa las [buenas prácticas](docs/desarrollo/buenas_practicas.md)
+3. Sigue la [guía de crear CRUD](docs/desarrollo/crear_nuevo_crud.md) para nuevas funcionalidades
+4. Asegúrate de que los tests pasen antes de hacer commit
+
+## 📝 Convenciones de Código
+
+- **PSR-12** para PHP
+- **Nombres en español** para documentación
+- **Componentes reutilizables** para evitar duplicación
+- **Type hints** en todos los métodos
+- **Computed Properties** de Livewire v3 para performance
+- **Eager Loading** para prevenir problemas N+1
+
+Ver [Buenas Prácticas](docs/desarrollo/buenas_practicas.md) para más detalles.
+
+## 📄 Licencia
+
+Este proyecto es propietario y confidencial.
+
+## 👥 Equipo
+
+Desarrollado como proyecto de entrenamiento para FBLuthier.

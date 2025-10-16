@@ -1,5 +1,61 @@
 # Sistema de Notificaciones Toast
 
+## 🚀 Quick Reference (Referencia Rápida)
+
+### Desde Livewire (PHP)
+
+```php
+// Tipos básicos
+$this->dispatch('notify', message: 'Operación exitosa', type: 'success');
+$this->dispatch('notify', message: 'Ocurrió un error', type: 'error');
+$this->dispatch('notify', message: 'Atención requerida', type: 'warning');
+$this->dispatch('notify', message: 'Información importante', type: 'info');
+
+// Con duración personalizada (ms)
+$this->dispatch('notify', message: 'Mensaje largo', type: 'success', duration: 10000);
+
+// Sin auto-dismiss
+$this->dispatch('notify', message: 'Requiere acción', type: 'warning', duration: 0);
+```
+
+### Desde JavaScript
+
+```javascript
+// Método principal
+notify('Mensaje', 'tipo', duracion);
+
+// Atajos
+notifySuccess('Operación exitosa');
+notifyError('Error crítico');
+notifyWarning('Cuidado');
+notifyInfo('FYI');
+```
+
+### Desde Alpine.js
+
+```blade
+<button @click="$dispatch('notify', { message: 'Hola', type: 'success' })">
+    Mostrar Toast
+</button>
+```
+
+### Tipos Disponibles
+
+| Tipo | Color | Uso |
+|------|-------|-----|
+| `success` | Verde | Operaciones exitosas |
+| `error` | Rojo | Errores y fallos |
+| `warning` | Amarillo | Advertencias |
+| `info` | Azul | Información general |
+
+### Duraciones Recomendadas
+
+- Mensajes cortos: `3000ms` (3 segundos)
+- Mensajes importantes: `7000ms` (7 segundos)
+- Requiere acción: `0` (sin auto-dismiss)
+
+---
+
 ## 📋 Descripción General
 
 El sistema de notificaciones toast proporciona feedback visual elegante y no intrusivo al usuario después de completar acciones. Los toasts aparecen en la esquina superior derecha, se auto-descartan después de unos segundos y son completamente accesibles.
