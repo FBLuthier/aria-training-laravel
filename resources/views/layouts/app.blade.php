@@ -75,6 +75,9 @@
             </main>
         </div>
 
+        {{-- BLOQUE 6: CONTENEDOR DE NOTIFICACIONES TOAST --}}
+        <x-toast-container />
+
         {{-- Scripts de Livewire (necesarios para componentes Livewire) --}}
         @livewireScripts
     </body>

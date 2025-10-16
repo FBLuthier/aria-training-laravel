@@ -2,6 +2,85 @@
 
 ## [Unreleased](https://github.com/laravel/laravel/compare/v12.4.0...12.x)
 
+### 2025-10-16 - Sistema de Notificaciones Toast
+
+**🎨 Nuevo Sistema:**
+- Agregado componente `<x-toast-container>` con Alpine.js para notificaciones elegantes
+- Sistema completo de toasts con 4 tipos: success, error, warning, info
+- Auto-dismiss configurable con barra de progreso visual
+- Apilamiento inteligente de múltiples notificaciones
+- Animaciones suaves con transiciones de Alpine.js
+- Compatible con dark mode y totalmente responsive
+
+**✨ Características:**
+- Helpers globales de JavaScript: `notify()`, `notifySuccess()`, `notifyError()`, `notifyWarning()`, `notifyInfo()`
+- Integración completa con Livewire via `$this->dispatch('notify')`
+- Componente `<x-toast-trigger>` para session flash
+- Cierre manual con botón X
+- Accesibilidad con ARIA labels y roles
+
+**🔧 Implementaciones:**
+- Sistema ya integrado en `GestionarEquipos` (todas las acciones CRUD)
+- Sistema integrado en `GestionarAuditoria` (limpiar filtros)
+- Helpers disponibles globalmente para uso en toda la aplicación
+
+**📚 Documentación:**
+- Creada guía completa en `docs/guias/toast_notifications.md`
+- Creada referencia rápida en `docs/guias/TOAST_QUICKREF.md`
+- Ejemplos prácticos de uso en diferentes contextos
+- Mejores prácticas y troubleshooting
+
+**🐛 Correcciones:**
+- Corregido problema con botón "Ver Detalles" en vista de auditoría
+- Reemplazado `wire:loading.remove` por overlay semitransparente en tabla de auditoría
+- Mejorada experiencia de usuario sin parpadeos en la interfaz
+
+### 2025-10-15 - Sistema de Loading States (Estados de Carga)
+
+**🎨 Nuevos Componentes:**
+- Agregado componente `<x-spinner>` reutilizable con múltiples tamaños y colores
+- Agregado componente `<x-loading-overlay>` para operaciones largas con overlay de pantalla completa
+- Agregado componente `<x-loading-state>` para estados de carga inline y en bloque
+
+**✨ Mejoras en Componentes Existentes:**
+- Actualizado `<x-primary-button>` con soporte para `loadingTarget`
+- Actualizado `<x-secondary-button>` con soporte para `loadingTarget`
+- Actualizado `<x-danger-button>` con soporte para `loadingTarget`
+- Todos los botones ahora muestran spinner automático durante operaciones asíncronas
+
+**🔧 Implementaciones:**
+- Loading states completos en `GestionarEquipos`:
+  - Spinner en campo de búsqueda
+  - Loading states en toggle de papelera
+  - Spinners en todas las acciones de tabla (editar, eliminar, restaurar)
+  - Loading states en modales de confirmación
+  - Overlay para operaciones en lote
+- Loading states completos en `GestionarAuditoria`:
+  - Spinner en búsqueda general
+  - Loading states en filtros
+  - Spinners en botones de exportación
+  - Loading states en tabla de resultados
+  - Overlay para proceso de exportación
+
+**📚 Documentación:**
+- Creada guía completa en `docs/guias/loading_states.md`
+- Creada referencia rápida en `docs/guias/COMPONENTES_LOADING.md`
+- Documentados todos los componentes, props y ejemplos de uso
+- Incluidas mejores prácticas y patrones recomendados
+
+**🐛 Correcciones:**
+- Corregido error en componente `modal.blade.php` que causaba referencia hardcoded a `showExportModal`
+- Agregado parámetro `entangleProperty` dinámico al componente modal
+- Mejorada compatibilidad con diferentes tipos de modales (form-modal, confirmation-modal)
+
+### 2025-10-15 - Corrección de Error en Modal de Equipos
+
+**🐛 Correcciones:**
+- Solucionado error `PublicPropertyNotFoundException` en vista de equipos
+- Corregida referencia hardcoded a `showExportModal` en `modal.blade.php`
+- Agregado soporte para propiedad `entangleProperty` dinámica en modales
+- Mejorada compatibilidad con modales de Laravel Breeze
+
 ## [v12.4.0](https://github.com/laravel/laravel/compare/v12.3.1...v12.4.0) - 2025-08-29
 
 * [12.x] Add default Redis retry configuration by [@mateusjatenee](https://github.com/mateusjatenee) in https://github.com/laravel/laravel/pull/6666

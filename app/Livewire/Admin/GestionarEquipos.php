@@ -365,7 +365,7 @@ class GestionarEquipos extends Component
             ModelAudited::dispatch('force_delete', $equipo, $equipoValues, null);
 
             $this->forceDeleteingId = null;
-            $this->dispatch('notify', message: 'Equipo eliminado permanentemente.', type: 'error');
+            $this->dispatch('notify', message: 'Equipo eliminado permanentemente.', type: 'success');
         }
     }
 
@@ -494,7 +494,7 @@ class GestionarEquipos extends Component
 
         $this->confirmingBulkForceDelete = false;
         $this->clearSelections();
-        $this->dispatch('notify', message: 'Equipos eliminados permanentemente.', type: 'error');
+        $this->dispatch('notify', message: 'Equipos eliminados permanentemente.', type: 'success');
     }
 
     // =======================================================================

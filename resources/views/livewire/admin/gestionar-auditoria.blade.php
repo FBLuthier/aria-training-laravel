@@ -10,20 +10,39 @@
                             <!-- BOTÓN PARA EXPORTAR -->
                             <button
                                 wire:click="openExportModal"
-                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                                wire:loading.attr="disabled"
+                                wire:target="exportWithOptions">
+                                <x-spinner 
+                                    size="sm" 
+                                    color="white"
+                                    wire:loading 
+                                    wire:target="exportWithOptions"
+                                    style="display: none;"
+                                />
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" wire:loading.remove wire:target="exportWithOptions">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l4-4m-4 4l-4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                Exportar
+                                <span wire:loading.remove wire:target="exportWithOptions">Exportar</span>
+                                <span wire:loading wire:target="exportWithOptions" style="display: none;">Exportando...</span>
                             </button>
                 <button
                     wire:click="clearFilters"
-                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                    wire:loading.attr="disabled"
+                    wire:target="clearFilters"
                 >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <x-spinner 
+                        size="sm" 
+                        color="white"
+                        wire:loading 
+                        wire:target="clearFilters"
+                        style="display: none;"
+                    />
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" wire:loading.remove wire:target="clearFilters">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
-                    Limpiar Filtros
+                    <span>Limpiar Filtros</span>
                 </button>
             </div>
         </div>
@@ -34,7 +53,7 @@
         <h3 class="text-lg font-semibold mb-4">Filtros de Búsqueda</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Búsqueda General -->
-            <div>
+            <div class="relative">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Búsqueda General</label>
                 <input
                     type="text"
@@ -42,6 +61,15 @@
                     placeholder="Buscar por acción, modelo, IP o usuario..."
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
+                <div class="absolute right-3 top-10">
+                    <x-spinner 
+                        size="sm" 
+                        color="gray"
+                        wire:loading 
+                        wire:target="search"
+                        style="display: none;"
+                    />
+                </div>
             </div>
 
             <!-- Filtro por Acción -->
@@ -106,7 +134,18 @@
     </div>
 
     <!-- TABLA DE RESULTADOS -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="bg-white rounded-lg shadow-md overflow-hidden relative">
+        {{-- Overlay solo para acciones que recargan la tabla --}}
+        <div 
+            wire:loading 
+            wire:target="search,actionFilter,modelFilter,userFilter,startDate,endDate,clearFilters,sortBy,gotoPage,previousPage,nextPage"
+            class="absolute inset-0 bg-white/70 dark:bg-gray-900/70 z-10 flex items-center justify-center"
+            style="display: none;"
+        >
+            <div class="text-center">
+                <x-spinner size="lg" color="primary" />
+            </div>
+        </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -187,9 +226,10 @@
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <button
                                     wire:click="showDetailsFor({{ $log->id }})"
-                                    class="text-indigo-600 hover:text-indigo-900"
+                                    class="text-indigo-600 hover:text-indigo-900 inline-flex items-center gap-1"
                                 >
-                                    {{ $detailId === $log->id ? 'Ocultar' : 'Ver' }} Detalles
+                                    <x-spinner size="xs" color="primary" wire:loading wire:target="showDetailsFor({{ $log->id }})" style="display: none;" />
+                                    <span>{{ $detailId === $log->id ? 'Ocultar' : 'Ver' }} Detalles</span>
                                 </button>
                             </td>
                         </tr>
@@ -479,9 +519,19 @@
                     <button
                         type="button"
                         wire:click="exportWithOptions"
-                        class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                        wire:loading.attr="disabled"
+                        wire:target="exportWithOptions"
                     >
-                        Exportar {{ ucfirst($exportFormat) }}
+                        <x-spinner 
+                            size="sm" 
+                            color="white"
+                            wire:loading 
+                            wire:target="exportWithOptions"
+                            style="display: none;"
+                        />
+                        <span wire:loading.remove wire:target="exportWithOptions">Exportar {{ ucfirst($exportFormat) }}</span>
+                        <span wire:loading wire:target="exportWithOptions" style="display: none;">Exportando...</span>
                     </button>
                 </div>
             </div>
@@ -489,4 +539,10 @@
     </div>
 </div>
 @endif
+
+{{-- Loading overlay para exportación --}}
+<x-loading-overlay 
+    target="exportWithOptions"
+    message="Generando archivo de exportación..."
+/>
 </div>

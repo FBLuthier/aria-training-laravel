@@ -16,11 +16,22 @@
                     <div class="flex justify-between items-center mb-4">
                         <div class="flex items-center gap-4 w-1/3">
                             {{-- Campo de búsqueda --}}
-                            <x-text-input 
-                                wire:model.live="search"
-                                class="block w-full" 
-                                type="text" 
-                                placeholder="Buscar equipo..." />
+                            <div class="relative w-full">
+                                <x-text-input 
+                                    wire:model.live="search"
+                                    class="block w-full" 
+                                    type="text" 
+                                    placeholder="Buscar equipo..." />
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <x-spinner 
+                                        size="sm" 
+                                        color="gray"
+                                        wire:loading 
+                                        wire:target="search"
+                                        style="display: none;"
+                                    />
+                                </div>
+                            </div>
 
                             {{-- Acciones en lote para equipos activos --}}
                             @if(!$showingTrash)
@@ -46,7 +57,7 @@
                         
                         {{-- Botones principales --}}
                         <div class="flex gap-3">
-                            <x-secondary-button wire:click="toggleTrash">
+                            <x-secondary-button wire:click="toggleTrash" loadingTarget="toggleTrash">
                                 {{ $showingTrash ? 'Ver Activos' : 'Ver Papelera' }}
                             </x-secondary-button>
                             @if(!$showingTrash)
@@ -57,7 +68,15 @@
                         </div>
                     </div>
 
+                    {{-- Loading state para la tabla --}}
+                    <x-loading-state 
+                        target="search,toggleTrash,sortBy,gotoPage,previousPage,nextPage" 
+                        message="Cargando equipos..."
+                        class="my-4"
+                    />
+
                     {{-- Tabla de equipos --}}
+                    <div wire:loading.remove wire:target="search,toggleTrash,sortBy,gotoPage,previousPage,nextPage">
                     @if ($showingTrash)
                         {{-- Vista de la papelera --}}
                         <x-data-table>
@@ -83,11 +102,13 @@
                                         <td class="px-6 py-4">{{ $equipo->deleted_at->format('d/m/Y H:i') }}</td>
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex gap-3 justify-end">
-                                                <button wire:click="restore({{ $equipo->id }})" class="font-medium text-green-600 dark:text-green-500 hover:underline">
-                                                    Restaurar
+                                                <button wire:click="restore({{ $equipo->id }})" class="font-medium text-green-600 dark:text-green-500 hover:underline inline-flex items-center gap-1">
+                                                    <x-spinner size="xs" color="current" wire:loading wire:target="restore({{ $equipo->id }})" style="display: none;" />
+                                                    <span>Restaurar</span>
                                                 </button>
-                                                <button wire:click="forceDelete({{ $equipo->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                                    Eliminar Definitivamente
+                                                <button wire:click="forceDelete({{ $equipo->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                    <x-spinner size="xs" color="current" wire:loading wire:target="forceDelete({{ $equipo->id }})" style="display: none;" />
+                                                    <span>Eliminar Definitivamente</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -121,11 +142,13 @@
                                         <td class="px-6 py-4">{{ $equipoRecienCreado->nombre }}</td>
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex gap-3 justify-end">
-                                                <button wire:click="edit({{ $equipoRecienCreado->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                    Editar
+                                                <button wire:click="edit({{ $equipoRecienCreado->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
+                                                    <x-spinner size="xs" color="current" wire:loading wire:target="edit({{ $equipoRecienCreado->id }})" style="display: none;" />
+                                                    <span>Editar</span>
                                                 </button>
-                                                <button wire:click="delete({{ $equipoRecienCreado->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                                    Eliminar
+                                                <button wire:click="delete({{ $equipoRecienCreado->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                    <x-spinner size="xs" color="current" wire:loading wire:target="delete({{ $equipoRecienCreado->id }})" style="display: none;" />
+                                                    <span>Eliminar</span>
                                                 </button>
                                             </div>
                                         </td>
@@ -142,11 +165,13 @@
                                             <td class="px-6 py-4">{{ $equipo->nombre }}</td>
                                             <td class="px-6 py-4 text-right">
                                                 <div class="flex gap-3 justify-end">
-                                                    <button wire:click="edit({{ $equipo->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
-                                                        Editar
+                                                    <button wire:click="edit({{ $equipo->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
+                                                        <x-spinner size="xs" color="current" wire:loading wire:target="edit({{ $equipo->id }})" style="display: none;" />
+                                                        <span>Editar</span>
                                                     </button>
-                                                    <button wire:click="delete({{ $equipo->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">
-                                                        Eliminar
+                                                    <button wire:click="delete({{ $equipo->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                        <x-spinner size="xs" color="current" wire:loading wire:target="delete({{ $equipo->id }})" style="display: none;" />
+                                                        <span>Eliminar</span>
                                                     </button>
                                                 </div>
                                             </td>
@@ -166,6 +191,7 @@
                     {{-- Paginación --}}
                     <div class="mt-4">
                         {{ $equipos->links() }}
+                    </div>
                     </div>
                 </div>
             </div>
@@ -203,7 +229,7 @@
         </x-slot>
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('deletingId', null)">Cancelar</x-secondary-button>
-            <x-danger-button class="ml-3" wire:click="performDelete">Eliminar</x-danger-button>
+            <x-danger-button class="ml-3" wire:click="performDelete" loadingTarget="performDelete">Eliminar</x-danger-button>
         </x-slot>
     </x-confirmation-modal>
 
@@ -215,7 +241,7 @@
         </x-slot>
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('restoringId', null)">Cancelar</x-secondary-button>
-            <x-primary-button class="ml-3" wire:click="performRestore">Restaurar</x-primary-button>
+            <x-primary-button class="ml-3" wire:click="performRestore" loadingTarget="performRestore">Restaurar</x-primary-button>
         </x-slot>
     </x-confirmation-modal>
 
@@ -228,7 +254,7 @@
         </x-slot>
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('forceDeleteingId', null)">Cancelar</x-secondary-button>
-            <x-danger-button class="ml-3" wire:click="performForceDelete">Eliminar Permanentemente</x-danger-button>
+            <x-danger-button class="ml-3" wire:click="performForceDelete" loadingTarget="performForceDelete">Eliminar Permanentemente</x-danger-button>
         </x-slot>
     </x-confirmation-modal>
 
@@ -240,7 +266,7 @@
         </x-slot>
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('confirmingBulkDelete', false)">Cancelar</x-secondary-button>
-            <x-danger-button class="ml-3" wire:click="deleteSelected">Eliminar Seleccionados</x-danger-button>
+            <x-danger-button class="ml-3" wire:click="deleteSelected" loadingTarget="deleteSelected">Eliminar Seleccionados</x-danger-button>
         </x-slot>
     </x-confirmation-modal>
 
@@ -252,7 +278,7 @@
         </x-slot>
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('confirmingBulkRestore', false)">Cancelar</x-secondary-button>
-            <x-primary-button class="ml-3" wire:click="restoreSelected">Restaurar Seleccionados</x-primary-button>
+            <x-primary-button class="ml-3" wire:click="restoreSelected" loadingTarget="restoreSelected">Restaurar Seleccionados</x-primary-button>
         </x-slot>
     </x-confirmation-modal>
 
@@ -265,7 +291,13 @@
         </x-slot>
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('confirmingBulkForceDelete', false)">Cancelar</x-secondary-button>
-            <x-danger-button class="ml-3" wire:click="forceDeleteSelected">Eliminar Permanentemente</x-danger-button>
+            <x-danger-button class="ml-3" wire:click="forceDeleteSelected" loadingTarget="forceDeleteSelected">Eliminar Permanentemente</x-danger-button>
         </x-slot>
     </x-confirmation-modal>
+
+    {{-- Loading overlay para operaciones largas --}}
+    <x-loading-overlay 
+        target="deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete"
+        message="Procesando operación..."
+    />
 </div>
