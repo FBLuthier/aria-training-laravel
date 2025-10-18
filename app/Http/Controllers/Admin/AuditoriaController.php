@@ -12,11 +12,76 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Font;
 
+/**
+ * =======================================================================
+ * CONTROLLER: AUDITORÍA - EXPORTACIÓN
+ * =======================================================================
+ * 
+ * Maneja la exportación de registros de auditoría en múltiples formatos.
+ * Permite exportar logs filtrados con campos personalizables.
+ * 
+ * RESPONSABILIDADES:
+ * - Exportar logs de auditoría en CSV, Excel (XLSX) y PDF
+ * - Aplicar filtros de búsqueda y fecha
+ * - Parsear User Agent para información de navegador/OS
+ * - Generar archivos con campos personalizables
+ * - Formato UTF-8 para caracteres especiales
+ * 
+ * FORMATOS SOPORTADOS:
+ * 1. **CSV** - Archivo delimitado por punto y coma (;)
+ *    - Compatible con Excel
+ *    - Encoding UTF-8 con BOM
+ *    - Ideal para importar a otras herramientas
+ * 
+ * 2. **Excel (XLSX)** - Formato nativo de Microsoft Excel
+ *    - Usa PhpSpreadsheet
+ *    - Formato con headers estilizados
+ *    - Auto-ajuste de columnas
+ *    - Ideal para análisis
+ * 
+ * 3. **PDF** - Documento portable
+ *    - Usa DomPDF
+ *    - Vista personalizada
+ *    - Ideal para reportes oficiales
+ * 
+ * CAMPOS EXPORTABLES:
+ * - Fecha y hora de la acción
+ * - Usuario que realizó la acción
+ * - Tipo de acción (create, update, delete, etc.)
+ * - Modelo afectado
+ * - ID del registro
+ * - IP address
+ * - Valores anteriores (JSON)
+ * - Valores nuevos (JSON)
+ * - Navegador detectado
+ * - Sistema operativo detectado
+ * - User agent completo
+ * 
+ * FILTROS APLICABLES:
+ * - Búsqueda general
+ * - Por acción específica
+ * - Por modelo
+ * - Por usuario
+ * - Por rango de fechas
+ * - Ordenamiento personalizado
+ * 
+ * SEGURIDAD:
+ * - Solo accesible por administradores
+ * - Usa middleware de autenticación
+ * - Aplica políticas de autorización
+ * 
+ * @package App\Http\Controllers\Admin
+ * @since 1.0
+ */
 class AuditoriaController extends Controller
 {
     /**
-{{ ... }}
      * Parsea el User Agent para extraer información resumida.
+     * 
+     * Detecta navegador y sistema operativo del User Agent string.
+     * 
+     * @param string $userAgent String completo del User Agent
+     * @return array ['browser' => string, 'os' => string, 'full' => string]
      */
     private function parseUserAgent(string $userAgent): array
     {
@@ -70,7 +135,14 @@ class AuditoriaController extends Controller
     }
 
     /**
-     * Genera el contenido CSV.
+     * Genera el contenido CSV para exportación.
+     * 
+     * Crea archivo CSV con encoding UTF-8 y BOM para compatibilidad.
+     * Usa punto y coma (;) como delimitador para Excel.
+     * 
+     * @param \Illuminate\Support\Collection $query Logs a exportar
+     * @param array $selectedFields Campos a incluir en exportación
+     * @return void Escribe directamente a php://output
      */
     private function generateCSV($query, $selectedFields): void
     {
@@ -244,7 +316,20 @@ class AuditoriaController extends Controller
     }
 
     /**
-     * Exporta los logs de auditoría en formato CSV.
+     * Exporta los logs de auditoría en el formato seleccionado.
+     * 
+     * Método principal de exportación. Aplica todos los filtros,
+     * procesa los datos y genera el archivo en el formato solicitado.
+     * 
+     * FLUJO:
+     * 1. Obtener parámetros de filtros y formato
+     * 2. Obtener campos a exportar
+     * 3. Construir query con filtros aplicados
+     * 4. Generar archivo según formato (CSV/Excel/PDF)
+     * 5. Retornar archivo para descarga
+     * 
+     * @param Request $request Parámetros de filtros y opciones
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse Archivo para descarga
      */
     public function export(Request $request)
     {
@@ -336,6 +421,17 @@ class AuditoriaController extends Controller
 
     /**
      * Genera archivo Excel XLSX nativo usando PhpSpreadsheet.
+     * 
+     * Crea archivo Excel con formato profesional:
+     * - Headers con fondo gris y texto bold
+     * - Auto-ajuste de ancho de columnas
+     * - Formato UTF-8 nativo
+     * - Encoding correcto de caracteres especiales
+     * 
+     * @param \Illuminate\Support\Collection $query Logs a exportar
+     * @param array $selectedFields Campos a incluir
+     * @param string $filename Nombre del archivo con extensión
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse Descarga del archivo
      */
     private function generateNativeExcel($query, $selectedFields, $filename)
     {

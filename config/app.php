@@ -1,5 +1,35 @@
 <?php
 
+/**
+ * =======================================================================
+ * CONFIGURACIÓN: APLICACIÓN PRINCIPAL
+ * =======================================================================
+ * 
+ * Configuración general de la aplicación Laravel.
+ * Define comportamiento fundamental del sistema.
+ * 
+ * PERSONALIZACIONES DEL PROYECTO:
+ * - Idioma: Español (es) por defecto
+ * - Timezone: UTC (cambiar a America/Bogota si se necesita hora local)
+ * - Locale: es para traducciones en español
+ * - Faker: es_ES para datos de prueba en español
+ * 
+ * VARIABLES DE ENTORNO IMPORTANTES:
+ * - APP_NAME: Nombre de la aplicación
+ * - APP_ENV: local, staging, production
+ * - APP_DEBUG: true en desarrollo, false en producción
+ * - APP_URL: URL base de la aplicación
+ * - APP_KEY: Llave de encriptación (generada con: php artisan key:generate)
+ * 
+ * SEGURIDAD:
+ * - APP_DEBUG debe ser false en producción
+ * - APP_KEY debe ser única y secreta
+ * - APP_ENV define comportamiento de errores y logs
+ * 
+ * @package Config
+ * @since 1.0
+ */
+
 return [
 
     /*

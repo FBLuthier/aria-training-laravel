@@ -1,4 +1,4 @@
-# Documentación de Aria Training
+# Documentación de Aria Training (v1.5)
 
 Bienvenido a la documentación completa del sistema Aria Training.
 
@@ -12,6 +12,8 @@ Bienvenido a la documentación completa del sistema Aria Training.
 
 **¿Buscas componentes reutilizables?** → Consulta [Componentes Reutilizables](arquitectura/componentes_reutilizables.md)
 
+**¿Necesitas implementar UX profesional?** → Ver [Loading States](desarrollo/guias/loading_states.md) y [Toast Notifications](desarrollo/guias/toast_notifications.md)
+
 **¿Tienes dudas sobre patrones?** → Lee [Buenas Prácticas](desarrollo/buenas_practicas.md)
 
 ---
@@ -20,7 +22,7 @@ Bienvenido a la documentación completa del sistema Aria Training.
 
 ### 📘 General
 
-- **[Definición del Proyecto](definicion_proyecto.md)** - Visión general, alcance, metodología, stack tecnológico
+- **[Definición del Proyecto](definicion_proyecto.md)** - Visión general, alcance, metodología, stack tecnológico (v1.5)
 
 ---
 
@@ -28,7 +30,9 @@ Bienvenido a la documentación completa del sistema Aria Training.
 
 Documentación sobre la estructura y componentes del sistema.
 
-- **[Componentes Reutilizables](arquitectura/componentes_reutilizables.md)** - Actions, Traits, Query Builders, Componentes Blade
+- **[Componentes Base](arquitectura/componentes_base.md)** - BaseCrudComponent, BaseModelForm, BaseQueryBuilder, BaseAdminPolicy
+- **[Componentes Blade](arquitectura/componentes_blade.md)** - ⭐ **v1.5:** Plantilla optimizada y 9 componentes reutilizables (incluye loading states y toast)
+- **[Componentes Reutilizables](arquitectura/componentes_reutilizables.md)** - ⭐ **v1.5:** Actions, Traits, Query Builders, 18 componentes totales
 - **[Modelo de Datos](arquitectura/modelo_datos.md)** - Estructura de base de datos, relaciones, migraciones
 
 ---
@@ -37,9 +41,13 @@ Documentación sobre la estructura y componentes del sistema.
 
 Guías prácticas para desarrollar nuevas funcionalidades.
 
-- **[Crear Nuevo CRUD](desarrollo/crear_nuevo_crud.md)** - Guía paso a paso con template completo
+- **[Crear Nuevo CRUD](desarrollo/crear_nuevo_crud.md)** - ⭐ **v1.5:** Guía completa paso a paso + sección UX profesional
 - **[Buenas Prácticas](desarrollo/buenas_practicas.md)** - Por qué usamos cada patrón y técnica
-- **[Guías Específicas](desarrollo/guias/)** - Documentación detallada de funcionalidades específicas
+
+#### 📁 Guías Específicas (desarrollo/guias/)
+
+- **[Loading States](desarrollo/guias/loading_states.md)** - ⭐ **NUEVO v1.5:** Sistema completo de estados de carga
+- **[Toast Notifications](desarrollo/guias/toast_notifications.md)** - ⭐ **NUEVO v1.5:** Sistema de notificaciones elegantes
 
 ---
 
@@ -105,15 +113,17 @@ Métricas de calidad y rendimiento del sistema.
 
 1. Lee [Buenas Prácticas](desarrollo/buenas_practicas.md) para entender el "por qué"
 2. Sigue la [Guía de Crear CRUD](desarrollo/crear_nuevo_crud.md) paso a paso
-3. Usa el [Modelo de Datos](arquitectura/modelo_datos.md) como referencia
+3. Implementa [Loading States](desarrollo/guias/loading_states.md) para mejor UX
+4. Agrega [Toast Notifications](desarrollo/guias/toast_notifications.md) para feedback visual
+5. Usa el [Modelo de Datos](arquitectura/modelo_datos.md) como referencia
 
 ### Implementar Funcionalidades Avanzadas
 
 - **Selección masiva:** [Selección Masiva](funcionalidades/seleccion_masiva.md)
 - **Optimizar queries:** [Carga Anticipada](funcionalidades/carga_anticipada.md)
 - **Exportar datos:** [Exportación de Auditoría](funcionalidades/sistema_exportacion_auditoria.md)
-- **Loading states:** [Estados de Carga](desarrollo/guias/loading_states.md)
-- **Notificaciones:** [Sistema de Toast](desarrollo/guias/toast_notifications.md)
+- **Loading states:** [Estados de Carga](desarrollo/guias/loading_states.md) ⭐ v1.5
+- **Notificaciones:** [Sistema de Toast](desarrollo/guias/toast_notifications.md) ⭐ v1.5
 
 ---
 
@@ -128,8 +138,10 @@ Métricas de calidad y rendimiento del sistema.
 ```
 docs/
 ├── INDICE.md                    (este archivo)
+├── definicion_proyecto.md       (documento maestro v1.5)
 ├── arquitectura/                (estructura del sistema)
 ├── desarrollo/                  (guías de desarrollo)
+│   └── guias/                  (guías específicas)
 ├── funcionalidades/             (documentación de features)
 ├── casos_de_uso/                (flujos por rol)
 ├── diagramas/                   (representación visual)
@@ -145,8 +157,10 @@ docs/
 
 **Crear algo nuevo:**
 - CRUD → [Crear Nuevo CRUD](desarrollo/crear_nuevo_crud.md)
+- Loading states → [Loading States](desarrollo/guias/loading_states.md)
+- Notificaciones → [Toast Notifications](desarrollo/guias/toast_notifications.md)
 - Acción de negocio → [Componentes Reutilizables](arquitectura/componentes_reutilizables.md#actions)
-- Componente Blade → [Componentes Reutilizables](arquitectura/componentes_reutilizables.md#componentes-blade)
+- Componente Blade → [Componentes Blade](arquitectura/componentes_blade.md)
 
 **Optimizar código:**
 - Queries lentas → [Carga Anticipada](funcionalidades/carga_anticipada.md)
@@ -171,14 +185,28 @@ docs/
 
 ## 🔄 Última Actualización
 
-**Fecha:** 2025-10-16  
-**Versión de la documentación:** 2.1
+**Fecha:** 2025-10-17  
+**Versión de la documentación:** 2.2  
+**Versión del proyecto:** 1.5
 
-**Cambios recientes:**
-- ✅ Consolidados documentos de loading states y toast notifications
-- ✅ Eliminadas carpetas /flujos y /operaciones
-- ✅ Agregadas quick references en guías
-- ✅ Estructura simplificada y más clara
+**Cambios recientes v1.5:**
+- ⭐ **Sistema completo de Loading States:** 3 componentes nuevos (spinner, loading-overlay, loading-state)
+- ⭐ **Sistema de Notificaciones Toast:** 2 componentes nuevos (toast-container, toast-trigger)
+- ✅ Actualizado documento maestro definicion_proyecto.md con historial v1.5
+- ✅ Documentados 5 nuevos componentes Blade de UX (total: 18 componentes reutilizables)
+- ✅ Agregada sección "Paso 6: Mejorar UX" en guía de crear CRUD
+- ✅ Guías técnicas completas: loading_states.md (483 líneas) y toast_notifications.md (629 líneas)
+- ✅ Actualizado CHANGELOG.md con entrada consolidada v1.5
+- ✅ Componentes de botones mejorados con prop `loadingTarget`
+- ✅ Helpers globales JavaScript disponibles en toda la aplicación
+
+**Impacto medible:**
+- ✅ 5 nuevos componentes Blade para UX profesional
+- ✅ Experiencia de usuario significativamente mejorada
+- ✅ Prevención automática de doble-click
+- ✅ Feedback visual inmediato en todas las operaciones
+- ✅ Sistema completamente documentado y reutilizable
+- ✅ Tiempo de implementación UX: ~5-10 minutos adicionales por vista
 
 ---
 
@@ -189,3 +217,7 @@ Si encuentras algo desactualizado o confuso:
 2. Actualiza este índice si agregaste/eliminaste documentos
 3. Mantén el mismo formato y estructura
 4. Sigue el patrón de commits establecido
+
+---
+
+*Documentación generada para Aria Training - Sistema de gestión de entrenamientos personalizados*

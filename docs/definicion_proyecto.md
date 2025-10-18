@@ -1,4 +1,4 @@
-# Documento de Definición del Proyecto: Aria Training (v1.4)
+# Documento de Definición del Proyecto: Aria Training (v1.5)
 
 ## Resumen Ejecutivo
 
@@ -10,7 +10,8 @@ El presente documento define el proyecto "Aria Training", una plataforma web dis
 | 1.0 | 2025-10-05 | Fernando Botero | Creación inicial del documento. Definición completa del alcance, requisitos y arquitectura para el MVP. |
 | 1.2 | 2025-10-15 | Fernando Botero | Implementación del sistema de pruebas automatizadas. Se agregan detalles sobre el sistema completo de pruebas desarrollado siguiendo prácticas de Extreme Programming (XP). Se documenta la implementación de 11 pruebas exhaustivas con cobertura del 100% en funcionalidades críticas del módulo de gestión de equipos (AD-04). Se establece el patrón profesional para desarrollo futuro. |
 | 1.3 | 2025-10-15 | Fernando Botero | Implementación completa del Sistema Avanzado de Exportación de Auditoría. Se añade funcionalidad de exportación en múltiples formatos (CSV, XLSX, PDF) con selección granular de campos. Se integra PhpSpreadsheet para generación nativa de archivos Excel. Se documenta la arquitectura de componentes Livewire con Alpine.js para el modal de exportación. Se eliminan dependencias obsoletas mejorando la seguridad del sistema (0 vulnerabilidades). Actualización del stack tecnológico del proyecto. |
-| **1.4** | **2025-10-16** | **Fernando Botero** | **Transformación arquitectónica del sistema.** Implementación de arquitectura modular con componentes reutilizables: 3 Actions para operaciones CRUD (DeleteModelAction, RestoreModelAction, ForceDeleteModelAction), 6 Traits para funcionalidad compartida (WithCrudOperations, WithAuditLogging, WithBulkActions, HasFormModal, HasSorting, HasTrashToggle), Query Builders personalizados para optimización de consultas, y 5 componentes Blade reutilizables. **Sistema de selección múltiple con paginación:** permite seleccionar registros a través de múltiples páginas manteniendo estado global, con acciones masivas (eliminar, restaurar, eliminar permanentemente) sobre cientos o miles de registros sin consumo excesivo de memoria. **Optimización de consultas:** implementación de eager loading con scopes withRelations() en todos los modelos, reduciendo queries de N+1 problema de ~100-200 consultas a 2-3 consultas por carga. **Mejoras de experiencia de usuario:** sistema de notificaciones toast con 4 tipos (success, error, warning, info), auto-dismiss configurable y apilamiento inteligente; sistema de loading states con 3 componentes (spinner, loading-state, loading-overlay) para feedback visual en todas las operaciones asíncronas. **Documentación completa reorganizada:** 50+ documentos estructurados en 8 carpetas temáticas (arquitectura, desarrollo, funcionalidades, casos_de_uso, diagramas, pruebas, métricas), incluyendo guías de desarrollo, buenas prácticas y patrón de commits estandarizado. Stack actualizado a Laravel 12.34.0, PHP 8.2, Livewire 3.6. Reducción del tiempo de desarrollo de nuevos CRUDs de 4-6 horas a 30-60 minutos mediante templates y componentes reutilizables. |
+| 1.4 | 2025-10-16 | Fernando Botero | Transformación arquitectónica del sistema. Implementación de arquitectura modular con componentes reutilizables: 3 Actions para operaciones CRUD (DeleteModelAction, RestoreModelAction, ForceDeleteModelAction), 6 Traits para funcionalidad compartida (WithCrudOperations, WithAuditLogging, WithBulkActions, HasFormModal, HasSorting, HasTrashToggle), Query Builders personalizados para optimización de consultas, y 5 componentes Blade reutilizables. Sistema de selección múltiple con paginación permite seleccionar registros a través de múltiples páginas manteniendo estado global. Optimización de consultas con eager loading reduce queries de ~100-200 a 2-3 por carga. Documentación completa reorganizada en 50+ documentos estructurados. Reducción del tiempo de desarrollo de nuevos CRUDs de 4-6 horas a 30-60 minutos. |
+| **1.5** | **2025-10-17** | **Fernando Botero** | **Sistema completo de Loading States y Notificaciones Toast para UX profesional.** Implementación de feedback visual integral: 3 componentes de loading (spinner con 5 tamaños y 5 colores, loading-overlay para operaciones largas, loading-state inline/bloque), sistema completo de notificaciones toast con 4 tipos (success, error, warning, info) con auto-dismiss configurable y apilamiento inteligente. Actualización de componentes de botones (primary, secondary, danger) con soporte automático para loadingTarget. Helpers globales de JavaScript (notify, notifySuccess, notifyError, notifyWarning, notifyInfo) disponibles en toda la aplicación. Implementación completa en GestionarEquipos (búsqueda, CRUD, acciones en lote) y GestionarAuditoria (filtros, exportación). Corrección de errores: bug PublicPropertyNotFoundException en modales, mejora de compatibilidad con entangleProperty dinámico. Documentación exhaustiva: guías completas en docs/desarrollo/guias/ (loading_states.md, toast_notifications.md) con ejemplos prácticos y mejores prácticas. Resultado: experiencia de usuario significativamente mejorada con feedback inmediato en todas las operaciones asíncronas, prevención de doble-click, reducción de frustración del usuario. |
 
 ---
 
@@ -69,12 +70,15 @@ El sistema implementa una arquitectura modular que elimina la duplicación de c�
 * Prevención automática del problema N+1 en todas las consultas
 * Centralización de lógica de queries complejas
 
-**Componentes Blade Reutilizables (5 implementados):**
+**Componentes Blade Reutilizables (8 implementados):**
 * **table-checkbox:** Checkbox con selección individual y "seleccionar todos"
 * **table-actions:** Botones de acciones (editar, eliminar, restaurar) con permisos
 * **action-button:** Botones con loading states automáticos
-* **spinner:** Indicadores de carga en 5 tamaños y 5 colores
-* **loading-overlay:** Overlay de pantalla completa para operaciones largas
+* **spinner:** Indicadores de carga en 5 tamaños (xs, sm, md, lg, xl) y 5 colores (current, white, gray, primary, red)
+* **loading-overlay:** Overlay de pantalla completa para operaciones largas con mensaje personalizable
+* **loading-state:** Estados de carga inline o en bloque para tablas y contenido
+* **toast-container:** Sistema de notificaciones con animaciones suaves y apilamiento inteligente
+* **toast-trigger:** Helper para mostrar toasts desde session flash después de redirecciones
 
 **Resultado Medible:**
 * Reducción de código por CRUD: de ~500 líneas a ~50 líneas (90% menos código)
@@ -99,22 +103,27 @@ El sistema implementa una arquitectura modular que elimina la duplicación de c�
 * Ejemplo: vista de equipos pasa de 103 queries a 3 queries (reducción del 97%)
 * Configuración centralizada en Query Builders para mantenimiento sencillo
 
-**Sistema de Notificaciones Toast:**
+**Sistema de Notificaciones Toast (v1.5):**
 * 4 tipos de notificaciones: success (verde), error (rojo), warning (amarillo), info (azul)
-* Auto-dismiss configurable con barra de progreso visual (duración personalizable)
-* Apilamiento inteligente: múltiples notificaciones se organizan verticalmente
-* Cierre manual mediante botón X
-* Integración completa con Livewire (PHP), JavaScript y Alpine.js
-* Posicionamiento en esquina superior derecha
+* Auto-dismiss configurable con barra de progreso visual animada (duración por defecto: 4 segundos, personalizable)
+* Apilamiento inteligente: múltiples notificaciones se organizan verticalmente sin superponerse
+* Cierre manual mediante botón X en cualquier momento
+* Integración completa con Livewire (PHP) via $this->dispatch('notify'), JavaScript y Alpine.js
+* Helpers globales: notify(), notifySuccess(), notifyError(), notifyWarning(), notifyInfo()
+* Posicionamiento en esquina superior derecha (personalizable)
 * Compatible con dark mode y completamente responsivo
+* Implementado en: GestionarEquipos (todas las acciones CRUD y masivas), GestionarAuditoria (filtros)
+* Documentación completa en docs/desarrollo/guias/toast_notifications.md
 
-**Sistema de Loading States:**
-* **Spinner:** Indicador giratorio en 5 tamaños (xs, sm, md, lg, xl) y 5 colores
-* **Loading State:** Mensaje de carga con opción inline o bloque para tablas
-* **Loading Overlay:** Overlay de pantalla completa para operaciones largas
-* Integración automática con todos los botones mediante prop loadingTarget
-* Feedback visual inmediato en todas las operaciones asíncronas: búsqueda, filtros, ordenamiento, paginación, CRUD
-* Prevención de doble-click: botones se deshabilitan automáticamente durante la carga
+**Sistema de Loading States (v1.5):**
+* **Spinner:** Indicador giratorio SVG en 5 tamaños (xs, sm, md, lg, xl) y 5 colores (current, white, gray, primary, red)
+* **Loading State:** Mensaje de carga con opción inline (para inputs) o bloque (para tablas completas)
+* **Loading Overlay:** Overlay de pantalla completa con fondo semitransparente para operaciones largas
+* Integración automática con todos los botones (primary, secondary, danger) mediante prop loadingTarget
+* Feedback visual inmediato en todas las operaciones asíncronas: búsqueda, filtros, ordenamiento, paginación, CRUD, exportación
+* Prevención de doble-click: botones se deshabilitan automáticamente y muestran texto "Procesando..." durante la carga
+* Implementado en: GestionarEquipos (búsqueda, toggle papelera, acciones individuales y masivas), GestionarAuditoria (filtros, búsqueda, exportación)
+* Documentación completa en docs/desarrollo/guias/loading_states.md
 
 **Sistema de Exportación de Auditoría:**
 * Exportación en 3 formatos: CSV, Excel (XLSX), PDF

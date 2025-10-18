@@ -3,24 +3,61 @@
 namespace App\Livewire\Traits;
 
 /**
- * Trait para manejar operaciones de formulario modal.
+ * =======================================================================
+ * TRAIT PARA GESTIÓN DE FORMULARIOS MODALES
+ * =======================================================================
  * 
- * Este trait proporciona la funcionalidad estándar para:
- * - Abrir modal para crear
- * - Abrir modal para editar
- * - Guardar (crear o actualizar)
- * - Cerrar modal
- * - Manejar auditoría de cambios
+ * Este trait maneja todo el ciclo de vida de formularios en modales:
+ * crear, editar, guardar y cerrar. Es el corazón de las operaciones
+ * CRUD con modales.
  * 
- * REQUISITOS:
- * - El componente debe tener una propiedad Form (ej: EquipoForm)
- * - Debe implementar getModelClass() que retorne el nombre de la clase del modelo
- * - Debe tener propiedades: $showFormModal, $form
+ * FUNCIONALIDADES:
+ * - create(): Abre modal vacío para crear nuevo registro
+ * - edit($id): Abre modal con datos para editar
+ * - save(): Guarda (crea o actualiza) el registro
+ * - closeFormModal(): Cierra modal y resetea formulario
+ * - Auditoría automática de cambios
+ * - Marcado de registros recién creados
+ * 
+ * FLUJO DE CREACIÓN:
+ * 1. Usuario hace clic en "Crear" → create()
+ * 2. Se abre modal vacío
+ * 3. Usuario llena formulario
+ * 4. Usuario hace clic en "Guardar" → save()
+ * 5. Se valida, crea registro y cierra modal
+ * 6. Se muestra notificación de éxito
+ * 
+ * FLUJO DE EDICIÓN:
+ * 1. Usuario hace clic en "Editar" → edit($id)
+ * 2. Se carga registro y abre modal con datos
+ * 3. Usuario modifica formulario
+ * 4. Usuario hace clic en "Guardar" → save()
+ * 5. Se valida, actualiza registro y cierra modal
+ * 6. Se muestra notificación de éxito
+ * 
+ * REQUISITOS DEL COMPONENTE:
+ * - Propiedad pública $form (BaseModelForm)
+ * - Implementar getModelClass(): string
+ * - Implementar setFormModel($model): void
+ * - Implementar markAsRecentlyCreated($model): void
+ * - Implementar clearRecentlyCreated(): void
+ * - Implementar auditFormSave($oldValues): void
+ * 
+ * @package App\Livewire\Traits
+ * @since 1.0
  */
 trait HasFormModal
 {
-    /** @var bool Controla la visibilidad del modal de formulario */
+    // =======================================================================
+    //  PROPIEDADES
+    // =======================================================================
+    
+    /** @var bool Controla si el modal de formulario está visible */
     public bool $showFormModal = false;
+    
+    // =======================================================================
+    //  LIFECYCLE HOOKS
+    // =======================================================================
 
     /**
      * Listener para detectar cambios en showFormModal desde Alpine.
@@ -57,6 +94,7 @@ trait HasFormModal
         
         $this->setFormModel($model);
         $this->showFormModal = true;
+        $this->clearRecentlyCreated(); // Limpiar item resaltado
     }
 
     /**
@@ -65,18 +103,17 @@ trait HasFormModal
     public function save(): void
     {
         // Autorización para crear o actualizar
-        $isUpdating = $this->form->{$this->getFormModelProperty()} 
-            && $this->form->{$this->getFormModelProperty()}->exists;
+        $isUpdating = $this->form->model && $this->form->model->exists;
 
         if ($isUpdating) {
-            $this->authorize('update', $this->form->{$this->getFormModelProperty()});
+            $this->authorize('update', $this->form->model);
         } else {
             $this->authorize('create', $this->getModelClass());
         }
         
         // Guardar valores anteriores para auditoría en caso de actualización
         $oldValues = $isUpdating 
-            ? $this->form->{$this->getFormModelProperty()}->toArray()
+            ? $this->form->model->toArray()
             : null;
 
         $message = $this->form->save();
@@ -85,8 +122,8 @@ trait HasFormModal
         $this->auditFormSave($oldValues);
 
         // Marcar como recién creado si aplica
-        if ($this->form->{$this->getFormModelProperty()}->wasRecentlyCreated) {
-            $this->markAsRecentlyCreated($this->form->{$this->getFormModelProperty()});
+        if ($this->form->model->wasRecentlyCreated) {
+            $this->markAsRecentlyCreated($this->form->model);
         }
 
         $this->closeFormModal();

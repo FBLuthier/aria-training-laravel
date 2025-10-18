@@ -280,11 +280,218 @@ class NuevoModelo extends Model
 
 Componentes de UI reutilizables para mantener consistencia visual.
 
-### table-checkbox
+### 📦 Componentes de Loading States (v1.5)
+
+Sistema completo de indicadores de carga para mejorar la experiencia de usuario durante operaciones asíncronas.
+
+#### spinner
+
+**Ubicación:** `resources/views/components/spinner.blade.php`
+
+**Propósito:** Indicador giratorio de carga SVG escalable.
+
+**Props:**
+- `size`: Tamaño (`xs`, `sm`, `md`, `lg`, `xl`). Default: `md`
+- `color`: Color (`current`, `white`, `gray`, `primary`, `red`). Default: `current`
+
+**Uso:**
+```blade
+{{-- Spinner básico --}}
+<x-spinner size="sm" color="gray" />
+
+{{-- Con wire:loading para mostrar durante operación --}}
+<x-spinner 
+    size="sm" 
+    color="primary"
+    wire:loading 
+    wire:target="save"
+    style="display: none;"
+/>
+
+{{-- En input de búsqueda --}}
+<div class="relative">
+    <input wire:model.live="search" />
+    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+        <x-spinner size="sm" wire:loading wire:target="search" />
+    </div>
+</div>
+```
+
+**Beneficio:** Feedback visual inmediato, 5 tamaños y 5 colores para diferentes contextos.
+
+---
+
+#### loading-overlay
+
+**Ubicación:** `resources/views/components/loading-overlay.blade.php`
+
+**Propósito:** Overlay de pantalla completa para operaciones largas que bloquean la interfaz.
+
+**Props:**
+- `message`: Mensaje a mostrar. Default: `"Cargando..."`
+- `target`: Target específico de Livewire (opcional)
+
+**Uso:**
+```blade
+{{-- Overlay básico --}}
+<x-loading-overlay message="Procesando operación..." />
+
+{{-- Con target específico --}}
+<x-loading-overlay 
+    target="deleteSelected,restoreSelected"
+    message="Procesando registros seleccionados..."
+/>
+```
+
+**Beneficio:** Previene interacciones durante operaciones críticas, proporciona contexto al usuario.
+
+---
+
+#### loading-state
+
+**Ubicación:** `resources/views/components/loading-state.blade.php`
+
+**Propósito:** Componente para mostrar estado de carga inline o en bloque.
+
+**Props:**
+- `target`: Target de Livewire (opcional)
+- `message`: Mensaje a mostrar. Default: `"Cargando..."`
+- `inline`: Boolean para modo inline. Default: `false`
+
+**Uso:**
+```blade
+{{-- Loading state block para tabla --}}
+<x-loading-state 
+    target="search,toggleTrash,sortBy" 
+    message="Cargando equipos..."
+/>
+
+{{-- Loading state inline --}}
+<x-loading-state 
+    target="search" 
+    message="Buscando..."
+    inline
+/>
+```
+
+**Beneficio:** Estados de carga flexibles para diferentes contextos de UI.
+
+---
+
+### 🔔 Componentes de Notificaciones Toast (v1.5)
+
+Sistema completo de notificaciones tipo toast para feedback inmediato al usuario.
+
+#### toast-container
+
+**Ubicación:** `resources/views/components/toast-container.blade.php`
+
+**Propósito:** Contenedor principal que maneja todas las notificaciones toast con Alpine.js.
+
+**Características:**
+- 4 tipos: `success`, `error`, `warning`, `info`
+- Auto-dismiss configurable con barra de progreso
+- Apilamiento inteligente de múltiples notificaciones
+- Animaciones suaves con Alpine.js transitions
+- Cierre manual con botón X
+
+**Uso:**
+```blade
+{{-- Ya incluido en layouts/app.blade.php, no necesitas agregarlo manualmente --}}
+<x-toast-container />
+```
+
+**Desde Livewire (PHP):**
+```php
+// Notificación de éxito
+$this->dispatch('notify', message: 'Operación exitosa', type: 'success');
+
+// Notificación de error
+$this->dispatch('notify', message: 'Error al procesar', type: 'error');
+
+// Con duración personalizada (ms)
+$this->dispatch('notify', message: 'Mensaje largo', type: 'info', duration: 7000);
+
+// Sin auto-dismiss
+$this->dispatch('notify', message: 'Requiere acción', type: 'warning', duration: 0);
+```
+
+**Desde JavaScript:**
+```javascript
+// Helpers globales disponibles
+notify('Mensaje', 'success', 4000);
+notifySuccess('Operación exitosa');
+notifyError('Error crítico');
+notifyWarning('Advertencia');
+notifyInfo('Información');
+```
+
+**Beneficio:** Feedback visual elegante y no intrusivo, mejora significativa en UX.
+
+---
+
+#### toast-trigger
+
+**Ubicación:** `resources/views/components/toast-trigger.blade.php`
+
+**Propósito:** Helper para disparar toasts desde session flash después de redirecciones.
+
+**Props:**
+- `key`: Key de sesión. Default: `'toast'`
+- `messageKey`: Key del mensaje. Default: `'message'`
+- `typeKey`: Key del tipo. Default: `'type'`
+
+**Uso:**
+```blade
+{{-- En tu vista Blade --}}
+<x-toast-trigger />
+
+{{-- En el controlador --}}
+return redirect()->route('home')->with([
+    'toast' => true,
+    'message' => 'Operación exitosa',
+    'type' => 'success'
+]);
+```
+
+**Beneficio:** Notificaciones persistentes entre redirecciones.
+
+---
+
+### 🎯 Componentes Mejorados con Loading States (v1.5)
+
+Los botones del sistema ahora incluyen soporte automático para loading states.
+
+#### primary-button, secondary-button, danger-button
+
+**Nueva prop:**
+- `loadingTarget`: Target de Livewire para mostrar estado de carga automáticamente
+
+**Uso:**
+```blade
+{{-- Botón con loading automático --}}
+<x-primary-button wire:click="save" loadingTarget="save">
+    Guardar
+</x-primary-button>
+
+{{-- Durante la operación, el botón muestra:
+     1. Spinner
+     2. Texto "Procesando..."
+     3. Se deshabilita automáticamente
+--}}
+```
+
+**Beneficio:** Prevención de doble-click, feedback visual automático, código más limpio.
+
+---
+
+### 📋 Componentes de Tabla
+
+#### table-checkbox
 
 **Ubicación:** `resources/views/components/table-checkbox.blade.php`
 
-**Propósito:** Checkbox estilizado para tablas.
+**Propósito:** Checkbox estilizado para tablas con selección múltiple.
 
 **Uso:**
 ```blade
@@ -296,7 +503,7 @@ Componentes de UI reutilizables para mantener consistencia visual.
 
 ---
 
-### table-actions
+#### table-actions
 
 **Ubicación:** `resources/views/components/table-actions.blade.php`
 
@@ -316,7 +523,7 @@ Componentes de UI reutilizables para mantener consistencia visual.
 
 ---
 
-### action-button
+#### action-button
 
 **Ubicación:** `resources/views/components/action-button.blade.php`
 
@@ -339,7 +546,7 @@ Componentes de UI reutilizables para mantener consistencia visual.
 
 ---
 
-### table-row-highlight
+#### table-row-highlight
 
 **Ubicación:** `resources/views/components/table-row-highlight.blade.php`
 
@@ -421,10 +628,17 @@ class GestionarModelo extends Component
 | WithAuditLogging | Trait | Auditoría centralizada | Consistencia garantizada |
 | WithBulkActions | Trait | Selección múltiple | Optimizado para miles de registros |
 | EquipoQueryBuilder | Builder | Queries reutilizables | DRY, legibilidad |
+| **spinner** | **Blade (v1.5)** | **Indicador de carga** | **5 tamaños, 5 colores** |
+| **loading-overlay** | **Blade (v1.5)** | **Overlay pantalla completa** | **Operaciones largas** |
+| **loading-state** | **Blade (v1.5)** | **Estado de carga** | **Inline o bloque** |
+| **toast-container** | **Blade (v1.5)** | **Notificaciones toast** | **4 tipos con auto-dismiss** |
+| **toast-trigger** | **Blade (v1.5)** | **Toast desde sesión** | **Persistencia en redirecciones** |
 | table-checkbox | Blade | Checkbox estilizado | UI consistente |
 | table-actions | Blade | Contenedor acciones | UI consistente |
 | action-button | Blade | Botón con spinner | UX mejorada |
 | table-row-highlight | Blade | Fila con resaltado | Feedback visual |
+
+**Total: 18 componentes reutilizables** (5 nuevos en v1.5)
 
 ---
 

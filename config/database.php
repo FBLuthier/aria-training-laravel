@@ -1,5 +1,52 @@
 <?php
 
+/**
+ * =======================================================================
+ * CONFIGURACIÓN: BASE DE DATOS
+ * =======================================================================
+ * 
+ * Configuración de conexiones a base de datos.
+ * Define cómo Laravel se conecta a MySQL/MariaDB.
+ * 
+ * ESTRUCTURA DEL PROYECTO:
+ * 
+ * CONEXIÓN PRINCIPAL:
+ * - Driver: MySQL / MariaDB
+ * - Charset: utf8mb4 (soporte completo de Unicode, emojis)
+ * - Collation: utf8mb4_unicode_ci (comparación case-insensitive)
+ * - Strict mode: true (validación estricta de SQL)
+ * 
+ * TABLAS PRINCIPALES:
+ * - usuarios: Tabla de usuarios (no 'users')
+ * - equipos: Equipos de gimnasio
+ * - ejercicios: Catálogo de ejercicios
+ * - rutinas: Rutinas de entrenamiento
+ * - audit_logs: Registro de auditoría
+ * - Y 9 tablas más relacionadas
+ * 
+ * VARIABLES DE ENTORNO (.env):
+ * - DB_CONNECTION: mysql o mariadb
+ * - DB_HOST: 127.0.0.1 (localhost)
+ * - DB_PORT: 3306 (puerto estándar MySQL)
+ * - DB_DATABASE: nombre de la base de datos
+ * - DB_USERNAME: usuario de MySQL
+ * - DB_PASSWORD: contraseña de MySQL
+ * 
+ * REDIS (OPCIONAL):
+ * - Usado para caché y colas si está configurado
+ * - Mejora rendimiento significativamente
+ * - No requerido para funcionamiento básico
+ * 
+ * MIGRACIONES:
+ * Ejecutar: php artisan migrate
+ * - Crea 24 tablas automáticamente
+ * - Incluye foreign keys y índices
+ * - Seeders disponibles para datos iniciales
+ * 
+ * @package Config
+ * @since 1.0
+ */
+
 use Illuminate\Support\Str;
 
 return [

@@ -5,127 +5,132 @@ namespace App\Models\Builders;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Query Builder personalizado para el modelo Equipo.
+ * =======================================================================
+ * QUERY BUILDER PERSONALIZADO PARA EQUIPOS
+ * =======================================================================
  * 
- * Proporciona métodos fluidos para filtrar, ordenar y manipular
- * consultas de equipos de forma reutilizable y testeable.
+ * Este Query Builder personaliza las consultas al modelo Equipo,
+ * agregando métodos específicos del dominio y heredando funcionalidad
+ * común del trait BaseQueryBuilder.
+ * 
+ * MÉTODOS HEREDADOS DE BaseQueryBuilder:
+ * - search($search): Busca en campos configurables
+ * - trash($showTrash): Filtra por eliminados o activos
+ * - sortBy($field, $direction): Ordena resultados
+ * - filtered(): Aplica búsqueda, filtro de trash y ordenamiento
+ * - active(): Solo registros activos
+ * - dateRange(): Filtra por rango de fechas
+ * - recent(): Registros recientes
+ * 
+ * MÉTODOS PROPIOS:
+ * - withEjercicios(): Equipos que tienen ejercicios
+ * - withoutEjercicios(): Equipos sin ejercicios
+ * - whereEjerciciosCount(): Filtra por cantidad de ejercicios
+ * 
+ * USO EN MODELO:
+ * ```php
+ * // En Equipo.php
+ * public function newEloquentBuilder($query): EquipoQueryBuilder
+ * {
+ *     return new EquipoQueryBuilder($query);
+ * }
+ * ```
+ * 
+ * USO EN CONSULTAS:
+ * ```php
+ * // Búsqueda con filtros
+ * Equipo::query()->filtered('Mancuernas', false, 'nombre', 'asc')->get();
+ * 
+ * // Equipos sin usar
+ * Equipo::query()->withoutEjercicios()->get();
+ * 
+ * // Equipos populares (con muchos ejercicios)
+ * Equipo::query()->whereEjerciciosCount('>=', 5)->get();
+ * ```
+ * 
+ * BENEFICIOS:
+ * - Código más legible y expresivo
+ * - Queries reutilizables
+ * - Búsqueda consistente en toda la app
+ * 
+ * @package App\Models\Builders
+ * @since 1.0
  */
 class EquipoQueryBuilder extends Builder
 {
+    use BaseQueryBuilder;
+
+    // =======================================================================
+    //  CONFIGURACIÓN
+    // =======================================================================
+
     /**
-     * Filtra equipos por término de búsqueda.
-     * Busca en el campo 'nombre'.
-     *
-     * @param string|null $search Término de búsqueda
+     * Campos en los que se realizarán las búsquedas.
+     * 
+     * El método search() heredado de BaseQueryBuilder busca en estos campos
+     * usando LIKE '%término%'.
+     * 
+     * @var array<string> Lista de nombres de columnas
+     */
+    protected array $searchableFields = ['nombre'];
+
+    // =======================================================================
+    //  MÉTODOS PERSONALIZADOS (SI NECESITAS LÓGICA ESPECIAL)
+    // =======================================================================
+
+    /**
+     * Filtra equipos que tienen al menos un ejercicio asociado.
+     * 
      * @return self
      */
-    public function search(?string $search): self
+    public function withEjercicios(): self
     {
-        if (empty($search)) {
-            return $this;
-        }
-
-        return $this->where('nombre', 'like', "%{$search}%");
+        return $this->has('ejercicios');
     }
 
     /**
-     * Filtra solo equipos eliminados (en papelera).
-     *
+     * Filtra equipos que NO tienen ejercicios asociados.
+     * Útil para identificar equipos sin usar.
+     * 
      * @return self
      */
-    public function onlyTrashed(): self
+    public function withoutEjercicios(): self
     {
-        return parent::onlyTrashed();
+        return $this->doesntHave('ejercicios');
     }
 
     /**
-     * Incluye equipos eliminados en los resultados.
-     *
+     * Carga la relación de ejercicios con el equipo.
+     * 
      * @return self
      */
-    public function withTrashed(): self
+    public function withEjerciciosRelation(): self
     {
-        return parent::withTrashed();
+        return $this->with('ejercicios');
     }
 
     /**
-     * Aplica filtro de papelera basado en una condición.
-     *
-     * @param bool $showTrash Si debe mostrar papelera
+     * Filtra equipos con un número específico de ejercicios.
+     * 
+     * @param string $operator Operador de comparación ('=', '>', '<', etc.)
+     * @param int $count Número de ejercicios
      * @return self
      */
-    public function trash(bool $showTrash = false): self
+    public function whereEjerciciosCount(string $operator, int $count): self
     {
-        return $showTrash ? $this->onlyTrashed() : $this;
+        return $this->has('ejercicios', $operator, $count);
     }
 
-    /**
-     * Ordena por campo y dirección.
-     *
-     * @param string $field Campo por el que ordenar
-     * @param string $direction Dirección ('asc' o 'desc')
-     * @return self
-     */
-    public function sortBy(string $field = 'id', string $direction = 'asc'): self
-    {
-        return $this->orderBy($field, $direction);
-    }
-
-    /**
-     * Aplica filtros comunes de búsqueda y papelera.
-     * Este es un método de conveniencia que combina search() y trash().
-     *
-     * @param string|null $search Término de búsqueda
-     * @param bool $showTrash Si debe mostrar papelera
-     * @return self
-     */
-    public function applyFilters(?string $search = null, bool $showTrash = false): self
-    {
-        return $this->search($search)->trash($showTrash);
-    }
-
-    /**
-     * Aplica filtros y ordenamiento comunes.
-     * Método todo-en-uno para casos típicos.
-     *
-     * @param string|null $search Término de búsqueda
-     * @param bool $showTrash Si debe mostrar papelera
-     * @param string $sortField Campo de ordenamiento
-     * @param string $sortDirection Dirección de ordenamiento
-     * @return self
-     */
-    public function filtered(
-        ?string $search = null,
-        bool $showTrash = false,
-        string $sortField = 'id',
-        string $sortDirection = 'asc'
-    ): self {
-        return $this
-            ->search($search)
-            ->trash($showTrash)
-            ->sortBy($sortField, $sortDirection);
-    }
-
-    /**
-     * Scope para obtener equipos activos (no eliminados).
-     *
-     * @return self
-     */
-    public function active(): self
-    {
-        return $this->whereNull('deleted_at');
-    }
-
-    /**
-     * Obtiene IDs de los registros actuales.
-     * Útil para selecciones masivas.
-     *
-     * @return array
-     */
-    public function getIds(): array
-    {
-        return $this->pluck('id')
-            ->map(fn($id) => (string) $id)
-            ->toArray();
-    }
+    // NOTA: Los siguientes métodos ya NO son necesarios porque vienen de BaseQueryBuilder:
+    // - search($search)
+    // - trash($showTrash)
+    // - sortBy($field, $direction)
+    // - applyFilters($search, $showTrash)
+    // - filtered($search, $showTrash, $sortField, $sortDirection)
+    // - active()
+    // - getIds()
+    // - dateRange($field, $from, $to)
+    // - recent($days, $field)
+    // - exceptIds($ids)
+    // - onlyIds($ids)
 }

@@ -3,22 +3,40 @@
 namespace App\Http\Controllers;
 
 
-// --- IMPORTACIONES DE CLASES ---
-// Se importan las clases necesarias para que el controlador funcione.
-use App\Http\Requests\ProfileUpdateRequest; // Clase para validar los datos de actualización del perfil.
-use Illuminate\Http\RedirectResponse;      // Clase para manejar las redirecciones.
-use Illuminate\Http\Request;                // Clase para manejar las peticiones HTTP entrantes.
-use Illuminate\Support\Facades\Auth;        // Fachada para interactuar con el sistema de autenticación.
-use Illuminate\Support\Facades\Redirect;    // Fachada para crear respuestas de redirección.
-use Illuminate\View\View;                   // Clase para manejar las vistas de Blade.
+use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\View\View;
 
 /**
- * =========================================================================
- * CONTROLADOR DEL PERFIL DE USUARIO
- * =========================================================================
- * Este controlador es responsable de manejar toda la lógica relacionada
- * con el perfil del usuario autenticado: mostrar el formulario de edición,
- * actualizar la información y eliminar la cuenta.
+ * =======================================================================
+ * CONTROLLER: PERFIL DE USUARIO
+ * =======================================================================
+ * 
+ * Maneja todas las operaciones relacionadas con el perfil del usuario
+ * autenticado: visualización, actualización y eliminación de cuenta.
+ * 
+ * RESPONSABILIDADES:
+ * - Mostrar formulario de edición de perfil
+ * - Actualizar información del usuario
+ * - Eliminar cuenta del usuario
+ * - Gestionar verificación de email al cambiar
+ * 
+ * RUTAS ASOCIADAS:
+ * - GET /profile - Formulario de edición
+ * - PATCH /profile - Actualizar datos
+ * - DELETE /profile - Eliminar cuenta
+ * 
+ * SEGURIDAD:
+ * - Requiere autenticación
+ * - Validación de contraseña para eliminación
+ * - Invalidación de sesión al eliminar cuenta
+ * - Regeneración de token CSRF
+ * 
+ * @package App\Http\Controllers
+ * @since 1.0
  */
 class ProfileController extends Controller
 {

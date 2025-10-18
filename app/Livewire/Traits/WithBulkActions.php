@@ -5,33 +5,98 @@ namespace App\Livewire\Traits;
 use Livewire\Attributes\Computed;
 
 /**
- * Trait para manejar selección múltiple y acciones en lote.
+ * =======================================================================
+ * TRAIT PARA ACCIONES EN LOTE (BULK ACTIONS)
+ * =======================================================================
  * 
- * Este trait proporciona la funcionalidad estándar para:
- * - Seleccionar/deseleccionar items individuales
- * - Seleccionar/deseleccionar todos los items de la página actual
- * - Seleccionar TODOS los items que coinciden con los filtros (optimizado para grandes volúmenes)
- * - Mantener el estado de selección
+ * Este trait implementa toda la lógica necesaria para seleccionar múltiples
+ * registros y realizar acciones masivas sobre ellos. Está optimizado para
+ * manejar grandes volúmenes de datos eficientemente.
  * 
- * REQUISITOS:
- * - El componente debe tener paginación (usa WithPagination)
- * - Debe tener una propiedad $search para filtrado
- * - Debe tener un modelo Eloquent para consultar
- * - Debe implementar el método getFilteredQuery() que retorna la query con filtros aplicados
+ * FUNCIONALIDADES:
+ * - Selección individual de items (checkboxes)
+ * - Seleccionar todos los items de la página actual
+ * - Seleccionar TODOS los items que coinciden con filtros (sin límite)
+ * - Excluir items específicos de selección masiva
+ * - Cálculo eficiente de cantidad seleccionada
+ * - Aplicar selección a queries para operaciones masivas
+ * 
+ * MODOS DE SELECCIÓN:
+ * 1. Individual: Usuario selecciona items uno por uno
+ * 2. Página: Selecciona todos los visibles (10, 15, etc.)
+ * 3. Global: Selecciona TODOS (incluso 10,000+) con filtros
+ * 
+ * OPTIMIZACIÓN PARA GRANDES VOLÚMENES:
+ * Cuando se seleccionan "todos", NO carga todos los IDs en memoria.
+ * En su lugar, usa la query con filtros y excepciones, lo cual es
+ * mucho más eficiente para eliminar/actualizar miles de registros.
+ * 
+ * USO EN COMPONENTE:
+ * ```php
+ * class GestionarEquipos extends Component
+ * {
+ *     use WithBulkActions;
+ *     
+ *     // Las acciones en lote ya están disponibles:
+ *     public function deleteSelected()
+ *     {
+ *         $query = Equipo::query();
+ *         $this->applySelectionToQuery($query);
+ *         $query->delete(); // Elimina solo los seleccionados
+ *     }
+ * }
+ * ```
+ * 
+ * USO EN VISTA:
+ * ```blade
+ * <input wire:model.live="selectAll" type="checkbox">
+ * 
+ * @foreach($items as $item)
+ *     <input wire:model.live="selectedItems" value="{{ $item->id }}" type="checkbox">
+ * @endforeach
+ * 
+ * @if($selectingAll)
+ *     Seleccionados: {{ $this->selectedCount }} items
+ * @endif
+ * ```
+ * 
+ * REQUISITOS DEL COMPONENTE:
+ * - Usar WithPagination de Livewire
+ * - Implementar getFilteredQuery(): Retorna query con filtros
+ * - Tener propiedad $search para búsqueda
+ * - Tener computed property $totalFilteredCount
+ * 
+ * @package App\Livewire\Traits
+ * @since 1.0
  */
 trait WithBulkActions
 {
-    /** @var array IDs de los items seleccionados */
+    // =======================================================================
+    //  PROPIEDADES DE SELECCIÓN
+    // =======================================================================
+    
+    /** @var array<string> IDs de los items seleccionados manualmente */
     public array $selectedItems = [];
 
-    /** @var bool Estado del checkbox "Seleccionar Todo" */
+    /** @var bool Estado del checkbox "Seleccionar Todo" de la página */
     public bool $selectAll = false;
 
-    /** @var bool Indica si se están seleccionando TODOS los registros (incluso los no visibles) */
+    /** 
+     * @var bool Indica si se están seleccionando TODOS los registros.
+     * Cuando es true, NO se cargan todos los IDs en memoria.
+     * En su lugar, se usa la query con filtros para máxima eficiencia.
+     */
     public bool $selectingAll = false;
 
-    /** @var array IDs excluidos cuando se usa selectingAll */
+    /** 
+     * @var array<string> IDs excluidos cuando selectingAll = true.
+     * Permite deseleccionar items específicos de una selección masiva.
+     */
     public array $exceptItems = [];
+    
+    // =======================================================================
+    //  LIFECYCLE HOOKS
+    // =======================================================================
 
     /**
      * Hook que se ejecuta cuando cambia el valor de $selectAll.

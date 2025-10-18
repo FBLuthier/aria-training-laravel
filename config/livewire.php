@@ -1,5 +1,54 @@
 <?php
 
+/**
+ * =======================================================================
+ * CONFIGURACIÓN: LIVEWIRE
+ * =======================================================================
+ * 
+ * Configuración de Livewire para componentes reactivos.
+ * Livewire permite crear interfaces dinámicas sin escribir JavaScript.
+ * 
+ * COMPONENTES DEL PROYECTO:
+ * - BaseCrudComponent: Componente base para CRUDs
+ * - GestionarEquipos: CRUD completo de equipos
+ * - GestionarAuditoria: Visualización de logs
+ * - Todos usan Livewire para interactividad en tiempo real
+ * 
+ * CONFIGURACIONES IMPORTANTES:
+ * 
+ * 1. NAMESPACE: App\Livewire
+ *    - Todos los componentes viven en app/Livewire/
+ *    - Vistas en resources/views/livewire/
+ * 
+ * 2. LAYOUT: layouts.app
+ *    - Layout por defecto para componentes full-page
+ *    - Se usa cuando una ruta apunta directamente a un componente
+ * 
+ * 3. INJECT_ASSETS: false ⚠️ PERSONALIZADO
+ *    - Nosotros controlamos manualmente los assets de Livewire
+ *    - Deben agregarse @livewireStyles y @livewireScripts en el layout
+ *    - Permite mayor control sobre cuándo se cargan los scripts
+ * 
+ * 4. PAGINATION: tailwind
+ *    - Usa clases de Tailwind CSS para la paginación
+ *    - Consistente con el diseño del proyecto
+ * 
+ * 5. NAVIGATE (SPA MODE): Habilitado
+ *    - wire:navigate en links crea experiencia SPA
+ *    - Barra de progreso azul (#2299dd)
+ *    - Carga más rápida entre páginas
+ * 
+ * USO EN EL PROYECTO:
+ * - Todos los CRUDs usan Livewire
+ * - Búsqueda en tiempo real
+ * - Modales dinámicos
+ * - Acciones sin recargar página
+ * - Paginación reactiva
+ * 
+ * @package Config
+ * @since 1.0
+ */
+
 return [
 
     /*

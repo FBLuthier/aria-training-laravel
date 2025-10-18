@@ -135,7 +135,7 @@
                                 </tr>
                             </x-slot>
                             <x-slot name="tbody">
-                                @forelse ($this->equipos as $equipo)
+                                @forelse ($this->items as $equipo)
                                     <tr wire:key="trash-{{ $equipo->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                         <td class="w-4 p-4">
                                             <input wire:model.live="selectedItems" value="{{ $equipo->id }}" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded">
@@ -198,7 +198,7 @@
                                     </tr>
                                 @endif
                                 
-                                @forelse ($this->equipos as $equipo)
+                                @forelse ($this->items as $equipo)
                                     @if (!$equipoRecienCreado || $equipoRecienCreado->id !== $equipo->id)
                                         <tr wire:key="equipo-{{ $equipo->id }}" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                                             <td class="w-4 p-4">
@@ -233,7 +233,7 @@
 
                     {{-- Paginación --}}
                     <div class="mt-4">
-                        {{ $this->equipos->links() }}
+                        {{ $this->items->links() }}
                     </div>
                     </div>
                 </div>
@@ -247,8 +247,8 @@
     <x-form-modal 
         :show="$showFormModal"
         cancelAction="closeFormModal"
-        :title="$form->equipo?->exists ? 'Editar Equipo' : 'Crear Nuevo Equipo'"
-        :submitText="$form->equipo?->exists ? 'Guardar Cambios' : 'Crear Equipo'"
+        :title="$form->model?->exists ? 'Editar Equipo' : 'Crear Nuevo Equipo'"
+        :submitText="$form->model?->exists ? 'Guardar Cambios' : 'Crear Equipo'"
     >
         <div>
             <x-input-label for="nombre" value="Nombre del Equipo" />

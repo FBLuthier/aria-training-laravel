@@ -1,23 +1,37 @@
 # Guía: Crear un Nuevo CRUD
 
-Esta guía te llevará paso a paso para crear un módulo CRUD completo en ~30-60 minutos.
+Esta guía te llevará paso a paso para crear un módulo CRUD completo en **~30-60 minutos** usando los **componentes base reutilizables** del sistema.
+
+---
+
+## ⚡ NOVEDAD: Componentes Base (v1.4)
+
+Desde la versión 1.4, el sistema incluye **3 componentes base** que reducen el código en **70-95%**:
+
+| Componente | Propósito | Beneficio |
+|------------|-----------|-----------|
+| **BaseModelForm** | Lógica común de Forms | 70% menos código |
+| **BaseQueryBuilder** | Consultas reutilizables | 60% menos código |
+| **BaseAdminPolicy** | Autorización estándar | 95% menos código |
+
+📚 **Documentación completa:** [`docs/arquitectura/componentes_base.md`](../arquitectura/componentes_base.md)
 
 ---
 
 ## 📋 Requisitos Previos
 
 Antes de empezar, asegúrate de tener:
-- Modelo creado y migración ejecutada
-- Factory del modelo (para testing)
-- Políticas de autorización configuradas
+- ✅ Modelo creado y migración ejecutada
+- ✅ Factory del modelo (para testing)
+- ✅ Comprensión básica de los componentes base
 
 ---
 
 ## 🚀 Pasos para Crear un CRUD
 
-### Paso 1: Crear el Form
+### Paso 1: Crear el Form (usando BaseModelForm)
 
-El Form encapsula la lógica de validación y guardado.
+El Form ahora extiende de **BaseModelForm** para heredar funcionalidad común.
 
 **Ubicación:** `app/Livewire/Forms/NuevoModeloForm.php`
 
@@ -27,65 +41,83 @@ El Form encapsula la lógica de validación y guardado.
 namespace App\Livewire\Forms;
 
 use App\Models\NuevoModelo;
-use Livewire\Attributes\Validate;
-use Livewire\Form;
+use Illuminate\Validation\Rule;
 
-class NuevoModeloForm extends Form
+/**
+ * Formulario para gestionar NuevoModelo.
+ * Extiende BaseModelForm para heredar funcionalidad común.
+ */
+class NuevoModeloForm extends BaseModelForm
 {
-    public ?NuevoModelo $modelo = null;
-
-    #[Validate('required|string|max:255')]
+    // =======================================================================
+    //  PROPIEDADES DEL FORMULARIO
+    // =======================================================================
+    
     public string $nombre = '';
-
-    #[Validate('nullable|string|max:1000')]
     public string $descripcion = '';
-
-    /**
-     * Configura el formulario con un modelo existente (para edición).
-     */
-    public function setModelo(NuevoModelo $modelo): void
+    
+    // =======================================================================
+    //  MÉTODOS ABSTRACTOS REQUERIDOS
+    // =======================================================================
+    
+    protected function rules(): array
     {
-        $this->modelo = $modelo;
-        $this->nombre = $modelo->nombre;
-        $this->descripcion = $modelo->descripcion ?? '';
+        return [
+            'nombre' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('nuevo_modelos')->ignore($this->model?->id)
+            ],
+            'descripcion' => 'nullable|string|max:1000',
+        ];
     }
-
-    /**
-     * Guarda el modelo (create o update).
-     */
-    public function save(): string
+    
+    protected function getModelClass(): string
     {
-        $this->validate();
-
-        $isCreating = is_null($this->modelo);
-
-        if ($isCreating) {
-            $this->modelo = NuevoModelo::create($this->only(['nombre', 'descripcion']));
-        } else {
-            $this->modelo->update($this->only(['nombre', 'descripcion']));
-        }
-
-        return $isCreating ? 'created' : 'updated';
+        return NuevoModelo::class;
     }
-
-    /**
-     * Resetea el formulario.
-     */
-    public function reset(...$properties): void
+    
+    protected function fillFromModel($model): void
     {
-        parent::reset(...$properties);
-        $this->modelo = null;
-        $this->nombre = '';
-        $this->descripcion = '';
+        $this->nombre = $model->nombre;
+        $this->descripcion = $model->descripcion ?? '';
+    }
+    
+    protected function getModelData(): array
+    {
+        return [
+            'nombre' => $this->nombre,
+            'descripcion' => $this->descripcion,
+        ];
+    }
+    
+    // =======================================================================
+    //  MÉTODOS DE CONVENIENCIA (OPCIONAL)
+    // =======================================================================
+    
+    /**
+     * Método de conveniencia para compatibilidad.
+     */
+    public function setNuevoModelo(NuevoModelo $modelo): void
+    {
+        $this->setModel($modelo);
     }
 }
 ```
 
+**✨ Ventajas:**
+- ✅ Método `save()` ya implementado
+- ✅ Método `reset()` ya implementado  
+- ✅ Validación automática
+- ✅ Hooks disponibles (beforeValidation, beforeSave, afterSave)
+- ✅ Métodos helper (isEditing, isCreating)
+
 ---
 
-### Paso 2: Crear el Query Builder (Opcional pero Recomendado)
+### Paso 2: Crear el Query Builder (usando BaseQueryBuilder)
 
-El Query Builder elimina duplicación de queries.
+El Query Builder ahora usa el **trait BaseQueryBuilder** para heredar funcionalidad común.
 
 **Ubicación:** `app/Models/Builders/NuevoModeloQueryBuilder.php`
 
@@ -96,86 +128,43 @@ namespace App\Models\Builders;
 
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * Query Builder personalizado para NuevoModelo.
+ * Usa BaseQueryBuilder trait para funcionalidad común.
+ */
 class NuevoModeloQueryBuilder extends Builder
 {
+    use BaseQueryBuilder;
+    
+    // =======================================================================
+    //  CONFIGURACIÓN
+    // =======================================================================
+    
     /**
-     * Filtra por término de búsqueda.
+     * Campos buscables (requerido por BaseQueryBuilder).
      */
-    public function search(?string $search): self
+    protected array $searchableFields = ['nombre', 'descripcion'];
+    
+    // =======================================================================
+    //  MÉTODOS PERSONALIZADOS (OPCIONAL)
+    // =======================================================================
+    
+    /**
+     * Filtra por algún criterio específico del modelo.
+     * Ejemplo: si tu modelo tiene un campo "activo"
+     */
+    public function activos(): self
     {
-        if (empty($search)) {
-            return $this;
-        }
-
-        return $this->where('nombre', 'like', "%{$search}%");
-    }
-
-    /**
-     * Aplica filtro de papelera.
-     */
-    public function trash(bool $showTrash = false): self
-    {
-        return $showTrash ? $this->onlyTrashed() : $this;
-    }
-
-    /**
-     * Ordena por campo y dirección.
-     */
-    public function sortBy(string $field = 'id', string $direction = 'asc'): self
-    {
-        return $this->orderBy($field, $direction);
-    }
-
-    /**
-     * Aplica filtros comunes de búsqueda y papelera.
-     */
-    public function applyFilters(?string $search = null, bool $showTrash = false): self
-    {
-        return $this->search($search)->trash($showTrash);
-    }
-
-    /**
-     * Aplica filtros y ordenamiento (método todo-en-uno).
-     */
-    public function filtered(
-        ?string $search = null,
-        bool $showTrash = false,
-        string $sortField = 'id',
-        string $sortDirection = 'asc'
-    ): self {
-        return $this
-            ->search($search)
-            ->trash($showTrash)
-            ->sortBy($sortField, $sortDirection);
-    }
-
-    /**
-     * Solo registros activos.
-     */
-    public function active(): self
-    {
-        return $this->whereNull('deleted_at');
-    }
-
-    /**
-     * Obtiene IDs como array.
-     */
-    public function getIds(): array
-    {
-        return $this->pluck('id')
-            ->map(fn($id) => (string) $id)
-            ->toArray();
+        return $this->where('activo', true);
     }
 }
 ```
 
----
-
-### Paso 3: Conectar el Query Builder al Modelo
-
-**Ubicación:** Actualiza `app/Models/NuevoModelo.php`
-
-```php
+**✨ Métodos heredados automáticamente:**
+- ✅ `search($search)` - Busca en campos configurados
+- ✅ `trash($showTrash)` - Filtro de papelera
+- ✅ `sortBy($field, $direction)` - Ordenamiento
+- ✅ `filtered($search, $showTrash, $sortField, $sortDirection)` - Todo-en-uno
 <?php
 
 namespace App\Models;
@@ -589,14 +578,197 @@ class GestionarNuevosModelos extends Component
 
 ---
 
+## 🎨 Paso 6: Mejorar la Experiencia de Usuario (UX) - v1.5
+
+**⭐ NUEVO:** Agrega feedback visual profesional con loading states y notificaciones toast.
+
+### 6.1. Agregar Loading States
+
+**En el campo de búsqueda:**
+```blade
+<div class="relative w-full">
+    <x-text-input 
+        wire:model.live="search"
+        placeholder="Buscar..." 
+    />
+    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+        <x-spinner 
+            size="sm" 
+            color="gray"
+            wire:loading 
+            wire:target="search"
+            style="display: none;"
+        />
+    </div>
+</div>
+```
+
+**En la tabla (mientras carga datos):**
+```blade
+{{-- Loading state --}}
+<x-loading-state 
+    target="search,toggleTrash,sortBy,gotoPage" 
+    message="Cargando registros..."
+    class="my-4"
+/>
+
+{{-- Tabla (se oculta durante carga) --}}
+<div wire:loading.remove wire:target="search,toggleTrash,sortBy,gotoPage">
+    <table>
+        {{-- Contenido de la tabla --}}
+    </table>
+</div>
+```
+
+**En botones con acciones:**
+```blade
+{{-- Botones con loading automático --}}
+<x-primary-button wire:click="save" loadingTarget="save">
+    Guardar
+</x-primary-button>
+
+<x-secondary-button wire:click="toggleTrash" loadingTarget="toggleTrash">
+    {{ $showingTrash ? 'Ver Activos' : 'Ver Papelera' }}
+</x-secondary-button>
+
+<x-danger-button wire:click="performDelete" loadingTarget="performDelete">
+    Eliminar
+</x-danger-button>
+```
+
+**Para operaciones masivas (overlay de pantalla completa):**
+```blade
+{{-- Al final de la vista, antes de </div> --}}
+<x-loading-overlay 
+    target="deleteSelected,restoreSelected,forceDeleteSelected"
+    message="Procesando registros seleccionados..."
+/>
+```
+
+### 6.2. Agregar Notificaciones Toast
+
+**En tu componente Livewire (PHP):**
+```php
+public function save(): void
+{
+    $this->form->validate();
+    
+    try {
+        $oldValues = $this->form->model?->exists ? $this->form->model->toArray() : null;
+        $this->form->save();
+        
+        $message = $this->form->model->wasRecentlyCreated 
+            ? 'Registro creado exitosamente.' 
+            : 'Registro actualizado exitosamente.';
+            
+        // ⭐ Notificación de éxito
+        $this->dispatch('notify', message: $message, type: 'success');
+        
+        $this->closeFormModal();
+        $this->auditFormSave($oldValues);
+        
+    } catch (\Exception $e) {
+        // ⭐ Notificación de error
+        $this->dispatch('notify', 
+            message: 'Error al guardar: ' . $e->getMessage(), 
+            type: 'error',
+            duration: 7000 // Duración más larga para errores
+        );
+        
+        Log::error('Error al guardar modelo: ' . $e->getMessage());
+    }
+}
+
+public function performDelete(): void
+{
+    $action = app(DeleteModelAction::class);
+    $result = $action->execute($this->deletingModel);
+    
+    // ⭐ Notificación según resultado
+    if ($result['success']) {
+        $this->dispatch('notify', message: $result['message'], type: 'success');
+    } else {
+        $this->dispatch('notify', message: $result['message'], type: 'error');
+    }
+    
+    $this->closeConfirmationModal();
+    $this->deletingId = null;
+}
+
+public function deleteSelected(): void
+{
+    $count = count($this->selectedItems);
+    
+    if ($count === 0) {
+        // ⭐ Notificación de advertencia
+        $this->dispatch('notify', 
+            message: 'No hay registros seleccionados.', 
+            type: 'warning'
+        );
+        return;
+    }
+    
+    $modelos = $this->getSelectedModels();
+    $action = app(DeleteModelAction::class);
+    $result = $action->executeBulk($modelos);
+    
+    // ⭐ Notificación de éxito masivo
+    $this->dispatch('notify', 
+        message: "{$count} registros eliminados correctamente.", 
+        type: 'success'
+    );
+    
+    $this->clearSelections();
+}
+```
+
+**Tipos de notificaciones disponibles:**
+- `success`: Para operaciones exitosas (verde)
+- `error`: Para errores y fallos (rojo)
+- `warning`: Para advertencias (amarillo)
+- `info`: Para información general (azul)
+
+**Duración personalizada:**
+- Mensajes cortos de éxito: 3000-4000ms (default)
+- Mensajes importantes/errores: 7000-10000ms
+- Sin auto-dismiss (requiere acción): 0ms
+
+### 6.3. Resultado Final
+
+Con estos ajustes, tu CRUD tendrá:
+- ✅ Spinners durante búsqueda en tiempo real
+- ✅ Loading states al cambiar de página o filtrar
+- ✅ Botones que se deshabilitan automáticamente durante operaciones
+- ✅ Feedback visual inmediato con "Procesando..."
+- ✅ Overlay para operaciones masivas que previene interacciones
+- ✅ Notificaciones elegantes para cada acción
+- ✅ Experiencia de usuario profesional sin código complejo
+
+**Documentación completa:**
+- `docs/desarrollo/guias/loading_states.md` - Guía exhaustiva de loading states
+- `docs/desarrollo/guias/toast_notifications.md` - Guía exhaustiva de toast notifications
+
+---
+
 ## ✅ Checklist de Implementación
 
+### Funcionalidad Base
 - [ ] Form creado con validaciones
 - [ ] Query Builder creado y conectado al modelo
 - [ ] Componente Livewire creado con todos los traits
 - [ ] Vista Blade creada con componentes reutilizables
 - [ ] Ruta agregada en `routes/web.php`
 - [ ] Políticas de autorización configuradas
+
+### UX y Feedback Visual (v1.5) ⭐
+- [ ] Loading states agregados (spinner en búsqueda, loading-state en tabla)
+- [ ] Botones actualizados con prop `loadingTarget`
+- [ ] Loading overlay agregado para operaciones masivas
+- [ ] Notificaciones toast implementadas en todas las acciones
+- [ ] Mensajes de error con toast type='error'
+- [ ] Mensajes de advertencia con toast type='warning'
+
+### Testing y Documentación
 - [ ] Traducciones agregadas (si aplica)
 - [ ] Tests creados
 - [ ] Documentación actualizada
@@ -606,6 +778,8 @@ class GestionarNuevosModelos extends Component
 ## 🎯 Resultado
 
 Con esta estructura, habrás creado un CRUD completo con:
+
+**Funcionalidad:**
 - ✅ Create, Read, Update, Delete
 - ✅ Soft Delete con papelera
 - ✅ Restore y Force Delete
@@ -614,7 +788,19 @@ Con esta estructura, habrás creado un CRUD completo con:
 - ✅ Selección múltiple y acciones en lote
 - ✅ Auditoría automática
 - ✅ Autorización en cada acción
+
+**Experiencia de Usuario (v1.5):** ⭐
+- ✅ Spinners durante operaciones asíncronas
+- ✅ Loading states en tablas y filtros
+- ✅ Overlay para operaciones masivas
+- ✅ Notificaciones toast elegantes (4 tipos)
+- ✅ Prevención de doble-click automática
+- ✅ Feedback visual inmediato en todas las acciones
+- ✅ Experiencia profesional y pulida
+
+**Código:**
 - ✅ UI consistente con el resto del sistema
 - ✅ Código reutilizable y mantenible
+- ✅ Componentes modulares fáciles de mantener
 
-**Tiempo estimado: 30-60 minutos** 🚀
+**Tiempo estimado: 30-60 minutos (funcionalidad base) + 5-10 minutos (UX)** 🚀

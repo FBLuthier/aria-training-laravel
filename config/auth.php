@@ -1,5 +1,42 @@
 <?php
 
+/**
+ * =======================================================================
+ * CONFIGURACIÓN: AUTENTICACIÓN
+ * =======================================================================
+ * 
+ * Configuración del sistema de autenticación de Laravel.
+ * Define cómo los usuarios se autentican y recuperan contraseñas.
+ * 
+ * ESTRUCTURA DEL PROYECTO:
+ * - Guard: 'web' (sesión estándar basada en cookies)
+ * - Provider: 'users' (modelo App\Models\User con tabla 'usuarios')
+ * - Tabla de usuarios: 'usuarios' (no 'users')
+ * - Tabla de tokens: 'password_reset_tokens'
+ * 
+ * GUARDS (GUARDIAS):
+ * Define cómo se autentica el usuario:
+ * - 'web': Sesión basada en cookies (default para apps web)
+ * - Podríamos agregar 'api' para APIs con tokens
+ * 
+ * PROVIDERS (PROVEEDORES):
+ * Define dónde se buscan los usuarios:
+ * - 'users': Usa modelo User con Eloquent
+ * - Tabla real: 'usuarios' (definida en el modelo)
+ * 
+ * PASSWORD RESET (RECUPERACIÓN):
+ * - Tokens expiran en 60 minutos
+ * - Throttle: 60 segundos entre intentos
+ * - Tabla: password_reset_tokens
+ * 
+ * PASSWORD CONFIRMATION (CONFIRMACIÓN):
+ * - Timeout: 10800 segundos (3 horas)
+ * - Usado para acciones sensibles (eliminar cuenta, etc.)
+ * 
+ * @package Config
+ * @since 1.0
+ */
+
 return [
 
     /*
