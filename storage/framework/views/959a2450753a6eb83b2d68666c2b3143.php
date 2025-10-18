@@ -1110,14 +1110,14 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
     
     <?php if (isset($component)) { $__componentOriginal115e82920da0ed7c897ee494af74b9d8 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal115e82920da0ed7c897ee494af74b9d8 = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.loading-overlay','data' => ['target' => 'deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete','message' => 'Procesando operación...']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.loading-overlay','data' => ['target' => 'save,deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete','message' => 'Procesando operación...']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('loading-overlay'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['target' => 'deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete','message' => 'Procesando operación...']); ?>
+<?php $component->withAttributes(['target' => 'save,deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete','message' => 'Procesando operación...']); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal115e82920da0ed7c897ee494af74b9d8)): ?>

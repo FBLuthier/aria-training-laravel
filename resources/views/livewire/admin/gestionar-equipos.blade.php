@@ -355,7 +355,7 @@
 
     {{-- Loading overlay para operaciones largas --}}
     <x-loading-overlay 
-        target="deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete"
+        target="save,deleteSelected,restoreSelected,forceDeleteSelected,performDelete,performRestore,performForceDelete"
         message="Procesando operación..."
     />
 </div>

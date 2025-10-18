@@ -21,7 +21,7 @@ use Illuminate\Validation\Rule as ValidationRule;
  * - setModel(): Carga datos de un modelo existente
  * 
  * VALIDACIONES:
- * - Nombre: requerido, 3-255 caracteres, único en la tabla
+ * - Nombre: requerido, 3-45 caracteres, único en la tabla
  * 
  * USO EN COMPONENTE:
  * ```php
@@ -72,7 +72,7 @@ class EquipoForm extends BaseModelForm
                 'required',
                 'string',
                 'min:3',
-                'max:255',
+                'max:45',
                 ValidationRule::unique('equipos')->ignore($this->model?->id)
             ]
         ];
