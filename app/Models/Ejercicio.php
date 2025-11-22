@@ -77,7 +77,41 @@ class Ejercicio extends Model
     // =======================================================================
     
     /** @var HasFactory Permite usar factories para testing */
+    /** @var HasFactory Permite usar factories para testing */
     use HasFactory;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
+    // =======================================================================
+    //  SCOPES (FILTROS)
+    // =======================================================================
+
+    /**
+     * Aplica los filtros de búsqueda y estado (papelera).
+     */
+    public function scopeApplyFilters($query, $search, $showingTrash)
+    {
+        $query->when($search, function ($q) use ($search) {
+            $q->where('nombre', 'like', '%' . $search . '%')
+              ->orWhere('descripcion', 'like', '%' . $search . '%');
+        });
+
+        if ($showingTrash) {
+            $query->onlyTrashed();
+        }
+
+        return $query;
+    }
+
+    /**
+     * Aplica filtros y ordenamiento (usado por BaseCrudComponent).
+     */
+    public function scopeFiltered($query, $search, $showingTrash, $sortField, $sortDirection)
+    {
+        // Mapeo de campos de ordenamiento si es necesario
+        // Si sortField es una relación, aquí se manejaría. Por ahora es simple.
+        return $query->applyFilters($search, $showingTrash)
+            ->orderBy($sortField, $sortDirection);
+    }
 
     // =======================================================================
     //  CONFIGURACIÓN DEL MODELO
@@ -91,42 +125,24 @@ class Ejercicio extends Model
         'nombre',        // Nombre del ejercicio
         'descripcion',   // Descripción detallada
         'equipo_id',     // FK al equipo necesario (opcional)
+        'grupo_muscular_id', // FK al músculo principal
+        'url_video',     // Nueva columna
         'estado',        // Estado: activo, inactivo
     ];
 
-    // =======================================================================
-    //  RELACIONES
-    // =======================================================================
+    // ... (existing code) ...
 
-    /**
-     * Relación: Un ejercicio puede requerir un equipo específico.
-     * 
-     * Esta es una relación muchos-a-uno (N:1) OPCIONAL.
-     * Algunos ejercicios requieren equipo (Press de Banca → Barra),
-     * otros no (Flexiones → sin equipo).
-     * 
-     * Ejemplos:
-     * - Press de Banca → requiere Barra Olímpica
-     * - Curl de Bíceps → requiere Mancuernas
-     * - Flexiones → equipo_id = NULL
-     * 
-     * Uso:
-     * ```php
-     * // Obtener el equipo del ejercicio
-     * $nombreEquipo = $ejercicio->equipo?->nombre;
-     * 
-     * // Crear ejercicio con equipo
-     * $ejercicio = Ejercicio::create([
-     *     'nombre' => 'Press de Banca',
-     *     'equipo_id' => $barra->id
-     * ]);
-     * ```
-     * 
-     * @return BelongsTo
-     */
     public function equipo(): BelongsTo
     {
         return $this->belongsTo(Equipo::class, 'equipo_id');
+    }
+
+    /**
+     * Relación: Músculo Principal (1:N)
+     */
+    public function grupoMuscular(): BelongsTo
+    {
+        return $this->belongsTo(GrupoMuscular::class, 'grupo_muscular_id');
     }
 
     /**

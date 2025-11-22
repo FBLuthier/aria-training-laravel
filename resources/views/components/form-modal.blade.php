@@ -16,7 +16,9 @@
 
         {{-- Contenido del formulario --}}
         <form wire:submit.prevent="save" class="space-y-4">
-            {{ $slot }}
+            <div class="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                {{ $slot }}
+            </div>
 
             {{-- Botones de acción --}}
             <div class="flex justify-end gap-3 pt-4">

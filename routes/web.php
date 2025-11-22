@@ -58,6 +58,11 @@ Route::middleware('auth')->group(function () {
         Route::get('equipos', GestionarEquipos::class)->name('equipos.index');
 
         // =======================================================================
+        //  GESTIÓN DE EJERCICIOS (LIVEWIRE)
+        // =======================================================================
+        Route::get('ejercicios', \App\Livewire\Admin\GestionarEjercicios::class)->name('ejercicios.index');
+
+        // =======================================================================
         //  GESTIÓN DE AUDITORÍA
         // =======================================================================
 

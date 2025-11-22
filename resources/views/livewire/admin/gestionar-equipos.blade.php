@@ -1,3 +1,96 @@
+{{-- 
+=========================================================================
+ COMPONENTE LIVEWIRE: GESTIÓN DE EQUIPOS
+=========================================================================
+ Vista principal para la gestión completa (CRUD) de equipos de gimnasio.
+ 
+ COMPONENTE LIVEWIRE: App\Livewire\Admin\GestionarEquipos
+ EXTIENDE: BaseCrudComponent
+ 
+ FUNCIONALIDADES:
+ - Listado paginado de equipos con búsqueda en tiempo real
+ - Crear nuevo equipo con modal y formulario reactivo
+ - Editar equipo existente
+ - Eliminar equipo (envío a papelera con soft delete)
+ - Papelera: Ver equipos eliminados
+ - Restaurar equipos desde papelera
+ - Eliminar permanentemente (force delete)
+ - Acciones en lote: eliminar/restaurar múltiples equipos
+ - Selección masiva: seleccionar todos los que coinciden con filtros
+ - Ordenamiento por columnas (ID, nombre, fecha eliminación)
+ - Estados de carga (loading states) para feedback visual
+ - Notificaciones toast para confirmar acciones
+ - Resaltado de equipo recién creado
+ 
+ ESTRUCTURA DE LA VISTA:
+ 1. Header: Título dinámico ("Gestión de Equipos" / "Papelera de Equipos")
+ 2. Toolbar: Búsqueda, acciones en lote, botones principales
+ 3. Banners de selección: Información sobre items seleccionados
+ 4. Loading states: Feedback visual durante operaciones
+ 5. Tabla principal: Listado de equipos con acciones
+ 6. Paginación: Navegación entre páginas
+ 7. Modales: Formulario, confirmaciones
+ 8. Loading overlay: Para operaciones que requieren tiempo
+ 
+ ESTADOS DE LA VISTA:
+ - Vista Normal: Muestra equipos activos con opciones de editar/eliminar
+ - Vista Papelera: Muestra equipos eliminados con opciones de restaurar/eliminar permanentemente
+ - Equipo Recién Creado: Se resalta con fondo verde después de crearlo
+ 
+ INTERACCIONES PRINCIPALES:
+ - Buscar: Filtrado instantáneo con wire:model.live
+ - Crear: Abre modal con formulario vacío
+ - Editar: Abre modal con datos del equipo
+ - Eliminar: Modal de confirmación → Envía a papelera
+ - Restaurar: Modal de confirmación → Restaura equipo activo
+ - Eliminar Permanentemente: Modal de confirmación (warning) → Borra de BD
+ - Toggle Papelera: Alterna entre vista normal y papelera
+ - Selección: Checkbox individual o seleccionar todos
+ - Ordenar: Click en headers para ordenar ascendente/descendente
+ 
+ COMPONENTES UTILIZADOS:
+ - <x-text-input>: Campo de búsqueda
+ - <x-spinner>: Indicadores de carga
+ - <x-bulk-actions>: Menú de acciones en lote
+ - <x-primary-button>, <x-secondary-button>: Botones principales
+ - <x-loading-state>: Estado de carga con mensaje
+ - <x-data-table>: Tabla responsiva con slots thead/tbody
+ - <x-sortable-header>: Headers de tabla ordenables
+ - <x-form-modal>: Modal con formulario de equipo
+ - <x-confirmation-modal>: Modales de confirmación
+ - <x-loading-overlay>: Overlay de carga para operaciones
+ 
+ PROPIEDADES LIVEWIRE (heredadas de BaseCrudComponent):
+ - $search: Término de búsqueda
+ - $showingTrash: Si está mostrando papelera
+ - $sortField: Campo actual de ordenamiento
+ - $sortDirection: Dirección del ordenamiento (asc/desc)
+ - $showFormModal: Si el modal de formulario está visible
+ - $selectedItems: IDs de items seleccionados
+ - $selectAll: Si todos los items de la página están seleccionados
+ - $selectingAll: Si se seleccionaron todos los registros filtrados
+ 
+ MÉTODOS LIVEWIRE PRINCIPALES:
+ - create(): Abre modal para crear equipo
+ - edit($id): Abre modal para editar equipo
+ - save(): Guarda equipo (crear/actualizar)
+ - delete($id): Elimina equipo (soft delete)
+ - restore($id): Restaura equipo de papelera
+ - forceDelete($id): Elimina permanentemente
+ - toggleTrash(): Alterna entre equipos activos/papelera
+ - sortBy($field): Ordena por campo
+ - deleteSelected(): Elimina equipos seleccionados
+ - restoreSelected(): Restaura equipos seleccionados
+ - forceDeleteSelected(): Elimina permanentemente seleccionados
+ 
+ DOCUMENTACIÓN:
+ - docs/desarrollo/crear_nuevo_crud.md
+ - docs/arquitectura/componentes_reutilizables.md
+ - docs/desarrollo/guias/loading_states.md
+ - docs/desarrollo/guias/toast_notifications.md
+=========================================================================
+--}}
+
 <div>
     {{-- Título de la página --}}
     <x-slot name="header">

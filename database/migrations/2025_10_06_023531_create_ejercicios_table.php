@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('nombre', 45);
             $table->text('descripcion')->nullable();
             $table->foreignId('equipo_id')->constrained('equipos');
+            $table->foreignId('grupo_muscular_id')->constrained('grupos_musculares');
             $table->boolean('estado');
             $table->timestamps();
             $table->softDeletes();

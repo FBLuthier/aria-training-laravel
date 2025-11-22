@@ -61,8 +61,10 @@ unset($__defined_vars, $__key, $__value); ?>
 
         
         <form wire:submit.prevent="save" class="space-y-4">
-            <?php echo e($slot); ?>
+            <div class="max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+                <?php echo e($slot); ?>
 
+            </div>
 
             
             <div class="flex justify-end gap-3 pt-4">

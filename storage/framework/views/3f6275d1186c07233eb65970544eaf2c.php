@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>" class="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ config('app.name', 'Aria Training') }}</title>
+    <title><?php echo e(config('app.name', 'Aria Training')); ?></title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />
     <!-- Styles / Scripts -->
-    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
+    <?php if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot'))): ?>
+        <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+    <?php else: ?>
         <!-- Fallback styles if vite is not running (dev only) -->
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
@@ -25,7 +25,7 @@
                 }
             }
         </script>
-    @endif
+    <?php endif; ?>
 </head>
 <body class="bg-gray-50 text-gray-900 dark:bg-zinc-950 dark:text-zinc-100 antialiased transition-colors duration-300">
 
@@ -43,24 +43,24 @@
                 <!-- Moon Icon (Classic Crescent) -->
                 <svg id="moon-icon" class="w-5 h-5 block dark:hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M21.4,13.7C20.6,13.9,19.8,14,19,14c-5,0-9-4-9-9c0-0.8,0.1-1.6,0.3-2.4c-4.8,0.9-8.3,5.2-8.3,10.3C2,18.6,6.4,23,11.9,23c5.1,0,9.4-3.5,10.3-8.3C21.9,14.4,21.6,14.1,21.4,13.7z"/></svg>
             </button>
-            @if (Route::has('login'))
-                @auth
-                    <a href="{{ url('/dashboard') }}" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Dashboard</a>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
+            <?php if(Route::has('login')): ?>
+                <?php if(auth()->guard()->check()): ?>
+                    <a href="<?php echo e(url('/dashboard')); ?>" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Dashboard</a>
+                    <form method="POST" action="<?php echo e(route('logout')); ?>" class="inline">
+                        <?php echo csrf_field(); ?>
                         <button type="submit" class="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors ml-2">
                             Cerrar Sesión
                         </button>
                     </form>
-                @else
-                    <a href="{{ route('login') }}" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Iniciar Sesión</a>
-                    @if (Route::has('register'))
-                        <a href="{{ route('register') }}" class="hidden sm:inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20">
+                <?php else: ?>
+                    <a href="<?php echo e(route('login')); ?>" class="text-sm font-medium hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Iniciar Sesión</a>
+                    <?php if(Route::has('register')): ?>
+                        <a href="<?php echo e(route('register')); ?>" class="hidden sm:inline-block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg shadow-indigo-500/20">
                             Registrarse
                         </a>
-                    @endif
-                @endauth
-            @endif
+                    <?php endif; ?>
+                <?php endif; ?>
+            <?php endif; ?>
         </div>
     </nav>
 
@@ -83,7 +83,7 @@
                         Gestión profesional para entrenadores. Resultados claros para atletas.
                     </p>
                     <div class="flex flex-wrap gap-4">
-                        <a href="{{ route('register') }}" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-0.5">
+                        <a href="<?php echo e(route('register')); ?>" class="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:-translate-y-0.5">
                             Empezar Ahora
                         </a>
                         <a href="#features" class="px-8 py-3.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-900 dark:text-white font-semibold rounded-xl transition-all">
@@ -220,7 +220,7 @@
                     <h3 class="text-3xl font-bold mb-4">¿Listo para empezar?</h3>
                     <p class="text-indigo-100 mb-8 text-lg">Únete a cientos de entrenadores que ya han optimizado su tiempo y resultados.</p>
                     <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="{{ route('register') }}" class="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-colors text-center">
+                        <a href="<?php echo e(route('register')); ?>" class="px-6 py-3 bg-white text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 transition-colors text-center">
                             Crear Cuenta Gratis
                         </a>
                         <a href="#" class="px-6 py-3 bg-indigo-700 text-white font-medium rounded-xl hover:bg-indigo-800 transition-colors text-center border border-indigo-500">
@@ -240,7 +240,7 @@
     <footer class="max-w-7xl mx-auto px-6 py-8 border-t border-gray-200 dark:border-zinc-800 mt-12">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="text-center md:text-left whitespace-nowrap">
-                <p class="text-sm text-gray-500 dark:text-zinc-500">© {{ date('Y') }} Aria Training. Todos los derechos reservados.</p>
+                <p class="text-sm text-gray-500 dark:text-zinc-500">© <?php echo e(date('Y')); ?> Aria Training. Todos los derechos reservados.</p>
             </div>
             <div class="flex gap-6 justify-center">
                 <a href="#" class="text-sm text-gray-500 hover:text-gray-900 dark:text-zinc-500 dark:hover:text-white transition-colors">Privacidad</a>
@@ -272,3 +272,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\aria-training\resources\views/welcome.blade.php ENDPATH**/ ?>

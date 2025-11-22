@@ -74,7 +74,7 @@ class GrupoMuscular extends Model
      * @var bool Deshabilitar timestamps automáticos.
      * Esta es una tabla de catálogo que rara vez cambia.
      */
-    public $timestamps = false;
+    public $timestamps = true;
     
     /** @var array<string> Campos asignables en masa */
     protected $fillable = ['nombre'];
