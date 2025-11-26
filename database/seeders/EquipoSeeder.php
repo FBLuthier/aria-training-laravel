@@ -30,6 +30,7 @@ class EquipoSeeder extends Seeder
             'Peso Corporal',
             'Polea',
             'Smith',
+            'Máquina',
         ];
 
         foreach ($equipos as $nombre) {

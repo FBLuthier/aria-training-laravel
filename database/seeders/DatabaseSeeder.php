@@ -21,43 +21,59 @@ class DatabaseSeeder extends Seeder
         // 2. CAMBIAMOS '$this->app' POR 'App'
         if (App::environment('local')) {
             
-            // Crea nuestro usuario de prueba "Atleta"
-            \App\Models\User::factory()->create([
-                'usuario' => 'atleta',
-                'nombre_1' => 'Usuario',
-                'apellido_1' => 'DePrueba',
-                'correo' => 'test@example.com',
-                'telefono' => '1234567890',
-                'fecha_nacimiento' => '2000-01-01',
-                'estado' => 1,
-                'tipo_usuario_id' => 3, // ID de Atleta
+            // Seeders de Datos Maestros (Orden Importante)
+            $this->call([
+                EquipoSeeder::class,
+                GrupoMuscularSeeder::class,
+                EjercicioSeeder::class,
             ]);
+
+            // Crea nuestro usuario de prueba "Atleta"
+            \App\Models\User::firstOrCreate(
+                ['usuario' => 'atleta'],
+                [
+                    'nombre_1' => 'Usuario',
+                    'apellido_1' => 'DePrueba',
+                    'correo' => 'test@example.com',
+                    'telefono' => '1234567890',
+                    'fecha_nacimiento' => '2000-01-01',
+                    'estado' => 1,
+                    'tipo_usuario_id' => 3, // ID de Atleta
+                    'password' => bcrypt('password'), // Asegurar password si se crea
+                ]
+            );
 
             // Crea nuestro usuario de prueba "Entrenador"
-            \App\Models\User::factory()->create([
-                'usuario' => 'entrenador',
-                'nombre_1' => 'Usuario',
-                'apellido_1' => 'DePrueba',
-                'correo' => 'entrenador@example.com',
-                'telefono' => '1234567890',
-                'fecha_nacimiento' => '2000-01-01',
-                'estado' => 1,
-                'tipo_usuario_id' => 2, // ID de Entrenador
-            ]);
+            \App\Models\User::firstOrCreate(
+                ['usuario' => 'entrenador'],
+                [
+                    'nombre_1' => 'Usuario',
+                    'apellido_1' => 'DePrueba',
+                    'correo' => 'entrenador@example.com',
+                    'telefono' => '1234567890',
+                    'fecha_nacimiento' => '2000-01-01',
+                    'estado' => 1,
+                    'tipo_usuario_id' => 2, // ID de Entrenador
+                    'password' => bcrypt('password'),
+                ]
+            );
 
             // Crea nuestro usuario de prueba "Administrador"
-            \App\Models\User::factory()->create([
-                'usuario' => 'admin',
-                'nombre_1' => 'Admin',
-                'apellido_1' => 'Aria',
-                'correo' => 'admin@example.com',
-                'telefono' => '1234567890',
-                'fecha_nacimiento' => '2000-01-01',
-                'estado' => 1,
-                'tipo_usuario_id' => 1, // ID de Administrador
-            ]);
+            \App\Models\User::firstOrCreate(
+                ['usuario' => 'admin'],
+                [
+                    'nombre_1' => 'Admin',
+                    'apellido_1' => 'Aria',
+                    'correo' => 'admin@example.com',
+                    'telefono' => '1234567890',
+                    'fecha_nacimiento' => '2000-01-01',
+                    'estado' => 1,
+                    'tipo_usuario_id' => 1, // ID de Administrador
+                    'password' => bcrypt('password'),
+                ]
+            );
             // Crea 25 equipos de prueba usando el factory
-            \App\Models\Equipo::factory(25)->create();
+            // \App\Models\Equipo::factory(25)->create();
         }
     }
 }

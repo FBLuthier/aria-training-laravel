@@ -5,13 +5,13 @@ import Alpine from 'alpinejs';
 // ✅ Solución final: Control total sobre Alpine
 // Ahora que desactivamos inject_assets de Livewire, nosotros controlamos Alpine
 
-window.Alpine = Alpine;
-Alpine.start();
+// window.Alpine = Alpine;
+// Alpine.start();
 
-console.log('✅ Alpine inicializado y controlado por nuestra aplicación');
+// console.log('✅ Alpine inicializado y controlado por nuestra aplicación');
 
 // Marcar que hemos manejado Alpine correctamente
-window.AlpineManagedByApp = true;
+// window.AlpineManagedByApp = true;
 
 // =========================================================================
 // HELPERS GLOBALES PARA NOTIFICACIONES TOAST
@@ -23,7 +23,7 @@ window.AlpineManagedByApp = true;
  * @param {string} type - Tipo de notificación: 'success', 'error', 'warning', 'info'
  * @param {number} duration - Duración en milisegundos (0 = no auto-dismiss)
  */
-window.notify = function(message, type = 'success', duration = 2000) {
+window.notify = function (message, type = 'success', duration = 2000) {
     window.dispatchEvent(new CustomEvent('notify', {
         detail: { message, type, duration }
     }));

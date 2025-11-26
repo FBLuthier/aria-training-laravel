@@ -169,7 +169,7 @@ class GestionarEjercicios extends BaseCrudComponent
                     $videoFinal = $this->equipos_urls[$eqId];
                 }
                 
-                Ejercicio::create([
+                $ejercicio = Ejercicio::create([
                     'nombre' => $nombreFinal,
                     'descripcion' => $this->descripcion,
                     'url_video' => $videoFinal,
@@ -177,6 +177,10 @@ class GestionarEjercicios extends BaseCrudComponent
                     'equipo_id' => $eqId,
                     'estado' => 1 
                 ]);
+                
+                // AUDITORÍA: Registrar creación
+                $this->auditCreate($ejercicio);
+                
                 $count++;
             }
             $this->dispatch('notify', message: "$count ejercicios creados correctamente", type: 'success');
@@ -184,6 +188,9 @@ class GestionarEjercicios extends BaseCrudComponent
             // ... (lógica de edición individual sin cambios)
             $model = Ejercicio::findOrFail($this->editingId);
             $equipo = Equipo::find($this->equipo_id);
+            
+            // Capturar valores anteriores para auditoría
+            $oldValues = $model->toArray();
             
             $nombreFinal = $this->nombre;
             if (!str_contains($nombreFinal, '(' . $equipo->nombre . ')')) {
@@ -197,6 +204,10 @@ class GestionarEjercicios extends BaseCrudComponent
                 'grupo_muscular_id' => $this->grupo_muscular_id,
                 'equipo_id' => $this->equipo_id,
             ]);
+            
+            // AUDITORÍA: Registrar actualización
+            $this->auditUpdate($model, $oldValues);
+            
             $this->dispatch('notify', message: 'Ejercicio actualizado correctamente', type: 'success');
         }
 

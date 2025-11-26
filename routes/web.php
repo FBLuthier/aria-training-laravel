@@ -63,6 +63,11 @@ Route::middleware('auth')->group(function () {
         Route::get('ejercicios', \App\Livewire\Admin\GestionarEjercicios::class)->name('ejercicios.index');
 
         // =======================================================================
+        //  GESTIÓN DE USUARIOS (LIVEWIRE)
+        // =======================================================================
+        Route::get('usuarios', \App\Livewire\Admin\GestionarUsuarios::class)->name('usuarios.index');
+
+        // =======================================================================
         //  GESTIÓN DE AUDITORÍA
         // =======================================================================
 

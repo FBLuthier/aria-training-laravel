@@ -84,6 +84,39 @@ class User extends Authenticatable
     /** @var HasFactory Permite usar factories para testing */
     /** @var Notifiable Habilita envío de notificaciones al usuario */
     use HasFactory, Notifiable;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
+
+    // =======================================================================
+    //  SCOPES (FILTROS)
+    // =======================================================================
+
+    /**
+     * Aplica los filtros de búsqueda y estado (papelera).
+     */
+    public function scopeApplyFilters($query, $search, $showingTrash)
+    {
+        $query->when($search, function ($q) use ($search) {
+            $q->where('nombre_1', 'like', '%' . $search . '%')
+              ->orWhere('apellido_1', 'like', '%' . $search . '%')
+              ->orWhere('correo', 'like', '%' . $search . '%')
+              ->orWhere('usuario', 'like', '%' . $search . '%');
+        });
+
+        if ($showingTrash) {
+            $query->onlyTrashed();
+        }
+
+        return $query;
+    }
+
+    /**
+     * Aplica filtros y ordenamiento (usado por BaseCrudComponent).
+     */
+    public function scopeFiltered($query, $search, $showingTrash, $sortField, $sortDirection)
+    {
+        return $query->applyFilters($search, $showingTrash)
+            ->orderBy($sortField, $sortDirection);
+    }
 
     // =======================================================================
     //  CONFIGURACIÓN DEL MODELO
@@ -112,6 +145,7 @@ class User extends Authenticatable
         'fecha_nacimiento',     // Fecha de nacimiento
         'estado',               // Estado del usuario
         'tipo_usuario_id',      // Tipo de usuario (FK a tipos_usuarios)
+        'entrenador_id',        // ID del entrenador asignado (para atletas)
     ];
 
     /**
@@ -146,6 +180,7 @@ class User extends Authenticatable
     {
         return [
             'contrasena' => 'hashed',  // Hash automático de contraseña
+            'fecha_nacimiento' => 'date',
         ];
     }
 
@@ -250,5 +285,25 @@ class User extends Authenticatable
     public function auditLogs(): HasMany
     {
         return $this->hasMany(AuditLog::class, 'user_id');
+    }
+
+    /**
+     * Relación: Un Atleta pertenece a un Entrenador.
+     * 
+     * @return BelongsTo
+     */
+    public function entrenador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'entrenador_id');
+    }
+
+    /**
+     * Relación: Un Entrenador tiene muchos Atletas.
+     * 
+     * @return HasMany
+     */
+    public function atletas(): HasMany
+    {
+        return $this->hasMany(User::class, 'entrenador_id');
     }
 }

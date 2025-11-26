@@ -3,8 +3,8 @@
     <div class="mb-8">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <h1 class="text-3xl font-bold text-gray-900">Gestión de Auditoría</h1>
-                <p class="text-gray-600 mt-2">Registro de todas las acciones realizadas en el sistema</p>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gestión de Auditoría</h1>
+                <p class="text-gray-600 dark:text-gray-400 mt-2">Registro de todas las acciones realizadas en el sistema</p>
             </div>
             <div class="flex gap-2">
                             <!-- BOTÓN PARA EXPORTAR -->
@@ -49,17 +49,17 @@
     </div>
 
     <!-- FILTROS -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <h3 class="text-lg font-semibold mb-4">Filtros de Búsqueda</h3>
+    <div class="bg-white dark:bg-zinc-900 rounded-lg shadow-md p-6 mb-6">
+        <h3 class="text-lg font-semibold mb-4 dark:text-white">Filtros de Búsqueda</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <!-- Búsqueda General -->
             <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Búsqueda General</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Búsqueda General</label>
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="search"
                     placeholder="Buscar por acción, modelo, IP o usuario..."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white"
                 >
                 <div class="absolute right-3 top-10">
                     <x-spinner 
@@ -74,10 +74,10 @@
 
             <!-- Filtro por Acción -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Acción</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Acción</label>
                 <select
                     wire:model.live="actionFilter"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white"
                 >
                     <option value="">Todas las acciones</option>
                     @foreach($actions as $value => $label)
@@ -88,21 +88,21 @@
 
             <!-- Filtro por Modelo -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Modelo</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo de Modelo</label>
                 <input
                     type="text"
                     wire:model.live.debounce.300ms="modelFilter"
                     placeholder="Ej: App\Models\Equipo"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white"
                 >
             </div>
 
             <!-- Filtro por Usuario -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Usuario</label>
                 <select
                     wire:model.live="userFilter"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white"
                 >
                     <option value="">Todos los usuarios</option>
                     @foreach($users as $user)
@@ -115,26 +115,26 @@
         <!-- Filtros de Fecha -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Desde</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha Desde</label>
                 <input
                     type="date"
                     wire:model.live="startDate"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white"
                 >
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Fecha Hasta</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fecha Hasta</label>
                 <input
                     type="date"
                     wire:model.live="endDate"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-zinc-800 dark:text-white"
                 >
             </div>
         </div>
     </div>
 
     <!-- TABLA DE RESULTADOS -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden relative">
+    <div class="bg-white dark:bg-zinc-900 rounded-lg shadow-md overflow-hidden relative">
         {{-- Overlay solo para acciones que recargan la tabla --}}
         <div 
             wire:loading 
@@ -147,11 +147,11 @@
             </div>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-zinc-800">
+                <thead class="bg-gray-50 dark:bg-zinc-800">
                     <tr>
                         <th
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700"
                             wire:click="sortBy('created_at')"
                         >
                             <div class="flex items-center gap-1">
@@ -163,11 +163,11 @@
                                 @endif
                             </div>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Usuario
                         </th>
                         <th
-                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700"
                             wire:click="sortBy('action')"
                         >
                             <div class="flex items-center gap-1">
@@ -179,27 +179,27 @@
                                 @endif
                             </div>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Modelo
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             ID Registro
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             IP Address
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             Acciones
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-zinc-900 divide-y divide-gray-200 dark:divide-zinc-800">
                     @forelse($auditLogs as $log)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                 {{ $log->created_at->format('d/m/Y H:i:s') }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                 {{ $log->user?->nombre_1 }} {{ $log->user?->apellido_1 }}
                                 <div class="text-xs text-gray-500">{{ $log->user?->correo }}</div>
                             </td>
@@ -214,19 +214,19 @@
                                     {{ $actions[$log->action] ?? $log->action }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                 {{ class_basename($log->model_type) }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                 {{ $log->model_id }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                 {{ $log->ip_address }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <button
                                     wire:click="showDetailsFor({{ $log->id }})"
-                                    class="text-indigo-600 hover:text-indigo-900 inline-flex items-center gap-1"
+                                    class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 inline-flex items-center gap-1"
                                 >
                                     <x-spinner size="xs" color="primary" wire:loading wire:target="showDetailsFor({{ $log->id }})" style="display: none;" />
                                     <span>{{ $detailId === $log->id ? 'Ocultar' : 'Ver' }} Detalles</span>
@@ -236,12 +236,12 @@
 
                         <!-- FILA DE DETALLES -->
                         @if($detailId === $log->id)
-                            <tr class="bg-gray-50">
+                            <tr class="bg-gray-50 dark:bg-zinc-800/50">
                                 <td colspan="7" class="px-6 py-4">
                                     <div class="space-y-4">
                                         <div class="flex justify-between items-center">
                                             <div class="flex items-center gap-3">
-                                                <h4 class="font-semibold text-gray-900">Detalles del Cambio</h4>
+                                                <h4 class="font-semibold text-gray-900 dark:text-white">Detalles del Cambio</h4>
                                                 @if($log->action === 'create')
                                                     <span class="font-medium text-green-700 text-lg">Registro Creado</span>
                                                 @elseif($log->action === 'update')
@@ -258,28 +258,28 @@
 
                                         @if($log->action === 'create')
                                             <div>
-                                                <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
+                                                <pre class="bg-gray-100 dark:bg-zinc-900 p-3 rounded text-sm overflow-x-auto dark:text-gray-300">{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
                                             </div>
                                         @elseif($log->action === 'update')
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <pre class="bg-red-50 p-3 rounded text-sm overflow-x-auto">{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
+                                                    <pre class="bg-red-50 dark:bg-red-900/20 p-3 rounded text-sm overflow-x-auto dark:text-red-200">{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
                                                 </div>
                                                 <div>
-                                                    <pre class="bg-green-50 p-3 rounded text-sm overflow-x-auto">{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
+                                                    <pre class="bg-green-50 dark:bg-green-900/20 p-3 rounded text-sm overflow-x-auto dark:text-green-200">{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
                                                 </div>
                                             </div>
                                         @elseif($log->action === 'delete')
                                             <div>
-                                                <pre class="bg-red-50 p-3 rounded text-sm overflow-x-auto">{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
+                                                <pre class="bg-red-50 dark:bg-red-900/20 p-3 rounded text-sm overflow-x-auto dark:text-red-200">{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
                                             </div>
                                         @elseif($log->action === 'restore')
                                             <div>
-                                                <pre class="bg-purple-50 p-3 rounded text-sm overflow-x-auto">{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
+                                                <pre class="bg-purple-50 dark:bg-purple-900/20 p-3 rounded text-sm overflow-x-auto dark:text-purple-200">{{ json_encode($log->new_values, JSON_PRETTY_PRINT) }}</pre>
                                             </div>
                                         @elseif($log->action === 'force_delete')
                                             <div>
-                                                <pre class="bg-red-50 p-3 rounded text-sm overflow-x-auto">{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
+                                                <pre class="bg-red-50 dark:bg-red-900/20 p-3 rounded text-sm overflow-x-auto dark:text-red-200">{{ json_encode($log->old_values, JSON_PRETTY_PRINT) }}</pre>
                                             </div>
                                         @endif
 
@@ -303,7 +303,7 @@
 
         <!-- PAGINACIÓN -->
         @if($auditLogs->hasPages())
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div class="px-6 py-4 bg-gray-50 dark:bg-zinc-800 border-t border-gray-200 dark:border-zinc-700">
                 {{ $auditLogs->links() }}
             </div>
         @endif
@@ -311,7 +311,7 @@
 
     <!-- ESTADÍSTICAS -->
     <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white dark:bg-zinc-900 rounded-lg shadow-md p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -321,13 +321,13 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <div class="text-2xl font-semibold text-gray-900">{{ $auditLogs->total() }}</div>
-                    <div class="text-gray-500">Total de Registros</div>
+                    <div class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $auditLogs->total() }}</div>
+                    <div class="text-gray-500 dark:text-gray-400">Total de Registros</div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white dark:bg-zinc-900 rounded-lg shadow-md p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -337,13 +337,13 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <div class="text-2xl font-semibold text-gray-900">{{ $auditLogs->count() }}</div>
-                    <div class="text-gray-500">En Esta Página</div>
+                    <div class="text-2xl font-semibold text-gray-900 dark:text-white">{{ $auditLogs->count() }}</div>
+                    <div class="text-gray-500 dark:text-gray-400">En Esta Página</div>
                 </div>
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="bg-white dark:bg-zinc-900 rounded-lg shadow-md p-6">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
@@ -353,8 +353,8 @@
                     </div>
                 </div>
                 <div class="ml-4">
-                    <div class="text-2xl font-semibold text-gray-900">{{ now()->format('d/m/Y H:i') }}</div>
-                    <div class="text-gray-500">Última Actualización</div>
+                    <div class="text-2xl font-semibold text-gray-900 dark:text-white">{{ now()->format('d/m/Y H:i') }}</div>
+                    <div class="text-gray-500 dark:text-gray-400">Última Actualización</div>
                 </div>
             </div>
         </div>
