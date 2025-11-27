@@ -45,13 +45,26 @@
                     </div>
                 </a>
 
-                <!-- Card: Ejercicios (Purple style) -->
-                <a href="<?php echo e(route('admin.ejercicios.index')); ?>" class="col-span-1 md:col-span-1 lg:col-span-1 bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-100 dark:border-zinc-800 hover:border-purple-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group">
-                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                
+                <a href="<?php echo e(route('admin.ejercicios')); ?>" class="block p-6 bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-300 border-l-4 border-purple-500">
+                    <div class="flex items-center">
+                        <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 mr-4">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ejercicios</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Biblioteca de ejercicios</p>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Ejercicios</h3>
-                    <p class="text-sm text-gray-500 dark:text-zinc-400">Biblioteca de movimientos y videos.</p>
+                </a>
+
+                
+                <a href="<?php echo e(route('admin.rutinas')); ?>" class="col-span-1 md:col-span-1 lg:col-span-1 bg-white dark:bg-zinc-900 rounded-3xl p-8 border border-gray-100 dark:border-zinc-800 hover:border-orange-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl group">
+                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Rutinas</h3>
+                    <p class="text-sm text-gray-500 dark:text-zinc-400">Planes de entrenamiento y calendarios.</p>
                 </a>
 
                 <!-- Card: Equipos (Blue style) -->
@@ -64,6 +77,7 @@
                 </a>
 
                 <!-- Card: Auditoría (Red/Teal style - Using Teal for Audit) -->
+                <?php if(Auth::user()->esAdmin()): ?>
                 <a href="<?php echo e(route('admin.auditoria.index')); ?>" class="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-8 flex flex-row items-center justify-between relative overflow-hidden group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-teal-500/10">
                     <div class="relative z-10 flex items-center gap-6">
                         <div class="w-12 h-12 bg-teal-500/20 rounded-2xl flex items-center justify-center">
@@ -79,6 +93,7 @@
                     </div>
                     <div class="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-l from-teal-600/10 to-transparent"></div>
                 </a>
+                <?php endif; ?>
 
             </div>
         </div>

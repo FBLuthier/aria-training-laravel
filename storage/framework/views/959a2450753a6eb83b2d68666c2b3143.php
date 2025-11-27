@@ -459,8 +459,9 @@
                                         <td class="px-6 py-4"><?php echo e($equipoRecienCreado->nombre); ?></td>
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex gap-3 justify-end">
-                                                <button wire:click="edit(<?php echo e($equipoRecienCreado->id); ?>)" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
-                                                    <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
+                                                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('update', $equipoRecienCreado)): ?>
+                                                    <button wire:click="edit(<?php echo e($equipoRecienCreado->id); ?>)" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
+                                                        <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf26909af655deaf31c8e20175813a5a0 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.spinner','data' => ['size' => 'xs','color' => 'current','wire:loading' => true,'wire:target' => 'edit('.e($equipoRecienCreado->id).')','style' => 'display: none;']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('spinner'); ?>
@@ -480,10 +481,12 @@
 <?php $component = $__componentOriginalf26909af655deaf31c8e20175813a5a0; ?>
 <?php unset($__componentOriginalf26909af655deaf31c8e20175813a5a0); ?>
 <?php endif; ?>
-                                                    <span>Editar</span>
-                                                </button>
-                                                <button wire:click="delete(<?php echo e($equipoRecienCreado->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
-                                                    <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
+                                                        <span>Editar</span>
+                                                    </button>
+                                                <?php endif; ?>
+                                                <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $equipoRecienCreado)): ?>
+                                                    <button wire:click="delete(<?php echo e($equipoRecienCreado->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                        <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf26909af655deaf31c8e20175813a5a0 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.spinner','data' => ['size' => 'xs','color' => 'current','wire:loading' => true,'wire:target' => 'delete('.e($equipoRecienCreado->id).')','style' => 'display: none;']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('spinner'); ?>
@@ -503,8 +506,9 @@
 <?php $component = $__componentOriginalf26909af655deaf31c8e20175813a5a0; ?>
 <?php unset($__componentOriginalf26909af655deaf31c8e20175813a5a0); ?>
 <?php endif; ?>
-                                                    <span>Eliminar</span>
-                                                </button>
+                                                        <span>Eliminar</span>
+                                                    </button>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                     </tr>
@@ -520,8 +524,9 @@
                                             <td class="px-6 py-4"><?php echo e($equipo->nombre); ?></td>
                                             <td class="px-6 py-4 text-right">
                                                 <div class="flex gap-3 justify-end">
-                                                    <button wire:click="edit(<?php echo e($equipo->id); ?>)" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
-                                                        <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
+                                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('update', $equipo)): ?>
+                                                        <button wire:click="edit(<?php echo e($equipo->id); ?>)" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
+                                                            <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf26909af655deaf31c8e20175813a5a0 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.spinner','data' => ['size' => 'xs','color' => 'current','wire:loading' => true,'wire:target' => 'edit('.e($equipo->id).')','style' => 'display: none;']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('spinner'); ?>
@@ -541,10 +546,12 @@
 <?php $component = $__componentOriginalf26909af655deaf31c8e20175813a5a0; ?>
 <?php unset($__componentOriginalf26909af655deaf31c8e20175813a5a0); ?>
 <?php endif; ?>
-                                                        <span>Editar</span>
-                                                    </button>
-                                                    <button wire:click="delete(<?php echo e($equipo->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
-                                                        <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
+                                                            <span>Editar</span>
+                                                        </button>
+                                                    <?php endif; ?>
+                                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $equipo)): ?>
+                                                        <button wire:click="delete(<?php echo e($equipo->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                            <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf26909af655deaf31c8e20175813a5a0 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.spinner','data' => ['size' => 'xs','color' => 'current','wire:loading' => true,'wire:target' => 'delete('.e($equipo->id).')','style' => 'display: none;']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('spinner'); ?>
@@ -564,8 +571,9 @@
 <?php $component = $__componentOriginalf26909af655deaf31c8e20175813a5a0; ?>
 <?php unset($__componentOriginalf26909af655deaf31c8e20175813a5a0); ?>
 <?php endif; ?>
-                                                        <span>Eliminar</span>
-                                                    </button>
+                                                            <span>Eliminar</span>
+                                                        </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>

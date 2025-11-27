@@ -2,10 +2,11 @@
 
 namespace App\Policies;
 
+use App\Models\Rutina;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 
-class UserPolicy extends BaseAdminPolicy
+class RutinaPolicy extends BaseAdminPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -18,16 +19,19 @@ class UserPolicy extends BaseAdminPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Model $model): bool
+    public function view(User $user, Model $rutina): bool
     {
         if ($this->isAdmin($user)) {
             return true;
         }
+
         if ($this->isEntrenador($user)) {
-            // Entrenador solo puede ver a sus atletas
-            return $model->entrenador_id === $user->id;
+            // El entrenador puede ver rutinas de SUS atletas
+            return $rutina->usuario->entrenador_id === $user->id;
         }
-        return false;
+
+        // El atleta puede ver SUS propias rutinas
+        return $user->id === $rutina->usuario_id;
     }
 
     /**
@@ -41,41 +45,39 @@ class UserPolicy extends BaseAdminPolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Model $model): bool
+    public function update(User $user, Model $rutina): bool
     {
         if ($this->isAdmin($user)) {
             return true;
         }
+
         if ($this->isEntrenador($user)) {
-            // Entrenador solo puede editar a sus atletas
-            return $model->entrenador_id === $user->id;
+            return $rutina->usuario->entrenador_id === $user->id;
         }
-        return false;
+
+        return false; // Atletas no editan sus rutinas (por ahora)
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Model $model): bool
+    public function delete(User $user, Model $rutina): bool
     {
-        // Prevent deleting yourself
-        if ($user->id === $model->id) {
-            return false;
-        }
         if ($this->isAdmin($user)) {
             return true;
         }
+
         if ($this->isEntrenador($user)) {
-            // Entrenador solo puede eliminar a sus atletas
-            return $model->entrenador_id === $user->id;
+            return $rutina->usuario->entrenador_id === $user->id;
         }
+
         return false;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, Model $model): bool
+    public function restore(User $user, Model $rutina): bool
     {
         return $this->isAdmin($user);
     }
@@ -83,7 +85,7 @@ class UserPolicy extends BaseAdminPolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, Model $model): bool
+    public function forceDelete(User $user, Model $rutina): bool
     {
         return $this->isAdmin($user);
     }

@@ -7,6 +7,7 @@ use App\Livewire\Forms\EquipoForm;
 use App\Livewire\Traits\WithExport;
 use App\Models\Equipo;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Computed;
 
 /**
  * Componente para gestionar Equipos.
@@ -124,6 +125,17 @@ class GestionarEquipos extends BaseCrudComponent
     // - confirmDeleteSelected(), deleteSelected()
     // - confirmRestoreSelected(), restoreSelected()
     // - confirmForceDeleteSelected(), forceDeleteSelected()
-    // - items() [antes era equipos()]
-    // - render()
+    /**
+     * Obtiene los items paginados con filtros aplicados.
+     */
+    #[Computed]
+    public function items()
+    {
+        return Equipo::forUser(auth()->user())
+            ->filtered($this->search, $this->showingTrash, $this->sortField, $this->sortDirection->value)
+            ->paginate($this->getPerPage());
+    }
+
+    // NOTA: Los siguientes métodos ahora se heredan de BaseCrudComponent:
+    // - clearSelections()
 }

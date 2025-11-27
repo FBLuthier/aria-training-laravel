@@ -99,9 +99,16 @@ class EquipoForm extends BaseModelForm
      */
     protected function getModelData(): array
     {
-        return [
+        $data = [
             'nombre' => $this->nombre
         ];
+
+        // Si es creación, asignar usuario actual
+        if (!$this->model->exists) {
+            $data['usuario_id'] = auth()->id();
+        }
+
+        return $data;
     }
 
     // =======================================================================

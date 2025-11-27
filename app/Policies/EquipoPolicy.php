@@ -50,20 +50,93 @@ namespace App\Policies;
  */
 class EquipoPolicy extends BaseAdminPolicy
 {
-    // =======================================================================
-    //  HERENCIA COMPLETA DE BaseAdminPolicy
-    // =======================================================================
-    
-    // Todos los métodos de autorización están implementados en BaseAdminPolicy.
-    // No es necesario sobrescribir nada a menos que necesites lógica especial.
-    
-    // MÉTODOS HEREDADOS:
-    // - viewAny(): Solo administradores
-    // - view(): Solo administradores
-    // - create(): Solo administradores
-    // - update(): Solo administradores
-    // - delete(): Solo administradores
-    // - restore(): Solo administradores
-    // - forceDelete(): Solo administradores
-    // - export(): Solo administradores
+    /**
+     * Determine whether the user can view any models.
+     */
+    public function viewAny($user): bool
+    {
+        return $user->esAdmin() || $user->esEntrenador();
+    }
+
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view($user, $model): bool
+    {
+        return $user->esAdmin() || $user->esEntrenador();
+    }
+
+    /**
+     * Determine whether the user can create models.
+     */
+    public function create($user): bool
+    {
+        return $user->esAdmin() || $user->esEntrenador();
+    }
+
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update($user, $model): bool
+    {
+        if ($user->esAdmin()) {
+            return true;
+        }
+
+        if ($user->esEntrenador()) {
+            // Solo puede editar si es el creador
+            return $model->usuario_id === $user->id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete($user, $model): bool
+    {
+        if ($user->esAdmin()) {
+            return true;
+        }
+
+        if ($user->esEntrenador()) {
+            // Solo puede eliminar si es el creador
+            return $model->usuario_id === $user->id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user can restore the model.
+     */
+    public function restore($user, $model): bool
+    {
+        if ($user->esAdmin()) {
+            return true;
+        }
+
+        if ($user->esEntrenador()) {
+            return $model->usuario_id === $user->id;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine whether the user can permanently delete the model.
+     */
+    public function forceDelete($user, $model): bool
+    {
+        if ($user->esAdmin()) {
+            return true;
+        }
+
+        if ($user->esEntrenador()) {
+            return $model->usuario_id === $user->id;
+        }
+
+        return false;
+    }
 }

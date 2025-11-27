@@ -37,6 +37,11 @@ class GestionarUsuarios extends BaseCrudComponent
     public function mount()
     {
         $this->tipos_usuario_list = TipoUsuario::where('id', '!=', 1)->get();
+        
+        if (auth()->user()->esEntrenador()) {
+            $this->filtroRol = 3; // Forzar filtro a Atletas
+        }
+        
         $this->cargarEntrenadores();
     }
 
@@ -60,6 +65,12 @@ class GestionarUsuarios extends BaseCrudComponent
     public function items()
     {
         $query = User::query()->where('tipo_usuario_id', '!=', 1);
+
+        // Si es Entrenador, solo ver sus propios atletas
+        if (auth()->user()->esEntrenador()) {
+            $query->where('entrenador_id', auth()->id());
+            $this->filtroRol = 3; // Asegurar que el filtro visual también sea Atletas
+        }
 
         // Búsqueda
         if ($this->search) {
@@ -142,6 +153,12 @@ class GestionarUsuarios extends BaseCrudComponent
             $validatedData['entrenador_id'] = null;
         }
 
+        // Lógica para Entrenadores: Forzar rol Atleta y asignarse a sí mismo
+        if (auth()->user()->esEntrenador()) {
+            $validatedData['tipo_usuario_id'] = 3;
+            $validatedData['entrenador_id'] = auth()->id();
+        }
+
         if (!$this->editingId) {
             // Creación: Asignar contraseña por defecto
             $validatedData['contrasena'] = Hash::make('password'); // Default password
@@ -196,7 +213,13 @@ class GestionarUsuarios extends BaseCrudComponent
         $this->apellido_2 = '';
         $this->telefono = '';
         $this->fecha_nacimiento = '';
-        $this->tipo_usuario_id = ''; // Resetear rol
+        
+        if (auth()->user()->esEntrenador()) {
+            $this->tipo_usuario_id = 3; // Entrenadores solo crean atletas
+        } else {
+            $this->tipo_usuario_id = '';
+        }
+        
         $this->entrenador_id = null;
         $this->editingId = null;
         $this->isEditing = false;

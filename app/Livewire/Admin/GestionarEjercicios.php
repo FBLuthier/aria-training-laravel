@@ -65,6 +65,14 @@ class GestionarEjercicios extends BaseCrudComponent
         return Ejercicio::class;
     }
 
+    #[Computed]
+    public function items()
+    {
+        return Ejercicio::forUser(auth()->user())
+            ->filtered($this->search, $this->showingTrash, $this->sortField, $this->sortDirection->value)
+            ->paginate($this->getPerPage());
+    }
+
     protected function getViewName(): string
     {
         return 'livewire.admin.gestionar-ejercicios';
@@ -76,7 +84,7 @@ class GestionarEjercicios extends BaseCrudComponent
 
     public function mount()
     {
-        $this->equipos_list = Equipo::orderBy('nombre')->get();
+        $this->equipos_list = Equipo::forUser(auth()->user())->orderBy('nombre')->get();
         $this->grupos_musculares_list = GrupoMuscular::orderBy('nombre')->get();
     }
 
@@ -136,6 +144,10 @@ class GestionarEjercicios extends BaseCrudComponent
         $this->equipo_id = $model->equipo_id;
         
         $this->editingId = $id; 
+        
+        // Autorización: Verificar si puede editar este ejercicio específico
+        $this->authorize('update', $model);
+
         $this->showFormModal = true;
     }
 
@@ -175,7 +187,8 @@ class GestionarEjercicios extends BaseCrudComponent
                     'url_video' => $videoFinal,
                     'grupo_muscular_id' => $this->grupo_muscular_id,
                     'equipo_id' => $eqId,
-                    'estado' => 1 
+                    'estado' => 1,
+                    'usuario_id' => auth()->id() // Asignar creador
                 ]);
                 
                 // AUDITORÍA: Registrar creación

@@ -35,7 +35,8 @@ class CheckAdminRole
         //    b) Auth::user()->id_tipo_usuario == 1: Si hay un usuario, ¿su `id_tipo_usuario` es igual a 1 (el ID para Administradores)?
         //
         // Ambas condiciones deben ser verdaderas para que el bloque `if` se ejecute.
-        if (Auth::check() && Auth::user()->tipo_usuario_id == 1) {
+        // Permitir acceso a Administradores (1) y Entrenadores (2)
+        if (Auth::check() && (Auth::user()->tipo_usuario_id == 1 || Auth::user()->tipo_usuario_id == 2)) {
             
             // 2. ACCESO PERMITIDO
             // Si el usuario es un administrador, se ejecuta `$next($request)`.

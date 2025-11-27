@@ -23,7 +23,8 @@
                         </div>
                     </div>
 
-    <!-- TABS DE FILTRADO POR ROL -->
+    <!-- TABS DE FILTRADO POR ROL (Solo para Admins) -->
+    @if(!auth()->user()->esEntrenador())
     <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
             <li class="mr-2" role="presentation">
@@ -47,6 +48,7 @@
             </li>
         </ul>
     </div>
+    @endif
 
     <!-- TABLA DE USUARIOS -->
     <x-data-table :items="$this->items">
@@ -154,17 +156,25 @@
 
                     <div>
                         <x-input-label for="tipo_usuario_id" :value="__('Rol de Usuario')" />
-                        <select wire:model.live="tipo_usuario_id" id="tipo_usuario_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="">Seleccione un Rol</option>
-                            @foreach($tipos_usuario_list as $tipo)
-                                <option value="{{ $tipo->id }}">{{ $tipo->rol }}</option>
-                            @endforeach
-                        </select>
+                        
+                        @if(auth()->user()->esEntrenador())
+                            <!-- Si es Entrenador, el rol es fijo: Atleta -->
+                            <div class="block mt-1 w-full p-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300">
+                                Atleta
+                            </div>
+                        @else
+                            <select wire:model.live="tipo_usuario_id" id="tipo_usuario_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">Seleccione un Rol</option>
+                                @foreach($tipos_usuario_list as $tipo)
+                                    <option value="{{ $tipo->id }}">{{ $tipo->rol }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                         @error('tipo_usuario_id') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
-                    <!-- CAMPO CONDICIONAL: ENTRENADOR (SOLO SI ES ATLETA) -->
-                    @if($tipo_usuario_id == 3)
+                    <!-- CAMPO CONDICIONAL: ENTRENADOR (SOLO SI ES ATLETA Y NO ES ENTRENADOR QUIEN CREA) -->
+                    @if($tipo_usuario_id == 3 && !auth()->user()->esEntrenador())
                     <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                         <x-input-label for="entrenador_id" :value="__('Asignar Entrenador')" />
                         <select wire:model="entrenador_id" id="entrenador_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">

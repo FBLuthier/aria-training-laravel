@@ -306,4 +306,32 @@ class User extends Authenticatable
     {
         return $this->hasMany(User::class, 'entrenador_id');
     }
+
+    // =======================================================================
+    //  MÉTODOS HELPER DE ROLES
+    // =======================================================================
+
+    /**
+     * Verifica si el usuario es Administrador.
+     */
+    public function esAdmin(): bool
+    {
+        return $this->tipo_usuario_id === 1;
+    }
+
+    /**
+     * Verifica si el usuario es Entrenador.
+     */
+    public function esEntrenador(): bool
+    {
+        return $this->tipo_usuario_id === 2;
+    }
+
+    /**
+     * Verifica si el usuario es Atleta.
+     */
+    public function esAtleta(): bool
+    {
+        return $this->tipo_usuario_id === 3;
+    }
 }

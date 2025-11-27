@@ -272,11 +272,19 @@
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex gap-3 justify-end">
                                                 <!--[if BLOCK]><![endif]--><?php if($showingTrash): ?>
-                                                    <button wire:click="restore(<?php echo e($ejercicio->id); ?>)" class="font-medium text-green-600 dark:text-green-500 hover:underline">Restaurar</button>
-                                                    <button wire:click="forceDelete(<?php echo e($ejercicio->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('restore', $ejercicio)): ?>
+                                                        <button wire:click="restore(<?php echo e($ejercicio->id); ?>)" class="font-medium text-green-600 dark:text-green-500 hover:underline">Restaurar</button>
+                                                    <?php endif; ?>
+                                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('forceDelete', $ejercicio)): ?>
+                                                        <button wire:click="forceDelete(<?php echo e($ejercicio->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    <?php endif; ?>
                                                 <?php else: ?>
-                                                    <button wire:click="edit(<?php echo e($ejercicio->id); ?>)" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</button>
-                                                    <button wire:click="delete(<?php echo e($ejercicio->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('update', $ejercicio)): ?>
+                                                        <button wire:click="edit(<?php echo e($ejercicio->id); ?>)" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</button>
+                                                    <?php endif; ?>
+                                                    <?php if (app(\Illuminate\Contracts\Auth\Access\Gate::class)->check('delete', $ejercicio)): ?>
+                                                        <button wire:click="delete(<?php echo e($ejercicio->id); ?>)" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    <?php endif; ?>
                                                 <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                             </div>
                                         </td>

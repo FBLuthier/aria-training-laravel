@@ -122,6 +122,11 @@ class GestionarAuditoria extends Component
      */
     public function mount(): void
     {
+        // Seguridad: Solo administradores pueden ver auditoría
+        if (!auth()->user()->esAdmin()) {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+
         $this->resetExportOptions();
     }
     

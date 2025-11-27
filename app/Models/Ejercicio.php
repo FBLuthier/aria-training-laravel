@@ -128,6 +128,7 @@ class Ejercicio extends Model
         'grupo_muscular_id', // FK al músculo principal
         'url_video',     // Nueva columna
         'estado',        // Estado: activo, inactivo
+        'usuario_id',    // Creador del ejercicio
     ];
 
     // ... (existing code) ...
@@ -217,5 +218,27 @@ class Ejercicio extends Model
             'equipo:id,nombre',              // Solo ID y nombre del equipo
             'gruposMusculares:id,nombre'     // Solo ID y nombre de músculos
         ]);
+    }
+
+    /**
+     * Relación: Usuario creador del ejercicio.
+     */
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    /**
+     * Scope: Filtrar ejercicios visibles para el usuario.
+     */
+    public function scopeForUser($query, $user)
+    {
+        return $query->where(function ($q) use ($user) {
+            $q->where('usuario_id', $user->id)
+              ->orWhereHas('usuario', function ($subQ) {
+                  $subQ->where('tipo_usuario_id', 1); // Admin
+              })
+              ->orWhereNull('usuario_id');
+        });
     }
 }

@@ -278,14 +278,18 @@
                                         <td class="px-6 py-4">{{ $equipoRecienCreado->nombre }}</td>
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex gap-3 justify-end">
-                                                <button wire:click="edit({{ $equipoRecienCreado->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
-                                                    <x-spinner size="xs" color="current" wire:loading wire:target="edit({{ $equipoRecienCreado->id }})" style="display: none;" />
-                                                    <span>Editar</span>
-                                                </button>
-                                                <button wire:click="delete({{ $equipoRecienCreado->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
-                                                    <x-spinner size="xs" color="current" wire:loading wire:target="delete({{ $equipoRecienCreado->id }})" style="display: none;" />
-                                                    <span>Eliminar</span>
-                                                </button>
+                                                @can('update', $equipoRecienCreado)
+                                                    <button wire:click="edit({{ $equipoRecienCreado->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
+                                                        <x-spinner size="xs" color="current" wire:loading wire:target="edit({{ $equipoRecienCreado->id }})" style="display: none;" />
+                                                        <span>Editar</span>
+                                                    </button>
+                                                @endcan
+                                                @can('delete', $equipoRecienCreado)
+                                                    <button wire:click="delete({{ $equipoRecienCreado->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                        <x-spinner size="xs" color="current" wire:loading wire:target="delete({{ $equipoRecienCreado->id }})" style="display: none;" />
+                                                        <span>Eliminar</span>
+                                                    </button>
+                                                @endcan
                                             </div>
                                         </td>
                                     </tr>
@@ -301,14 +305,18 @@
                                             <td class="px-6 py-4">{{ $equipo->nombre }}</td>
                                             <td class="px-6 py-4 text-right">
                                                 <div class="flex gap-3 justify-end">
-                                                    <button wire:click="edit({{ $equipo->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
-                                                        <x-spinner size="xs" color="current" wire:loading wire:target="edit({{ $equipo->id }})" style="display: none;" />
-                                                        <span>Editar</span>
-                                                    </button>
-                                                    <button wire:click="delete({{ $equipo->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
-                                                        <x-spinner size="xs" color="current" wire:loading wire:target="delete({{ $equipo->id }})" style="display: none;" />
-                                                        <span>Eliminar</span>
-                                                    </button>
+                                                    @can('update', $equipo)
+                                                        <button wire:click="edit({{ $equipo->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline inline-flex items-center gap-1">
+                                                            <x-spinner size="xs" color="current" wire:loading wire:target="edit({{ $equipo->id }})" style="display: none;" />
+                                                            <span>Editar</span>
+                                                        </button>
+                                                    @endcan
+                                                    @can('delete', $equipo)
+                                                        <button wire:click="delete({{ $equipo->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline inline-flex items-center gap-1">
+                                                            <x-spinner size="xs" color="current" wire:loading wire:target="delete({{ $equipo->id }})" style="display: none;" />
+                                                            <span>Eliminar</span>
+                                                        </button>
+                                                    @endcan
                                                 </div>
                                             </td>
                                         </tr>

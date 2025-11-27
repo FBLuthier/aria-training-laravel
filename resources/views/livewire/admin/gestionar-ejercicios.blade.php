@@ -98,11 +98,19 @@
                                         <td class="px-6 py-4 text-right">
                                             <div class="flex gap-3 justify-end">
                                                 @if($showingTrash)
-                                                    <button wire:click="restore({{ $ejercicio->id }})" class="font-medium text-green-600 dark:text-green-500 hover:underline">Restaurar</button>
-                                                    <button wire:click="forceDelete({{ $ejercicio->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    @can('restore', $ejercicio)
+                                                        <button wire:click="restore({{ $ejercicio->id }})" class="font-medium text-green-600 dark:text-green-500 hover:underline">Restaurar</button>
+                                                    @endcan
+                                                    @can('forceDelete', $ejercicio)
+                                                        <button wire:click="forceDelete({{ $ejercicio->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    @endcan
                                                 @else
-                                                    <button wire:click="edit({{ $ejercicio->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</button>
-                                                    <button wire:click="delete({{ $ejercicio->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    @can('update', $ejercicio)
+                                                        <button wire:click="edit({{ $ejercicio->id }})" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Editar</button>
+                                                    @endcan
+                                                    @can('delete', $ejercicio)
+                                                        <button wire:click="delete({{ $ejercicio->id }})" class="font-medium text-red-600 dark:text-red-500 hover:underline">Eliminar</button>
+                                                    @endcan
                                                 @endif
                                             </div>
                                         </td>

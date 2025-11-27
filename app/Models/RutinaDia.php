@@ -70,6 +70,12 @@ class RutinaDia extends Model
         'rutina_id',
         'numero_dia',
         'nombre_dia',
+        'plantilla_dia_id',
+        'fecha',
+    ];
+
+    protected $casts = [
+        'fecha' => 'date',
     ];
 
     /**
@@ -80,6 +86,14 @@ class RutinaDia extends Model
     public function rutina(): BelongsTo
     {
         return $this->belongsTo(Rutina::class, 'rutina_id');
+    }
+
+    /**
+     * Relación: Un día puede provenir de una plantilla.
+     */
+    public function plantillaDia(): BelongsTo
+    {
+        return $this->belongsTo(PlantillaDia::class, 'plantilla_dia_id');
     }
 
     /**

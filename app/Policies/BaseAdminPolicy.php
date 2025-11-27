@@ -61,6 +61,17 @@ abstract class BaseAdminPolicy
     }
 
     /**
+     * Verifica si el usuario es entrenador.
+     * 
+     * @param User $user
+     * @return bool
+     */
+    protected function isEntrenador(User $user): bool
+    {
+        return $user->esEntrenador();
+    }
+
+    /**
      * Verifica si el usuario es el dueño del modelo.
      * Útil para sobrescribir métodos con lógica de "propio recurso".
      * 

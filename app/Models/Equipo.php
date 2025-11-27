@@ -77,7 +77,7 @@ class Equipo extends Model
     public $timestamps = false;
     
     /** @var array<string> Campos asignables en masa (mass assignment) */
-    protected $fillable = ['nombre'];
+    protected $fillable = ['nombre', 'usuario_id'];
 
     // =======================================================================
     //  QUERY BUILDER PERSONALIZADO
@@ -133,5 +133,31 @@ class Equipo extends Model
     public function ejercicios(): HasMany
     {
         return $this->hasMany(Ejercicio::class, 'equipo_id');
+    }
+
+    /**
+     * Relación: Usuario creador del equipo.
+     */
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    /**
+     * Scope: Filtrar equipos visibles para el usuario.
+     * Muestra:
+     * 1. Equipos creados por el usuario.
+     * 2. Equipos creados por Administradores (globales).
+     * 3. Equipos sin usuario asignado (legacy/globales).
+     */
+    public function scopeForUser($query, $user)
+    {
+        return $query->where(function ($q) use ($user) {
+            $q->where('usuario_id', $user->id)
+              ->orWhereHas('usuario', function ($subQ) {
+                  $subQ->where('tipo_usuario_id', 1); // Admin
+              })
+              ->orWhereNull('usuario_id');
+        });
     }
 }

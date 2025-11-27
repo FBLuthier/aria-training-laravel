@@ -61,7 +61,8 @@
                         </div>
                     </div>
 
-    <!-- TABS DE FILTRADO POR ROL -->
+    <!-- TABS DE FILTRADO POR ROL (Solo para Admins) -->
+    <!--[if BLOCK]><![endif]--><?php if(!auth()->user()->esEntrenador()): ?>
     <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
         <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" role="tablist">
             <li class="mr-2" role="presentation">
@@ -85,6 +86,7 @@
             </li>
         </ul>
     </div>
+    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
 
     <!-- TABLA DE USUARIOS -->
     <?php if (isset($component)) { $__componentOriginalc8463834ba515134d5c98b88e1a9dc03 = $component; } ?>
@@ -378,12 +380,20 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
 <?php $component = $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581; ?>
 <?php unset($__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581); ?>
 <?php endif; ?>
-                        <select wire:model.live="tipo_usuario_id" id="tipo_usuario_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                            <option value="">Seleccione un Rol</option>
-                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $tipos_usuario_list; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tipo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <option value="<?php echo e($tipo->id); ?>"><?php echo e($tipo->rol); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
-                        </select>
+                        
+                        <!--[if BLOCK]><![endif]--><?php if(auth()->user()->esEntrenador()): ?>
+                            <!-- Si es Entrenador, el rol es fijo: Atleta -->
+                            <div class="block mt-1 w-full p-2 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300">
+                                Atleta
+                            </div>
+                        <?php else: ?>
+                            <select wire:model.live="tipo_usuario_id" id="tipo_usuario_id" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                                <option value="">Seleccione un Rol</option>
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $tipos_usuario_list; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tipo): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($tipo->id); ?>"><?php echo e($tipo->rol); ?></option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                            </select>
+                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                         <!--[if BLOCK]><![endif]--><?php $__errorArgs = ['tipo_usuario_id'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
@@ -394,8 +404,8 @@ endif;
 unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
 
-                    <!-- CAMPO CONDICIONAL: ENTRENADOR (SOLO SI ES ATLETA) -->
-                    <!--[if BLOCK]><![endif]--><?php if($tipo_usuario_id == 3): ?>
+                    <!-- CAMPO CONDICIONAL: ENTRENADOR (SOLO SI ES ATLETA Y NO ES ENTRENADOR QUIEN CREA) -->
+                    <!--[if BLOCK]><![endif]--><?php if($tipo_usuario_id == 3 && !auth()->user()->esEntrenador()): ?>
                     <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                         <?php if (isset($component)) { $__componentOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginale3da9d84bb64e4bc2eeebaafabfb2581 = $attributes; } ?>

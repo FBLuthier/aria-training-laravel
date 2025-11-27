@@ -29,7 +29,7 @@ foreach ($attributes->all() as $__key => $__value) {
 unset($__defined_vars, $__key, $__value); ?>
 
 <button <?php echo e($attributes->merge(['type' => 'submit', 'class' => 'inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white focus:bg-gray-700 dark:focus:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150'])); ?>>
-    <!--[if BLOCK]><![endif]--><?php if($loadingTarget): ?>
+    <?php if($loadingTarget): ?>
         <?php if (isset($component)) { $__componentOriginalf26909af655deaf31c8e20175813a5a0 = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginalf26909af655deaf31c8e20175813a5a0 = $attributes; } ?>
 <?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.spinner','data' => ['size' => 'sm','color' => 'white','wire:loading' => true,'wire:target' => ''.e($loadingTarget).'','class' => 'dark:text-gray-800']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
@@ -50,13 +50,13 @@ unset($__defined_vars, $__key, $__value); ?>
 <?php $component = $__componentOriginalf26909af655deaf31c8e20175813a5a0; ?>
 <?php unset($__componentOriginalf26909af655deaf31c8e20175813a5a0); ?>
 <?php endif; ?>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?>
     <span <?php if($loadingTarget): ?> wire:loading.remove wire:target="<?php echo e($loadingTarget); ?>" <?php endif; ?>>
         <?php echo e($slot); ?>
 
     </span>
-    <!--[if BLOCK]><![endif]--><?php if($loadingTarget): ?>
+    <?php if($loadingTarget): ?>
         <span wire:loading wire:target="<?php echo e($loadingTarget); ?>">Procesando...</span>
-    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+    <?php endif; ?>
 </button>
 <?php /**PATH C:\xampp\htdocs\aria-training\resources\views/components/primary-button.blade.php ENDPATH**/ ?>

@@ -60,7 +60,9 @@ Route::middleware('auth')->group(function () {
         // =======================================================================
         //  GESTIÓN DE EJERCICIOS (LIVEWIRE)
         // =======================================================================
-        Route::get('ejercicios', \App\Livewire\Admin\GestionarEjercicios::class)->name('ejercicios.index');
+        Route::get('/ejercicios', \App\Livewire\Admin\GestionarEjercicios::class)->name('ejercicios');
+        Route::get('/rutinas', \App\Livewire\Admin\GestionarRutinas::class)->name('rutinas');
+        Route::get('/rutinas/{id}/calendario', \App\Livewire\Admin\GestionarRutinaCalendario::class)->name('rutinas.calendario');
 
         // =======================================================================
         //  GESTIÓN DE USUARIOS (LIVEWIRE)
