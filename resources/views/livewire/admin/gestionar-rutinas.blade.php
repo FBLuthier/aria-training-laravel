@@ -35,7 +35,6 @@
                                 <x-sortable-header field="id" :currentField="$sortField" :direction="$sortDirection->value">ID</x-sortable-header>
                                 <x-sortable-header field="nombre" :currentField="$sortField" :direction="$sortDirection->value">Nombre</x-sortable-header>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Atleta</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Objetivo</th>
                                 <th class="px-6 py-3 text-right">Acciones</th>
                             </tr>
                         </x-slot>
@@ -45,12 +44,7 @@
                                     <td class="px-6 py-4">{{ $rutina->id }}</td>
                                     <td class="px-6 py-4 font-medium">{{ $rutina->nombre }}</td>
                                     <td class="px-6 py-4">
-                                        {{ $rutina->usuario->nombre_1 }} {{ $rutina->usuario->apellido_1 }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                            {{ $rutina->objetivo->nombre ?? 'N/A' }}
-                                        </span>
+                                        {{ $rutina->atleta?->nombre_1 ?? 'Sin Asignar' }} {{ $rutina->atleta?->apellido_1 }}
                                     </td>
                                     <td class="px-6 py-4 text-right">
                                         <div class="flex gap-3 justify-end">
@@ -86,40 +80,29 @@
     </div>
 
     {{-- Modal Formulario --}}
-    <x-form-modal :show="$showFormModal" cancelAction="closeFormModal" :title="$editingId ? 'Editar Rutina' : 'Nueva Rutina'">
+    <x-form-modal :show="$showFormModal" cancelAction="closeFormModal" :title="$form->model?->exists ? 'Editar Rutina' : 'Nueva Rutina'">
         <div class="space-y-4">
             <div>
                 <x-input-label for="nombre" value="Nombre de la Rutina" />
-                <x-text-input wire:model="nombre" id="nombre" class="block w-full mt-1" type="text" placeholder="Ej: Mesociclo 1 - Hipertrofia" />
-                @error('nombre') <x-input-error :messages="$message" class="mt-2" /> @enderror
+                <x-text-input wire:model="form.nombre" id="nombre" class="block w-full mt-1" type="text" placeholder="Ej: Mesociclo 1 - Hipertrofia" />
+                @error('form.nombre') <x-input-error :messages="$message" class="mt-2" /> @enderror
             </div>
 
             <div>
-                <x-input-label for="usuario_id" value="Atleta Asignado" />
-                <select wire:model="usuario_id" id="usuario_id" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
+                <x-input-label for="atleta_id" value="Atleta Asignado" />
+                <select wire:model="form.atleta_id" id="atleta_id" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
                     <option value="">Seleccione un atleta...</option>
                     @foreach($atletas_list as $atleta)
                         <option value="{{ $atleta->id }}">{{ $atleta->nombre_1 }} {{ $atleta->apellido_1 }} ({{ $atleta->usuario }})</option>
                     @endforeach
                 </select>
-                @error('usuario_id') <x-input-error :messages="$message" class="mt-2" /> @enderror
-            </div>
-
-            <div>
-                <x-input-label for="objetivo_id" value="Objetivo Principal" />
-                <select wire:model="objetivo_id" id="objetivo_id" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm">
-                    <option value="">Seleccione un objetivo...</option>
-                    @foreach($objetivos_list as $obj)
-                        <option value="{{ $obj->id }}">{{ $obj->nombre }}</option>
-                    @endforeach
-                </select>
-                @error('objetivo_id') <x-input-error :messages="$message" class="mt-2" /> @enderror
+                @error('form.atleta_id') <x-input-error :messages="$message" class="mt-2" /> @enderror
             </div>
 
             <div>
                 <x-input-label for="descripcion" value="Descripción (Opcional)" />
-                <textarea wire:model="descripcion" id="descripcion" rows="3" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
-                @error('descripcion') <x-input-error :messages="$message" class="mt-2" /> @enderror
+                <textarea wire:model="form.descripcion" id="descripcion" rows="3" class="block w-full mt-1 border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+                @error('form.descripcion') <x-input-error :messages="$message" class="mt-2" /> @enderror
             </div>
         </div>
     </x-form-modal>

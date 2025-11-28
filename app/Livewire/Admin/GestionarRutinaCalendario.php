@@ -31,7 +31,7 @@ class GestionarRutinaCalendario extends Component
 
     public function mount($id)
     {
-        $this->rutina = Rutina::with('usuario')->findOrFail($id);
+        $this->rutina = Rutina::with('atleta')->findOrFail($id);
         $this->authorize('view', $this->rutina);
         
         $this->loadDias();
@@ -39,38 +39,60 @@ class GestionarRutinaCalendario extends Component
 
     public function loadDias()
     {
-        // Cargar días ordenados. Si no existen, podríamos crearlos (ej: 7 días por defecto)
-        // Por ahora asumimos que se crean dinámicamente o mostramos los existentes.
-        // Si la rutina es nueva, quizás queramos inicializarla con 7 días vacíos.
-        
         $this->dias = $this->rutina->dias()->orderBy('numero_dia')->get();
-
-        if ($this->dias->isEmpty()) {
-            $this->initializeWeek();
-        }
     }
 
-    public function initializeWeek()
+    public function addDia()
     {
-        // Crear 7 días base para la semana
-        $nombres = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+        $nuevoNumero = $this->rutina->dias()->max('numero_dia') + 1;
         
-        foreach ($nombres as $index => $nombre) {
-            RutinaDia::create([
-                'rutina_id' => $this->rutina->id,
-                'numero_dia' => $index + 1,
-                'nombre_dia' => $nombre,
-            ]);
+        RutinaDia::create([
+            'rutina_id' => $this->rutina->id,
+            'numero_dia' => $nuevoNumero,
+            'nombre_dia' => 'Día ' . $nuevoNumero,
+        ]);
+
+        $this->loadDias();
+        $this->dispatch('notify', message: 'Día agregado correctamente', type: 'success');
+    }
+
+    public function deleteDia($diaId)
+    {
+        $dia = RutinaDia::findOrFail($diaId);
+        $dia->delete();
+
+        // Reordenar días restantes (opcional, pero recomendado)
+        $this->reorderDias();
+
+        $this->loadDias();
+        $this->dispatch('notify', message: 'Día eliminado correctamente', type: 'success');
+    }
+
+    public function updateDiaNombre($diaId, $nuevoNombre)
+    {
+        $dia = RutinaDia::findOrFail($diaId);
+        $dia->update(['nombre_dia' => $nuevoNombre]);
+        $this->dispatch('notify', message: 'Nombre actualizado', type: 'success');
+    }
+
+    private function reorderDias()
+    {
+        $dias = $this->rutina->dias()->orderBy('numero_dia')->get();
+        foreach ($dias as $index => $dia) {
+            $dia->update(['numero_dia' => $index + 1]);
         }
-        
-        $this->dias = $this->rutina->dias()->orderBy('numero_dia')->get();
     }
 
     #[Computed]
     public function plantillas()
     {
-        // Cargar plantillas del atleta (dueño de la rutina)
-        return PlantillaDia::where('usuario_id', $this->rutina->usuario_id)->get();
+        // Cargar plantillas del entrenador del atleta
+        // Si el usuario autenticado es el entrenador, son sus plantillas.
+        // Si es admin, podría ver todas o las del entrenador del atleta.
+        
+        $entrenadorId = $this->rutina->atleta->entrenador_id ?? auth()->id();
+        
+        return PlantillaDia::where('usuario_id', $entrenadorId)->get();
     }
 
     public function openAssignModal($diaId)

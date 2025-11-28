@@ -63,6 +63,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/ejercicios', \App\Livewire\Admin\GestionarEjercicios::class)->name('ejercicios');
         Route::get('/rutinas', \App\Livewire\Admin\GestionarRutinas::class)->name('rutinas');
         Route::get('/rutinas/{id}/calendario', \App\Livewire\Admin\GestionarRutinaCalendario::class)->name('rutinas.calendario');
+        Route::get('/rutinas/dia/{diaId}', \App\Livewire\Admin\GestionarDiaRutina::class)->name('rutinas.dia');
 
         // =======================================================================
         //  GESTIÓN DE USUARIOS (LIVEWIRE)

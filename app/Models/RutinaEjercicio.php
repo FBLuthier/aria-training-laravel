@@ -78,6 +78,12 @@ class RutinaEjercicio extends Model
         'indicaciones',
         'orden_en_dia',
         'orden_en_bloque',
+        'tempo',
+        'unidad_peso',
+    ];
+
+    protected $casts = [
+        'tempo' => 'array',
     ];
 
     /**

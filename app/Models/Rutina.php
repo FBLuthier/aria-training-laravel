@@ -90,6 +90,7 @@ class Rutina extends Model
     
     /** @var HasFactory Permite usar factories para testing */
     use HasFactory;
+    use \Illuminate\Database\Eloquent\SoftDeletes;
 
     // =======================================================================
     //  CONFIGURACIÓN DEL MODELO
@@ -101,8 +102,7 @@ class Rutina extends Model
     /** @var array<string> Campos asignables en masa */
     protected $fillable = [
         'nombre',       // Nombre de la rutina
-        'objetivo_id',  // FK al objetivo (Hipertrofia, Fuerza, etc.)
-        'usuario_id',   // FK al entrenador creador
+        'atleta_id',    // FK al atleta asignado
         'estado',       // activo, inactivo, borrador
     ];
 
@@ -111,58 +111,13 @@ class Rutina extends Model
     // =======================================================================
 
     /**
-     * Relación: Una rutina es creada por un usuario (entrenador).
-     * 
-     * Esta es una relación muchos-a-uno (N:1).
-     * Un entrenador puede crear múltiples rutinas, pero cada rutina
-     * tiene un solo creador.
-     * 
-     * NOTA: El usuario debe tener rol de "Entrenador" o "Administrador"
-     * para crear rutinas.
-     * 
-     * Uso:
-     * ```php
-     * // Obtener el entrenador de la rutina
-     * $entrenador = $rutina->usuario;
-     * 
-     * // Crear rutina para un entrenador
-     * $entrenador->rutinas()->create([
-     *     'nombre' => 'Nueva Rutina',
-     *     'objetivo_id' => 1
-     * ]);
-     * ```
+     * Relación: Una rutina es asignada a un atleta.
      * 
      * @return BelongsTo
      */
-    public function usuario(): BelongsTo
+    public function atleta(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'usuario_id');
-    }
-
-    /**
-     * Relación: Una rutina tiene un objetivo de entrenamiento.
-     * 
-     * El objetivo define la meta del programa de entrenamiento:
-     * - Hipertrofia (ganancia muscular)
-     * - Fuerza (incremento de fuerza máxima)
-     * - Resistencia (acondicionamiento cardiovascular)
-     * - Pérdida de peso
-     * - Acondicionamiento general
-     * 
-     * Uso:
-     * ```php
-     * // Obtener objetivo de la rutina
-     * $objetivo = $rutina->objetivo->nombre;
-     * 
-     * // Filtrar rutinas por objetivo
-     * $rutinasHipertrofia = Rutina::where('objetivo_id', 1)->get();
-     * ```
-     * 
-     * @return BelongsTo
-     */
-    public function objetivo(): BelongsTo
-    {
-        return $this->belongsTo(Objetivo::class, 'objetivo_id');
+        return $this->belongsTo(User::class, 'atleta_id');
     }
 
     /**
@@ -227,8 +182,7 @@ class Rutina extends Model
     public function scopeWithRelations($query)
     {
         return $query->with([
-            'usuario:id,nombre_1,apellido_1',
-            'objetivo:id,nombre'
+            'atleta:id,nombre_1,apellido_1',
         ]);
     }
 

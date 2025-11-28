@@ -24,22 +24,9 @@ class GestionarRutinas extends BaseCrudComponent
     //  PROPIEDADES
     // =======================================================================
 
-    #[Rule('required|min:3|max:45')]
-    public $nombre = '';
-
-    #[Rule('nullable|string')]
-    public $descripcion = '';
-
-    #[Rule('required|exists:usuarios,id')]
-    public $usuario_id = ''; // El atleta al que se asigna
-
-    #[Rule('required|exists:objetivos,id')]
-    public $objetivo_id = '';
+    public \App\Livewire\Forms\RutinaForm $form;
 
     public $atletas_list = [];
-    public $objetivos_list = [];
-
-    public $editingId = null;
 
     // =======================================================================
     //  MÉTODOS BASE
@@ -58,17 +45,17 @@ class GestionarRutinas extends BaseCrudComponent
     #[Computed]
     public function items()
     {
-        $query = Rutina::query();
+        $query = Rutina::with(['atleta']);
 
         // Si es Entrenador, ver rutinas de SUS atletas
         if (auth()->user()->esEntrenador()) {
-            $query->whereHas('usuario', function ($q) {
+            $query->whereHas('atleta', function ($q) {
                 $q->where('entrenador_id', auth()->id());
             });
         }
         // Si es Atleta, ver SUS rutinas
         elseif (auth()->user()->esAtleta()) {
-            $query->where('usuario_id', auth()->id());
+            $query->where('atleta_id', auth()->id());
         }
 
         // Filtros estándar
@@ -97,57 +84,5 @@ class GestionarRutinas extends BaseCrudComponent
             // Admin ve todos los atletas (o lógica a definir)
             $this->atletas_list = User::where('tipo_usuario_id', 3)->get();
         }
-
-        $this->objetivos_list = \App\Models\Objetivo::all();
-    }
-
-    // =======================================================================
-    //  ACCIONES
-    // =======================================================================
-
-    public function create(): void
-    {
-        $this->reset(['nombre', 'descripcion', 'usuario_id', 'objetivo_id']);
-        $this->showFormModal = true;
-    }
-
-    public function edit(int $id): void
-    {
-        $this->reset(['nombre', 'descripcion', 'usuario_id', 'objetivo_id']);
-        $model = Rutina::findOrFail($id);
-        
-        $this->authorize('update', $model);
-
-        $this->editingId = $id;
-        $this->nombre = $model->nombre;
-        $this->descripcion = $model->descripcion; // Nota: Rutina no tiene descripcion en migration original, verificar
-        $this->usuario_id = $model->usuario_id;
-        $this->objetivo_id = $model->objetivo_id;
-
-        $this->showFormModal = true;
-    }
-
-    public function save(): void
-    {
-        $this->validate();
-
-        $data = [
-            'nombre' => $this->nombre,
-            'usuario_id' => $this->usuario_id,
-            'objetivo_id' => $this->objetivo_id,
-            'estado' => 1, // Activa por defecto
-        ];
-
-        if ($this->editingId) {
-            $model = Rutina::findOrFail($this->editingId);
-            $this->authorize('update', $model);
-            $model->update($data);
-            $this->dispatch('notify', message: 'Rutina actualizada correctamente', type: 'success');
-        } else {
-            Rutina::create($data);
-            $this->dispatch('notify', message: 'Rutina creada correctamente', type: 'success');
-        }
-
-        $this->showFormModal = false;
     }
 }

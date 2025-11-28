@@ -21,6 +21,12 @@ class PlantillaDiaEjercicio extends Model
         'descanso_segundos',
         'indicaciones',
         'orden',
+        'tempo',
+        'unidad_peso',
+    ];
+
+    protected $casts = [
+        'tempo' => 'array',
     ];
 
     /**
