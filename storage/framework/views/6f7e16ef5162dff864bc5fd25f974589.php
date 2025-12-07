@@ -27,157 +27,102 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Ejercicios del Día</h3>
                     
-                    <!--[if BLOCK]><![endif]--><?php if($dia->rutinaEjercicios->isEmpty()): ?>
+                    <!--[if BLOCK]><![endif]--><?php if($bloques->isEmpty() && $dia->rutinaEjercicios->whereNull('rutina_bloque_id')->isEmpty()): ?>
                         <div class="text-center py-12 text-gray-500 dark:text-gray-400">
                             <p>No hay ejercicios asignados a este día.</p>
                             <p class="text-sm">Usa el buscador de la derecha para añadir ejercicios.</p>
+                            <button wire:click="createBloque" class="mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                + Añadir Bloque (Sección)
+                            </button>
                         </div>
                     <?php else: ?>
-                        <div class="space-y-4">
-                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $dia->rutinaEjercicios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $re): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div wire:key="re-<?php echo e($re->id); ?>" class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h4 class="font-bold text-gray-800 dark:text-gray-200"><?php echo e($re->ejercicio->nombre); ?></h4>
-                                            <span class="text-xs text-gray-500"><?php echo e($re->ejercicio->grupoMuscular->nombre ?? 'General'); ?></span>
-                                        </div>
-                                        <button wire:click="removeEjercicio(<?php echo e($re->id); ?>)" class="text-red-500 hover:text-red-700 text-sm">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        </button>
-                                    </div>
-
+                        <div class="space-y-8">
+                            
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $bloques; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bloque): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div wire:key="bloque-<?php echo e($bloque->id); ?>" 
+                                     x-data="{ open: false }" 
+                                     class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6"
+                                >
                                     
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Series</label>
-                                            <input type="number" 
-                                                   wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.series"
-                                                   wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'series', $event.target.value)"
-                                                   class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+                                    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
+                                         @click="open = !open"
+                                    >
+                                        <div class="flex items-center gap-3 flex-1">
+                                            
+                                            <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
+                                                 :class="{'rotate-180': open}"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
                                             >
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Repeticiones</label>
-                                            <input type="text" 
-                                                   wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.repeticiones"
-                                                   wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'repeticiones', $event.target.value)"
-                                                   class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                                            >
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Peso</label>
-                                            <div class="relative mt-1 rounded-md shadow-sm">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+
+                                            
+                                            <div class="flex-1" @click.stop>
                                                 <input type="text" 
-                                                       wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.peso_sugerido"
-                                                       wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'peso_sugerido', $event.target.value)"
-                                                       class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm pr-16"
-                                                >
-                                                <div class="absolute inset-y-0 right-0 flex items-center">
-                                                    <select wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.unidad_peso"
-                                                            wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'unidad_peso', $event.target.value)"
-                                                            class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-xs"
-                                                    >
-                                                        <option value="kg">kg</option>
-                                                        <option value="lbs">lbs</option>
-                                                    </select>
-                                                </div>
+                                                       value="<?php echo e($bloque->nombre); ?>"
+                                                       wire:change="updateBloqueNombre(<?php echo e($bloque->id); ?>, $event.target.value)"
+                                                       class="font-bold text-lg text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 w-full hover:bg-gray-200 dark:hover:bg-gray-600 rounded px-2 transition-colors"
+                                                />
                                             </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Descanso (seg)</label>
-                                            <input type="number" 
-                                                   wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.descanso_segundos"
-                                                   wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'descanso_segundos', $event.target.value)"
-                                                   class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-xs text-gray-500" x-show="!open">
+                                                <?php echo e($bloque->rutinaEjercicios->count()); ?> ejercicios
+                                            </span>
+                                            <button wire:click="deleteBloque(<?php echo e($bloque->id); ?>)" 
+                                                    @click.stop
+                                                    class="text-xs text-red-500 hover:text-red-700 font-medium" 
+                                                    title="Eliminar Sección"
                                             >
+                                                Eliminar Sección
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div class="mt-3">
-                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Indicaciones / Notas</label>
-                                        <input type="text" 
-                                               wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.indicaciones"
-                                               wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'indicaciones', $event.target.value)"
-                                               class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                                               placeholder="Ej: Controlar la excéntrica..."
-                                        >
                                     </div>
 
                                     
-                                    <div class="mt-4 border-t border-gray-100 dark:border-gray-600 pt-3">
-                                        <div class="flex items-center mb-2">
-                                            <input type="checkbox" 
-                                                   id="has_tempo_<?php echo e($re->id); ?>" 
-                                                   wire:model.live="ejerciciosData.<?php echo e($re->id); ?>.has_tempo"
-                                                   wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'has_tempo', $event.target.checked)"
-                                                   class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:bg-gray-900"
-                                            >
-                                            <label for="has_tempo_<?php echo e($re->id); ?>" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Habilitar Tempo</label>
-                                        </div>
-
-                                        <!--[if BLOCK]><![endif]--><?php if(!empty($ejerciciosData[$re->id]['has_tempo'])): ?>
-                                            <div class="grid grid-cols-3 gap-4 bg-gray-100 dark:bg-gray-800 p-3 rounded-md">
-                                                
-                                                
-                                                <div class="flex flex-col gap-2">
-                                                    <select wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.tempo.fase1.accion"
-                                                            wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'tempo.fase1.accion', $event.target.value)"
-                                                            class="text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                    >
-                                                        <option value="Bajar">Bajar</option>
-                                                        <option value="Subir">Subir</option>
-                                                        <option value="Tomar aire">Tomar aire</option>
-                                                    </select>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="number" 
-                                                               wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.tempo.fase1.tiempo"
-                                                               wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'tempo.fase1.tiempo', $event.target.value)"
-                                                               class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                               placeholder="Seg"
-                                                        >
-                                                        <span class="text-xs text-gray-500">s</span>
-                                                    </div>
-                                                </div>
-
-                                                
-                                                <div class="flex flex-col gap-2 text-center">
-                                                    <span class="text-xs font-semibold text-gray-600 dark:text-gray-400 py-2">Mantener</span>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="number" 
-                                                               wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.tempo.fase2.tiempo"
-                                                               wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'tempo.fase2.tiempo', $event.target.value)"
-                                                               class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                               placeholder="Seg"
-                                                        >
-                                                        <span class="text-xs text-gray-500">s</span>
-                                                    </div>
-                                                </div>
-
-                                                
-                                                <div class="flex flex-col gap-2">
-                                                    <select wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.tempo.fase3.accion"
-                                                            wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'tempo.fase3.accion', $event.target.value)"
-                                                            class="text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                    >
-                                                        <option value="Subir">Subir</option>
-                                                        <option value="Bajar">Bajar</option>
-                                                        <option value="Soltar aire">Soltar aire</option>
-                                                    </select>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="number" 
-                                                               wire:model.blur="ejerciciosData.<?php echo e($re->id); ?>.tempo.fase3.tiempo"
-                                                               wire:change="updateEjercicio(<?php echo e($re->id); ?>, 'tempo.fase3.tiempo', $event.target.value)"
-                                                               class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                               placeholder="Seg"
-                                                        >
-                                                        <span class="text-xs text-gray-500">s</span>
-                                                    </div>
-                                                </div>
-
+                                    <div x-show="open" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                         x-transition:enter-end="opacity-100 transform translate-y-0"
+                                         class="p-4 space-y-4 bg-white dark:bg-gray-800"
+                                         style="display: none;"
+                                    >
+                                        <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $bloque->rutinaEjercicios; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $re): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                            <?php echo $__env->make('livewire.admin.partials.ejercicio-card', ['re' => $re], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                            <div class="text-sm text-gray-400 italic py-4 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                                                <p>Sección vacía.</p>
+                                                <p class="text-xs mt-1">Arrastra ejercicios aquí o añádelos desde el buscador seleccionando "<?php echo e($bloque->nombre); ?>".</p>
                                             </div>
                                         <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                                     </div>
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+
+                            
+                            <?php
+                                $ejerciciosSinBloque = $dia->rutinaEjercicios->whereNull('rutina_bloque_id');
+                            ?>
+
+                            <!--[if BLOCK]><![endif]--><?php if($ejerciciosSinBloque->isNotEmpty()): ?>
+                                <div class="border-l-4 border-gray-300 dark:border-gray-600 pl-4">
+                                    <h4 class="font-bold text-gray-600 dark:text-gray-400 mb-4">General / Sin Sección</h4>
+                                    <div class="space-y-4">
+                                        <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $ejerciciosSinBloque; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $re): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                            <?php echo $__env->make('livewire.admin.partials.ejercicio-card', ['re' => $re], array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            
+                            
+                            <div class="pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <button wire:click="createBloque" class="flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Añadir Nueva Sección
+                                </button>
+                            </div>
                         </div>
                     <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
@@ -193,6 +138,16 @@
                         </button>
                     </div>
                     
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Añadir a Sección:</label>
+                        <select wire:model.live="selectedBloqueId" class="w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">General (Sin Sección)</option>
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $bloques; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $bloque): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($bloque->id); ?>"><?php echo e($bloque->nombre); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                        </select>
+                    </div>
+
                     <div class="relative">
                         <input type="text" 
                                wire:model.live.debounce.300ms="search"
@@ -203,7 +158,7 @@
                         <!--[if BLOCK]><![endif]--><?php if(strlen($search) >= 2): ?>
                             <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 max-h-60 overflow-y-auto">
                                 <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $this->searchResults; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $ejercicio): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                    <button wire:click="addEjercicio(<?php echo e($ejercicio->id); ?>)" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0">
+                                    <button wire:click="addEjercicio(<?php echo e($ejercicio->id); ?>, $wire.selectedBloqueId)" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0">
                                         <div class="font-medium text-gray-800 dark:text-gray-200"><?php echo e($ejercicio->nombre); ?></div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400"><?php echo e($ejercicio->grupoMuscular->nombre ?? 'General'); ?></div>
                                     </button>

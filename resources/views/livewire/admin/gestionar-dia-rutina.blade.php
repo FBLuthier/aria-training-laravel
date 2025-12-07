@@ -27,157 +27,102 @@
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Ejercicios del Día</h3>
                     
-                    @if($dia->rutinaEjercicios->isEmpty())
+                    @if($bloques->isEmpty() && $dia->rutinaEjercicios->whereNull('rutina_bloque_id')->isEmpty())
                         <div class="text-center py-12 text-gray-500 dark:text-gray-400">
                             <p>No hay ejercicios asignados a este día.</p>
                             <p class="text-sm">Usa el buscador de la derecha para añadir ejercicios.</p>
+                            <button wire:click="createBloque" class="mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                + Añadir Bloque (Sección)
+                            </button>
                         </div>
                     @else
-                        <div class="space-y-4">
-                            @foreach($dia->rutinaEjercicios as $re)
-                                <div wire:key="re-{{ $re->id }}" class="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-700/50">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <div>
-                                            <h4 class="font-bold text-gray-800 dark:text-gray-200">{{ $re->ejercicio->nombre }}</h4>
-                                            <span class="text-xs text-gray-500">{{ $re->ejercicio->grupoMuscular->nombre ?? 'General' }}</span>
-                                        </div>
-                                        <button wire:click="removeEjercicio({{ $re->id }})" class="text-red-500 hover:text-red-700 text-sm">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                        </button>
-                                    </div>
+                        <div class="space-y-8">
+                            {{-- 1. BLOQUES --}}
+                            @foreach($bloques as $bloque)
+                                <div wire:key="bloque-{{ $bloque->id }}" 
+                                     x-data="{ open: false }" 
+                                     class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6"
+                                >
+                                    {{-- Cabecera del Bloque (Click para abrir/cerrar) --}}
+                                    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
+                                         @click="open = !open"
+                                    >
+                                        <div class="flex items-center gap-3 flex-1">
+                                            {{-- Icono Chevron --}}
+                                            <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
+                                                 :class="{'rotate-180': open}"
+                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                            >
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
 
-                                    {{-- Grid de Edición --}}
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Series</label>
-                                            <input type="number" 
-                                                   wire:model.blur="ejerciciosData.{{ $re->id }}.series"
-                                                   wire:change="updateEjercicio({{ $re->id }}, 'series', $event.target.value)"
-                                                   class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                                            >
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Repeticiones</label>
-                                            <input type="text" 
-                                                   wire:model.blur="ejerciciosData.{{ $re->id }}.repeticiones"
-                                                   wire:change="updateEjercicio({{ $re->id }}, 'repeticiones', $event.target.value)"
-                                                   class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                                            >
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Peso</label>
-                                            <div class="relative mt-1 rounded-md shadow-sm">
+                                            {{-- Input Nombre Bloque (Stop propagation para no cerrar al editar) --}}
+                                            <div class="flex-1" @click.stop>
                                                 <input type="text" 
-                                                       wire:model.blur="ejerciciosData.{{ $re->id }}.peso_sugerido"
-                                                       wire:change="updateEjercicio({{ $re->id }}, 'peso_sugerido', $event.target.value)"
-                                                       class="block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500 text-sm pr-16"
-                                                >
-                                                <div class="absolute inset-y-0 right-0 flex items-center">
-                                                    <select wire:model.blur="ejerciciosData.{{ $re->id }}.unidad_peso"
-                                                            wire:change="updateEjercicio({{ $re->id }}, 'unidad_peso', $event.target.value)"
-                                                            class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-xs"
-                                                    >
-                                                        <option value="kg">kg</option>
-                                                        <option value="lbs">lbs</option>
-                                                    </select>
-                                                </div>
+                                                       value="{{ $bloque->nombre }}"
+                                                       wire:change="updateBloqueNombre({{ $bloque->id }}, $event.target.value)"
+                                                       class="font-bold text-lg text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 w-full hover:bg-gray-200 dark:hover:bg-gray-600 rounded px-2 transition-colors"
+                                                />
                                             </div>
                                         </div>
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Descanso (seg)</label>
-                                            <input type="number" 
-                                                   wire:model.blur="ejerciciosData.{{ $re->id }}.descanso_segundos"
-                                                   wire:change="updateEjercicio({{ $re->id }}, 'descanso_segundos', $event.target.value)"
-                                                   class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
+
+                                        <div class="flex items-center gap-4">
+                                            <span class="text-xs text-gray-500" x-show="!open">
+                                                {{ $bloque->rutinaEjercicios->count() }} ejercicios
+                                            </span>
+                                            <button wire:click="deleteBloque({{ $bloque->id }})" 
+                                                    @click.stop
+                                                    class="text-xs text-red-500 hover:text-red-700 font-medium" 
+                                                    title="Eliminar Sección"
                                             >
+                                                Eliminar Sección
+                                            </button>
                                         </div>
                                     </div>
-                                    <div class="mt-3">
-                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400">Indicaciones / Notas</label>
-                                        <input type="text" 
-                                               wire:model.blur="ejerciciosData.{{ $re->id }}.indicaciones"
-                                               wire:change="updateEjercicio({{ $re->id }}, 'indicaciones', $event.target.value)"
-                                               class="mt-1 block w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"
-                                               placeholder="Ej: Controlar la excéntrica..."
-                                        >
-                                    </div>
 
-                                    {{-- TEMPO CONFIG --}}
-                                    <div class="mt-4 border-t border-gray-100 dark:border-gray-600 pt-3">
-                                        <div class="flex items-center mb-2">
-                                            <input type="checkbox" 
-                                                   id="has_tempo_{{ $re->id }}" 
-                                                   wire:model.live="ejerciciosData.{{ $re->id }}.has_tempo"
-                                                   wire:change="updateEjercicio({{ $re->id }}, 'has_tempo', $event.target.checked)"
-                                                   class="rounded border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:bg-gray-900"
-                                            >
-                                            <label for="has_tempo_{{ $re->id }}" class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Habilitar Tempo</label>
-                                        </div>
-
-                                        @if(!empty($ejerciciosData[$re->id]['has_tempo']))
-                                            <div class="grid grid-cols-3 gap-4 bg-gray-100 dark:bg-gray-800 p-3 rounded-md">
-                                                
-                                                {{-- FASE 1: BAJAR --}}
-                                                <div class="flex flex-col gap-2">
-                                                    <select wire:model.blur="ejerciciosData.{{ $re->id }}.tempo.fase1.accion"
-                                                            wire:change="updateEjercicio({{ $re->id }}, 'tempo.fase1.accion', $event.target.value)"
-                                                            class="text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                    >
-                                                        <option value="Bajar">Bajar</option>
-                                                        <option value="Subir">Subir</option>
-                                                        <option value="Tomar aire">Tomar aire</option>
-                                                    </select>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="number" 
-                                                               wire:model.blur="ejerciciosData.{{ $re->id }}.tempo.fase1.tiempo"
-                                                               wire:change="updateEjercicio({{ $re->id }}, 'tempo.fase1.tiempo', $event.target.value)"
-                                                               class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                               placeholder="Seg"
-                                                        >
-                                                        <span class="text-xs text-gray-500">s</span>
-                                                    </div>
-                                                </div>
-
-                                                {{-- FASE 2: MANTENER --}}
-                                                <div class="flex flex-col gap-2 text-center">
-                                                    <span class="text-xs font-semibold text-gray-600 dark:text-gray-400 py-2">Mantener</span>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="number" 
-                                                               wire:model.blur="ejerciciosData.{{ $re->id }}.tempo.fase2.tiempo"
-                                                               wire:change="updateEjercicio({{ $re->id }}, 'tempo.fase2.tiempo', $event.target.value)"
-                                                               class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                               placeholder="Seg"
-                                                        >
-                                                        <span class="text-xs text-gray-500">s</span>
-                                                    </div>
-                                                </div>
-
-                                                {{-- FASE 3: SUBIR --}}
-                                                <div class="flex flex-col gap-2">
-                                                    <select wire:model.blur="ejerciciosData.{{ $re->id }}.tempo.fase3.accion"
-                                                            wire:change="updateEjercicio({{ $re->id }}, 'tempo.fase3.accion', $event.target.value)"
-                                                            class="text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                    >
-                                                        <option value="Subir">Subir</option>
-                                                        <option value="Bajar">Bajar</option>
-                                                        <option value="Soltar aire">Soltar aire</option>
-                                                    </select>
-                                                    <div class="flex items-center gap-1">
-                                                        <input type="number" 
-                                                               wire:model.blur="ejerciciosData.{{ $re->id }}.tempo.fase3.tiempo"
-                                                               wire:change="updateEjercicio({{ $re->id }}, 'tempo.fase3.tiempo', $event.target.value)"
-                                                               class="w-full text-xs rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                                               placeholder="Seg"
-                                                        >
-                                                        <span class="text-xs text-gray-500">s</span>
-                                                    </div>
-                                                </div>
-
+                                    {{-- Lista de Ejercicios del Bloque (Colapsable) --}}
+                                    <div x-show="open" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                         x-transition:enter-end="opacity-100 transform translate-y-0"
+                                         class="p-4 space-y-4 bg-white dark:bg-gray-800"
+                                         style="display: none;"
+                                    >
+                                        @forelse($bloque->rutinaEjercicios as $re)
+                                            @include('livewire.admin.partials.ejercicio-card', ['re' => $re])
+                                        @empty
+                                            <div class="text-sm text-gray-400 italic py-4 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                                                <p>Sección vacía.</p>
+                                                <p class="text-xs mt-1">Arrastra ejercicios aquí o añádelos desde el buscador seleccionando "{{ $bloque->nombre }}".</p>
                                             </div>
-                                        @endif
+                                        @endforelse
                                     </div>
                                 </div>
                             @endforeach
+
+                            {{-- 2. EJERCICIOS SIN BLOQUE (GENERAL) --}}
+                            @php
+                                $ejerciciosSinBloque = $dia->rutinaEjercicios->whereNull('rutina_bloque_id');
+                            @endphp
+
+                            @if($ejerciciosSinBloque->isNotEmpty())
+                                <div class="border-l-4 border-gray-300 dark:border-gray-600 pl-4">
+                                    <h4 class="font-bold text-gray-600 dark:text-gray-400 mb-4">General / Sin Sección</h4>
+                                    <div class="space-y-4">
+                                        @foreach($ejerciciosSinBloque as $re)
+                                            @include('livewire.admin.partials.ejercicio-card', ['re' => $re])
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                            
+                            {{-- Botón Añadir Bloque al final --}}
+                            <div class="pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <button wire:click="createBloque" class="flex items-center text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    Añadir Nueva Sección
+                                </button>
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -193,6 +138,16 @@
                         </button>
                     </div>
                     
+                    <div class="mb-4">
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Añadir a Sección:</label>
+                        <select wire:model.live="selectedBloqueId" class="w-full text-sm rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">General (Sin Sección)</option>
+                            @foreach($bloques as $bloque)
+                                <option value="{{ $bloque->id }}">{{ $bloque->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <div class="relative">
                         <input type="text" 
                                wire:model.live.debounce.300ms="search"
@@ -203,7 +158,7 @@
                         @if(strlen($search) >= 2)
                             <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 max-h-60 overflow-y-auto">
                                 @forelse($this->searchResults as $ejercicio)
-                                    <button wire:click="addEjercicio({{ $ejercicio->id }})" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0">
+                                    <button wire:click="addEjercicio({{ $ejercicio->id }}, $wire.selectedBloqueId)" class="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0">
                                         <div class="font-medium text-gray-800 dark:text-gray-200">{{ $ejercicio->nombre }}</div>
                                         <div class="text-xs text-gray-500 dark:text-gray-400">{{ $ejercicio->grupoMuscular->nombre ?? 'General' }}</div>
                                     </button>

@@ -24,19 +24,30 @@ class GestionarDiaRutina extends Component
     // Edición en línea (array indexado por rutina_ejercicio_id)
     public $ejerciciosData = [];
 
+    public $bloques = []; // Colección de bloques
+    public $selectedBloqueId = ''; // Bloque seleccionado para añadir ejercicios
+
     public function mount($diaId)
     {
-        $this->dia = RutinaDia::with(['rutina.atleta', 'rutinaEjercicios.ejercicio'])->findOrFail($diaId);
+        $this->dia = RutinaDia::with(['rutina.atleta', 'bloques.rutinaEjercicios.ejercicio', 'rutinaEjercicios.ejercicio'])
+            ->findOrFail($diaId);
         $this->authorize('view', $this->dia->rutina);
         
         // Inicializar datos de edición
-        $this->refreshEjerciciosData();
+        $this->refreshData();
     }
 
-    public function refreshEjerciciosData()
+    public function refreshData()
     {
+        $this->dia->refresh();
+        $this->bloques = $this->dia->bloques;
+        
         $this->ejerciciosData = [];
-        foreach ($this->dia->rutinaEjercicios as $re) {
+        
+        // Cargar datos de ejercicios (tanto los que están en bloques como los sueltos)
+        $todosEjercicios = $this->dia->rutinaEjercicios; // Esto trae todos por la relación hasMany directa
+        
+        foreach ($todosEjercicios as $re) {
             $this->ejerciciosData[$re->id] = [
                 'series' => $re->series,
                 'repeticiones' => $re->repeticiones,
@@ -61,29 +72,64 @@ class GestionarDiaRutina extends Component
             return [];
         }
 
-        return Ejercicio::where('nombre', 'like', '%' . $this->search . '%')
-            ->orWhere('descripcion', 'like', '%' . $this->search . '%')
+        return Ejercicio::whereRaw('nombre COLLATE utf8mb4_general_ci LIKE ?', ['%' . $this->search . '%'])
+            ->orWhereRaw('descripcion COLLATE utf8mb4_general_ci LIKE ?', ['%' . $this->search . '%'])
             ->take(10)
             ->get();
     }
 
-    public function addEjercicio($ejercicioId)
+    // --- Gestión de Bloques ---
+
+    public function createBloque()
+    {
+        $maxOrden = $this->dia->bloques()->max('orden') ?? 0;
+        
+        $this->dia->bloques()->create([
+            'nombre' => 'Nuevo Bloque',
+            'orden' => $maxOrden + 1,
+        ]);
+
+        $this->refreshData();
+        $this->dispatch('notify', message: 'Bloque añadido', type: 'success');
+    }
+
+    public function updateBloqueNombre($bloqueId, $nombre)
+    {
+        $bloque = $this->dia->bloques()->findOrFail($bloqueId);
+        $bloque->update(['nombre' => $nombre]);
+        $this->dispatch('notify', message: 'Nombre del bloque actualizado', type: 'success');
+    }
+
+    public function deleteBloque($bloqueId)
+    {
+        $bloque = $this->dia->bloques()->findOrFail($bloqueId);
+        // Los ejercicios pasarán a rutina_bloque_id = null gracias a onDelete('set null') en la migración
+        // O podemos eliminarlos si el usuario prefiere. Por seguridad, mejor mantenerlos.
+        $bloque->delete();
+        
+        $this->refreshData();
+        $this->dispatch('notify', message: 'Bloque eliminado', type: 'success');
+    }
+
+    public function addEjercicio($ejercicioId, $bloqueId = null)
     {
         $ejercicio = Ejercicio::findOrFail($ejercicioId);
         
         // Calcular orden
+        // Si es en un bloque, orden dentro del bloque? O orden global?
+        // Actualmente usamos orden_en_dia global.
         $maxOrden = $this->dia->rutinaEjercicios()->max('orden_en_dia') ?? 0;
 
         $nuevo = RutinaEjercicio::create([
             'rutina_dia_id' => $this->dia->id,
+            'rutina_bloque_id' => $bloqueId, // Asignar al bloque si existe
             'ejercicio_id' => $ejercicio->id,
             'series' => 3, // Default
             'repeticiones' => '10-12', // Default
             'orden_en_dia' => $maxOrden + 1,
         ]);
 
-        $this->dia->refresh();
-        $this->refreshEjerciciosData();
+        $this->refreshData();
         $this->search = ''; // Limpiar búsqueda
         
         $this->dispatch('notify', message: 'Ejercicio añadido', type: 'success');
@@ -94,8 +140,7 @@ class GestionarDiaRutina extends Component
         $re = RutinaEjercicio::where('rutina_dia_id', $this->dia->id)->findOrFail($rutinaEjercicioId);
         $re->delete();
         
-        $this->dia->refresh();
-        $this->refreshEjerciciosData();
+        $this->refreshData();
         
         $this->dispatch('notify', message: 'Ejercicio eliminado', type: 'success');
     }

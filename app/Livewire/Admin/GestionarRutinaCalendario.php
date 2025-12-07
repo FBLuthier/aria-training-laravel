@@ -4,7 +4,6 @@ namespace App\Livewire\Admin;
 
 use App\Models\Rutina;
 use App\Models\RutinaDia;
-use App\Models\PlantillaDia;
 use App\Models\RutinaEjercicio;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
@@ -22,24 +21,71 @@ use Livewire\Attributes\Computed;
 class GestionarRutinaCalendario extends Component
 {
     public Rutina $rutina;
-    public $dias = []; // Array de días cargados
-    
-    // Para el modal de asignación
-    public $showAssignModal = false;
-    public $selectedDiaId = null; // ID del RutinaDia seleccionado
-    public $selectedPlantillaId = ''; // ID de la plantilla a copiar
+    public $currentMonth;
+    public $currentYear;
 
     public function mount($id)
     {
         $this->rutina = Rutina::with('atleta')->findOrFail($id);
         $this->authorize('view', $this->rutina);
         
-        $this->loadDias();
+        $this->currentMonth = now()->month;
+        $this->currentYear = now()->year;
     }
 
-    public function loadDias()
+    #[Computed]
+    public function dias()
     {
-        $this->dias = $this->rutina->dias()->orderBy('numero_dia')->get();
+        return $this->rutina->dias()
+            ->with(['rutinaEjercicios.ejercicio', 'bloques'])
+            ->orderBy('numero_dia')
+            ->get();
+    }
+
+    #[Computed]
+    public function diasSinFecha()
+    {
+        return $this->dias()->whereNull('fecha');
+    }
+
+    #[Computed]
+    public function diasProgramados()
+    {
+        return $this->dias()->whereNotNull('fecha')->groupBy(function($dia) {
+            return $dia->fecha->format('Y-m-d');
+        });
+    }
+
+    public function changeMonth($increment)
+    {
+        $date = \Carbon\Carbon::createFromDate($this->currentYear, $this->currentMonth, 1)->addMonths($increment);
+        $this->currentMonth = $date->month;
+        $this->currentYear = $date->year;
+    }
+
+    public function assignFecha($diaId, $fecha)
+    {
+        $dia = RutinaDia::findOrFail($diaId);
+        $dia->update(['fecha' => $fecha]);
+        
+        $this->dispatch('notify', message: 'Día programado correctamente', type: 'success');
+    }
+
+    public function removeFecha($diaId)
+    {
+        $dia = RutinaDia::findOrFail($diaId);
+        $dia->update(['fecha' => null]);
+        
+        $this->dispatch('notify', message: 'Día movido al banco', type: 'success');
+    }
+
+    public function copyToNextWeek($diaId)
+    {
+        $dia = RutinaDia::findOrFail($diaId);
+        if ($dia->fecha) {
+            $nextWeek = $dia->fecha->copy()->addWeek()->format('Y-m-d');
+            $this->duplicateDia($diaId, $nextWeek);
+        }
     }
 
     public function addDia()
@@ -50,21 +96,91 @@ class GestionarRutinaCalendario extends Component
             'rutina_id' => $this->rutina->id,
             'numero_dia' => $nuevoNumero,
             'nombre_dia' => 'Día ' . $nuevoNumero,
+            'fecha' => null, // Por defecto al banco
         ]);
 
-        $this->loadDias();
-        $this->dispatch('notify', message: 'Día agregado correctamente', type: 'success');
+        $this->dispatch('notify', message: 'Día agregado al banco', type: 'success');
     }
 
-    public function deleteDia($diaId)
+    public function duplicateDia($diaId, $targetDate = null)
     {
-        $dia = RutinaDia::findOrFail($diaId);
+        $diaOriginal = RutinaDia::with(['bloques', 'rutinaEjercicios'])->findOrFail($diaId);
+        
+        $nuevoNumero = $this->rutina->dias()->max('numero_dia') + 1;
+        
+        // Generar nombre con sufijo
+        $nombreBase = $diaOriginal->nombre_dia;
+        // Detectar si ya tiene sufijo (N)
+        if (preg_match('/\((\d+)\)$/', $nombreBase, $matches)) {
+            $sufijo = intval($matches[1]) + 1;
+            $nuevoNombre = preg_replace('/\((\d+)\)$/', "($sufijo)", $nombreBase);
+        } else {
+            $nuevoNombre = $nombreBase . " (1)";
+        }
+
+        // Crear nuevo día
+        $nuevoDia = RutinaDia::create([
+            'rutina_id' => $this->rutina->id,
+            'numero_dia' => $nuevoNumero,
+            'nombre_dia' => $nuevoNombre,
+            'fecha' => $targetDate,
+        ]);
+
+        // Mapa de IDs de bloques antiguos a nuevos para reasignar ejercicios
+        $bloqueMap = [];
+
+        // 1. Clonar Bloques
+        foreach ($diaOriginal->bloques as $bloque) {
+            $nuevoBloque = $nuevoDia->bloques()->create([
+                'nombre' => $bloque->nombre,
+                'orden' => $bloque->orden,
+            ]);
+            $bloqueMap[$bloque->id] = $nuevoBloque->id;
+        }
+
+        // 2. Clonar Ejercicios
+        foreach ($diaOriginal->rutinaEjercicios as $ejercicio) {
+            $nuevoBloqueId = null;
+            if ($ejercicio->rutina_bloque_id && isset($bloqueMap[$ejercicio->rutina_bloque_id])) {
+                $nuevoBloqueId = $bloqueMap[$ejercicio->rutina_bloque_id];
+            }
+
+            $nuevoDia->rutinaEjercicios()->create([
+                'rutina_bloque_id' => $nuevoBloqueId,
+                'ejercicio_id' => $ejercicio->ejercicio_id,
+                'series' => $ejercicio->series,
+                'repeticiones' => $ejercicio->repeticiones,
+                'peso_sugerido' => $ejercicio->peso_sugerido,
+                'unidad_peso' => $ejercicio->unidad_peso,
+                'descanso_segundos' => $ejercicio->descanso_segundos,
+                'indicaciones' => $ejercicio->indicaciones,
+                'orden_en_dia' => $ejercicio->orden_en_dia,
+                'tempo' => $ejercicio->tempo,
+            ]);
+        }
+
+        $this->dispatch('notify', message: 'Día duplicado correctamente', type: 'success');
+    }
+
+    public $deletingDiaId = null;
+    public $confirmingDiaDeletion = false;
+
+    public function confirmDeleteDia($diaId)
+    {
+        $this->deletingDiaId = $diaId;
+        $this->confirmingDiaDeletion = true;
+    }
+
+    public function performDeleteDia()
+    {
+        $dia = RutinaDia::findOrFail($this->deletingDiaId);
         $dia->delete();
 
         // Reordenar días restantes (opcional, pero recomendado)
         $this->reorderDias();
 
-        $this->loadDias();
+        $this->deletingDiaId = null;
+        $this->confirmingDiaDeletion = false;
         $this->dispatch('notify', message: 'Día eliminado correctamente', type: 'success');
     }
 
@@ -83,69 +199,13 @@ class GestionarRutinaCalendario extends Component
         }
     }
 
-    #[Computed]
-    public function plantillas()
-    {
-        // Cargar plantillas del entrenador del atleta
-        // Si el usuario autenticado es el entrenador, son sus plantillas.
-        // Si es admin, podría ver todas o las del entrenador del atleta.
-        
-        $entrenadorId = $this->rutina->atleta->entrenador_id ?? auth()->id();
-        
-        return PlantillaDia::where('usuario_id', $entrenadorId)->get();
-    }
-
-    public function openAssignModal($diaId)
-    {
-        $this->selectedDiaId = $diaId;
-        $this->selectedPlantillaId = '';
-        $this->showAssignModal = true;
-    }
-
-    public function assignPlantilla()
-    {
-        $this->validate([
-            'selectedPlantillaId' => 'required|exists:plantillas_dias,id',
-        ]);
-
-        $dia = RutinaDia::findOrFail($this->selectedDiaId);
-        $plantilla = PlantillaDia::with('ejercicios')->findOrFail($this->selectedPlantillaId);
-
-        // 1. Vincular plantilla
-        $dia->update([
-            'plantilla_dia_id' => $plantilla->id,
-            // 'nombre_dia' => $plantilla->nombre // Opcional: cambiar nombre del día
-        ]);
-
-        // 2. Copiar ejercicios
-        // Primero limpiar ejercicios existentes del día
-        $dia->rutinaEjercicios()->delete();
-
-        foreach ($plantilla->ejercicios as $ejercicioPlantilla) {
-            RutinaEjercicio::create([
-                'rutina_dia_id' => $dia->id,
-                'ejercicio_id' => $ejercicioPlantilla->ejercicio_id,
-                'series' => $ejercicioPlantilla->series,
-                'repeticiones' => $ejercicioPlantilla->repeticiones,
-                'peso_sugerido' => $ejercicioPlantilla->peso_sugerido,
-                'descanso_segundos' => $ejercicioPlantilla->descanso_segundos,
-                'indicaciones' => $ejercicioPlantilla->indicaciones,
-                'orden' => $ejercicioPlantilla->orden,
-            ]);
-        }
-
-        $this->showAssignModal = false;
-        $this->loadDias(); // Recargar
-        $this->dispatch('notify', message: 'Plantilla asignada correctamente', type: 'success');
-    }
-
     public function clearDia($diaId)
     {
         $dia = RutinaDia::findOrFail($diaId);
         $dia->rutinaEjercicios()->delete();
-        $dia->update(['plantilla_dia_id' => null]);
+        $dia->bloques()->delete(); // También limpiar bloques
+        // $dia->update(['plantilla_dia_id' => null]); // Ya no se usa
         
-        $this->loadDias();
         $this->dispatch('notify', message: 'Día limpiado correctamente', type: 'success');
     }
 

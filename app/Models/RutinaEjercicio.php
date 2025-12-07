@@ -71,8 +71,8 @@ class RutinaEjercicio extends Model
 
     protected $fillable = [
         'rutina_dia_id',
+        'rutina_bloque_id',
         'ejercicio_id',
-        'bloque_id',
         'series',
         'repeticiones',
         'indicaciones',
@@ -106,22 +106,21 @@ class RutinaEjercicio extends Model
      * 
      * @return BelongsTo
      */
-    public function ejercicio(): BelongsTo
+    public function ejercicio()
     {
-        return $this->belongsTo(Ejercicio::class, 'ejercicio_id');
+        return $this->belongsTo(Ejercicio::class)->withTrashed();
     }
 
     /**
      * Relación: Un ejercicio puede pertenecer a un bloque (opcional).
      * 
-     * Si bloque_id es NULL, es un ejercicio individual.
-     * Si tiene bloque_id, forma parte de superserie, circuito, etc.
+     * Si rutina_bloque_id es NULL, es un ejercicio individual o "General".
      * 
      * @return BelongsTo
      */
-    public function bloque(): BelongsTo
+    public function bloque()
     {
-        return $this->belongsTo(BloqueEjercicioDia::class, 'bloque_id');
+        return $this->belongsTo(RutinaBloque::class, 'rutina_bloque_id');
     }
 
     /**

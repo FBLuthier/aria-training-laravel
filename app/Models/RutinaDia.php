@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\RutinaBloque;
 
 /**
  * =======================================================================
@@ -107,9 +108,9 @@ class RutinaDia extends Model
      * 
      * @return HasMany
      */
-    public function bloques(): HasMany
+    public function bloques()
     {
-        return $this->hasMany(BloqueEjercicioDia::class, 'rutina_dia_id');
+        return $this->hasMany(RutinaBloque::class)->orderBy('orden');
     }
 
     /**
@@ -124,9 +125,9 @@ class RutinaDia extends Model
      * 
      * @return HasMany
      */
-    public function rutinaEjercicios(): HasMany
+    public function rutinaEjercicios()
     {
-        return $this->hasMany(RutinaEjercicio::class, 'rutina_dia_id');
+        return $this->hasMany(RutinaEjercicio::class)->orderBy('orden_en_dia');
     }
 
     /**
