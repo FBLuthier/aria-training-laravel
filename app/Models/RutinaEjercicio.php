@@ -80,6 +80,8 @@ class RutinaEjercicio extends Model
         'orden_en_bloque',
         'tempo',
         'unidad_peso',
+        'track_rpe',
+        'track_rir',
     ];
 
     protected $casts = [

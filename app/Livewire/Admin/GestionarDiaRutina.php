@@ -61,6 +61,8 @@ class GestionarDiaRutina extends Component
                     'fase3' => ['accion' => 'Subir', 'tiempo' => ''],
                 ],
                 'has_tempo' => !empty($re->tempo),
+                'track_rpe' => (bool) $re->track_rpe,
+                'track_rir' => (bool) $re->track_rir,
             ];
         }
     }
@@ -113,6 +115,9 @@ class GestionarDiaRutina extends Component
 
     public function addEjercicio($ejercicioId, $bloqueId = null)
     {
+        if (empty($bloqueId)) {
+            $bloqueId = null;
+        }
         $ejercicio = Ejercicio::findOrFail($ejercicioId);
         
         // Calcular orden
@@ -182,6 +187,31 @@ class GestionarDiaRutina extends Component
             }
             return;
         }
+
+        // Manejo de RPE/RIR (Mutuamente excluyentes)
+        if ($field === 'track_rpe') {
+            $this->ejerciciosData[$rutinaEjercicioId]['track_rpe'] = $value;
+            $re->update(['track_rpe' => $value]);
+            
+            if ($value) {
+                // Si activa RPE, desactivar RIR
+                $re->update(['track_rir' => false]);
+                $this->ejerciciosData[$rutinaEjercicioId]['track_rir'] = false;
+            }
+            return;
+        }
+
+        if ($field === 'track_rir') {
+            $this->ejerciciosData[$rutinaEjercicioId]['track_rir'] = $value;
+            $re->update(['track_rir' => $value]);
+            
+            if ($value) {
+                // Si activa RIR, desactivar RPE
+                $re->update(['track_rpe' => false]);
+                $this->ejerciciosData[$rutinaEjercicioId]['track_rpe'] = false;
+            }
+            return;
+        }
         
         $re->update([$field => $value]);
         
@@ -225,6 +255,62 @@ class GestionarDiaRutina extends Component
         
         // Opcional: Añadirlo automáticamente al día o buscarlo
         $this->search = $ejercicio->nombre; // Para que aparezca en el buscador
+    }
+
+    // --- Reordenamiento (Drag & Drop) ---
+
+    public function reorderBloques($items)
+    {
+        foreach ($items as $index => $id) {
+            $this->dia->bloques()->where('id', $id)->update(['orden' => $index + 1]);
+        }
+        $this->refreshData();
+    }
+
+    public function reorderEjercicio($ejercicioId, $bloqueId, $newOrden)
+    {
+        $re = RutinaEjercicio::where('rutina_dia_id', $this->dia->id)->findOrFail($ejercicioId);
+        
+        // Convertir bloqueId vacío a null
+        $bloqueId = empty($bloqueId) ? null : $bloqueId;
+
+        // Actualizar bloque si cambió
+        if ($re->rutina_bloque_id != $bloqueId) {
+            $re->rutina_bloque_id = $bloqueId;
+        }
+
+        // Estrategia de reordenamiento:
+        // 1. "Hacer hueco" en la nueva posición
+        // 2. Mover el elemento
+        // 3. Re-indexar todo el grupo para asegurar consistencia (más costoso pero seguro)
+        
+        // Opción segura: Re-indexar todo el grupo afectado
+        // Primero movemos el elemento temporalmente al final para sacarlo del medio
+        // $re->orden_en_dia = 9999; 
+        // $re->save();
+
+        // En realidad, como SortableJS nos da el índice visual final, lo más fácil es:
+        // 1. Obtener todos los ejercicios del bloque destino (excluyendo el que movemos) ordenados
+        // 2. Insertar el nuestro en la posición correcta en la colección
+        // 3. Recorrer y guardar orden
+
+        $siblings = RutinaEjercicio::where('rutina_dia_id', $this->dia->id)
+            ->where('rutina_bloque_id', $bloqueId)
+            ->where('id', '!=', $ejercicioId)
+            ->orderBy('orden_en_dia')
+            ->get();
+
+        // Insertar en la posición correcta (newOrden es 1-based)
+        $siblings->splice($newOrden - 1, 0, [$re]);
+
+        // Guardar nuevo orden
+        foreach ($siblings as $index => $sibling) {
+            $sibling->orden_en_dia = $index + 1;
+            $sibling->rutina_bloque_id = $bloqueId; // Asegurar bloque
+            $sibling->save();
+        }
+
+        $this->refreshData();
     }
 
     public function render()

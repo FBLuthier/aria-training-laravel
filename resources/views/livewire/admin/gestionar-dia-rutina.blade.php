@@ -37,84 +37,185 @@
                         </div>
                     @else
                         <div class="space-y-8">
-                            {{-- 1. BLOQUES --}}
-                            @foreach($bloques as $bloque)
-                                <div wire:key="bloque-{{ $bloque->id }}" 
-                                     x-data="{ open: false }" 
-                                     class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6"
-                                >
-                                    {{-- Cabecera del Bloque (Click para abrir/cerrar) --}}
-                                    <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
-                                         @click="open = !open"
+                            {{-- 1. BLOQUES (Sortable) --}}
+                            <div x-data="{
+                                initSortable() {
+                                    let el = this.$el;
+                                    window.Sortable.create(el, {
+                                        handle: '.bloque-handle',
+                                        animation: 150,
+                                        ghostClass: 'bg-indigo-50',
+                                        onEnd: (evt) => {
+                                            let items = Array.from(el.children).map(child => child.dataset.id);
+                                            $wire.reorderBloques(items);
+                                        }
+                                    });
+                                }
+                            }" x-init="initSortable()">
+                                @foreach($bloques as $bloque)
+                                    <div wire:key="bloque-{{ $bloque->id }}" 
+                                         data-id="{{ $bloque->id }}"
+                                         x-data="{ open: false }" 
+                                         class="bg-white dark:bg-gray-800 shadow-sm rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden mb-6"
                                     >
-                                        <div class="flex items-center gap-3 flex-1">
-                                            {{-- Icono Chevron --}}
-                                            <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
-                                                 :class="{'rotate-180': open}"
-                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                            >
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                            </svg>
+                                        {{-- Cabecera del Bloque (Click para abrir/cerrar) --}}
+                                        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center cursor-pointer"
+                                             @click="open = !open"
+                                        >
+                                            <div class="flex items-center gap-3 flex-1">
+                                                {{-- Handle para mover bloque --}}
+                                                <div class="bloque-handle cursor-move text-gray-400 hover:text-gray-600 p-1" @click.stop>
+                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                                                </div>
 
-                                            {{-- Input Nombre Bloque (Stop propagation para no cerrar al editar) --}}
-                                            <div class="flex-1" @click.stop>
-                                                <input type="text" 
-                                                       value="{{ $bloque->nombre }}"
-                                                       wire:change="updateBloqueNombre({{ $bloque->id }}, $event.target.value)"
-                                                       class="font-bold text-lg text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 w-full hover:bg-gray-200 dark:hover:bg-gray-600 rounded px-2 transition-colors"
-                                                />
+                                                {{-- Icono Chevron --}}
+                                                <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
+                                                     :class="{'rotate-180': open}"
+                                                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                                >
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                </svg>
+    
+                                                {{-- Input Nombre Bloque (Stop propagation para no cerrar al editar) --}}
+                                                <div class="flex-1" @click.stop>
+                                                    <input type="text" 
+                                                           value="{{ $bloque->nombre }}"
+                                                           wire:change="updateBloqueNombre({{ $bloque->id }}, $event.target.value)"
+                                                           class="font-bold text-lg text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 w-full hover:bg-gray-200 dark:hover:bg-gray-600 rounded px-2 transition-colors"
+                                                    />
+                                                </div>
+                                            </div>
+    
+                                            <div class="flex items-center gap-4">
+                                                <span class="text-xs text-gray-500" x-show="!open">
+                                                    {{ $bloque->rutinaEjercicios->count() }} ejercicios
+                                                </span>
+                                                <button wire:click="deleteBloque({{ $bloque->id }})" 
+                                                        @click.stop
+                                                        class="text-xs text-red-500 hover:text-red-700 font-medium" 
+                                                        title="Eliminar Sección"
+                                                >
+                                                    Eliminar Sección
+                                                </button>
                                             </div>
                                         </div>
-
-                                        <div class="flex items-center gap-4">
-                                            <span class="text-xs text-gray-500" x-show="!open">
-                                                {{ $bloque->rutinaEjercicios->count() }} ejercicios
-                                            </span>
-                                            <button wire:click="deleteBloque({{ $bloque->id }})" 
-                                                    @click.stop
-                                                    class="text-xs text-red-500 hover:text-red-700 font-medium" 
-                                                    title="Eliminar Sección"
-                                            >
-                                                Eliminar Sección
-                                            </button>
+    
+                                        {{-- Lista de Ejercicios del Bloque (Colapsable y Sortable) --}}
+                                        <div x-show="open" 
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                             x-transition:enter-end="opacity-100 transform translate-y-0"
+                                             class="p-4 space-y-4 bg-white dark:bg-gray-800"
+                                             style="display: none;"
+                                             x-data="{
+                                                initSortableEjercicios() {
+                                                    let el = this.$el;
+                                                    window.Sortable.create(el, {
+                                                        group: 'ejercicios',
+                                                        filter: '.no-drag',
+                                                        preventOnFilter: false,
+                                                        animation: 150,
+                                                        ghostClass: 'bg-indigo-50',
+                                                        onEnd: (evt) => {
+                                                            // Recolectar info de todos los ejercicios en este contenedor
+                                                            let items = Array.from(el.children).map((child, index) => {
+                                                                return {
+                                                                    id: child.dataset.id,
+                                                                    bloque_id: '{{ $bloque->id }}',
+                                                                    orden: index + 1
+                                                                };
+                                                            });
+                                                            // Si se movió a otro contenedor, el evento se dispara en el origen, 
+                                                            // pero necesitamos actualizar ambos o manejarlo globalmente.
+                                                            // Mejor estrategia: enviar el item movido y su nuevo destino.
+                                                            // O simplemente enviar el nuevo estado de ESTA lista.
+                                                            
+                                                            // Estrategia robusta: Enviar actualización del elemento movido
+                                                            let itemEl = evt.item;
+                                                            let newBloqueId = evt.to.dataset.bloqueId || null;
+                                                            let newIndex = evt.newIndex;
+                                                            
+                                                            $wire.reorderEjercicio(itemEl.dataset.id, newBloqueId, newIndex + 1);
+                                                        }
+                                                    });
+                                                }
+                                             }"
+                                             x-init="initSortableEjercicios()"
+                                             data-bloque-id="{{ $bloque->id }}"
+                                        >
+                                            @forelse($bloque->rutinaEjercicios as $re)
+                                                <div wire:key="ejercicio-{{ $re->id }}" data-id="{{ $re->id }}">
+                                                    @include('livewire.admin.partials.ejercicio-card', ['re' => $re])
+                                                </div>
+                                            @empty
+                                                <div class="text-sm text-gray-400 italic py-4 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                                                    <p>Sección vacía.</p>
+                                                    <p class="text-xs mt-1">Arrastra ejercicios aquí o añádelos desde el buscador seleccionando "{{ $bloque->nombre }}".</p>
+                                                </div>
+                                            @endforelse
                                         </div>
                                     </div>
-
-                                    {{-- Lista de Ejercicios del Bloque (Colapsable) --}}
-                                    <div x-show="open" 
-                                         x-transition:enter="transition ease-out duration-200"
-                                         x-transition:enter-start="opacity-0 transform -translate-y-2"
-                                         x-transition:enter-end="opacity-100 transform translate-y-0"
-                                         class="p-4 space-y-4 bg-white dark:bg-gray-800"
-                                         style="display: none;"
-                                    >
-                                        @forelse($bloque->rutinaEjercicios as $re)
-                                            @include('livewire.admin.partials.ejercicio-card', ['re' => $re])
-                                        @empty
-                                            <div class="text-sm text-gray-400 italic py-4 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
-                                                <p>Sección vacía.</p>
-                                                <p class="text-xs mt-1">Arrastra ejercicios aquí o añádelos desde el buscador seleccionando "{{ $bloque->nombre }}".</p>
-                                            </div>
-                                        @endforelse
-                                    </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
 
                             {{-- 2. EJERCICIOS SIN BLOQUE (GENERAL) --}}
                             @php
                                 $ejerciciosSinBloque = $dia->rutinaEjercicios->whereNull('rutina_bloque_id');
                             @endphp
 
-                            @if($ejerciciosSinBloque->isNotEmpty())
-                                <div class="border-l-4 border-gray-300 dark:border-gray-600 pl-4">
-                                    <h4 class="font-bold text-gray-600 dark:text-gray-400 mb-4">General / Sin Sección</h4>
-                                    <div class="space-y-4">
-                                        @foreach($ejerciciosSinBloque as $re)
-                                            @include('livewire.admin.partials.ejercicio-card', ['re' => $re])
-                                        @endforeach
+                            <div class="border-l-4 border-gray-300 dark:border-gray-600 pl-4" x-data="{ open: false }">
+                                <div class="flex justify-between items-center cursor-pointer mb-4" @click="open = !open">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-gray-500 transition-transform duration-200" 
+                                             :class="{'rotate-180': open}"
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                        >
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                        <h4 class="font-bold text-gray-600 dark:text-gray-400">General / Sin Sección</h4>
                                     </div>
+                                    <span class="text-xs text-gray-500" x-show="!open">
+                                        {{ $ejerciciosSinBloque->count() }} ejercicios
+                                    </span>
                                 </div>
-                            @endif
+
+                                <div class="space-y-4 min-h-[50px]"
+                                     x-show="open"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                                     style="display: none;"
+                                     x-data="{
+                                        initSortableGeneral() {
+                                            let el = this.$el;
+                                            window.Sortable.create(el, {
+                                                group: 'ejercicios',
+                                                filter: '.no-drag',
+                                                preventOnFilter: false,
+                                                animation: 150,
+                                                ghostClass: 'bg-indigo-50',
+                                                onEnd: (evt) => {
+                                                    let itemEl = evt.item;
+                                                    // Obtener el ID del bloque destino dinámicamente.
+                                                    // Si se mueve a otro bloque, evt.to tendrá el dataset.bloqueId del destino.
+                                                    // Si se queda en General, evt.to es el mismo el, y bloqueId será vacío/undefined, por lo que usamos null.
+                                                    let newBloqueId = evt.to.dataset.bloqueId || null; 
+                                                    let newIndex = evt.newIndex;
+                                                    $wire.reorderEjercicio(itemEl.dataset.id, newBloqueId, newIndex + 1);
+                                                }
+                                            });
+                                        }
+                                     }"
+                                     x-init="initSortableGeneral()"
+                                     data-bloque-id=""
+                                >
+                                    @foreach($ejerciciosSinBloque as $re)
+                                        <div wire:key="ejercicio-{{ $re->id }}" data-id="{{ $re->id }}">
+                                            @include('livewire.admin.partials.ejercicio-card', ['re' => $re])
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                             
                             {{-- Botón Añadir Bloque al final --}}
                             <div class="pt-4 border-t border-gray-100 dark:border-gray-700">

@@ -103,42 +103,65 @@
                         </div>
                         
                         <div class="space-y-3 min-h-[200px]" 
-                             x-data 
-                             @dragover.prevent 
-                             @drop.prevent="$wire.removeFecha($event.dataTransfer.getData('diaId'))"
+                             x-data="{
+                                initSortableBank() {
+                                    let el = this.$refs.bankList;
+                                    window.Sortable.create(el, {
+                                        group: {
+                                            name: 'shared',
+                                            pull: true, // Mover, no clonar (el backend asigna, no duplica)
+                                            put: true
+                                        },
+                                        sort: false, // No reordenar el banco
+                                        animation: 150,
+                                        ghostClass: 'bg-indigo-50',
+                                        onAdd: (evt) => {
+                                            // Si se suelta aquí desde el calendario, es para eliminar la fecha (desasignar)
+                                            let diaId = evt.item.dataset.id;
+                                            $wire.removeFecha(diaId);
+                                            // Eliminar el elemento del DOM del banco porque Livewire lo volverá a renderizar
+                                            // si corresponde (si pasa a estar 'sin fecha').
+                                            evt.item.remove();
+                                        }
+                                    });
+                                }
+                             }"
+                             x-init="initSortableBank()"
                         >
-                            <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $this->diasSinFecha; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dia): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <div draggable="true" 
-                                     @dragstart="$event.dataTransfer.setData('diaId', <?php echo e($dia->id); ?>)"
-                                     class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded p-3 cursor-move hover:shadow-md transition-shadow group"
-                                >
-                                    <div class="flex justify-between items-start">
-                                        <div class="flex-1">
-                                            <input type="text" 
-                                                   value="<?php echo e($dia->nombre_dia); ?>" 
-                                                   wire:change="updateDiaNombre(<?php echo e($dia->id); ?>, $event.target.value)"
-                                                   class="font-semibold text-sm text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 w-full"
-                                            />
-                                            <div class="text-xs text-gray-500 mt-1"><?php echo e($dia->rutinaEjercicios->count()); ?> ejercicios</div>
-                                        </div>
-                                        <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <a href="<?php echo e(route('admin.rutinas.dia', $dia->id)); ?>" class="text-indigo-500 hover:text-indigo-700" title="Editar">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                            </a>
-                                            <button wire:click="duplicateDia(<?php echo e($dia->id); ?>)" class="text-blue-500 hover:text-blue-700" title="Duplicar">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                                            </button>
-                                            <button wire:click="confirmDeleteDia(<?php echo e($dia->id); ?>)" class="text-red-500 hover:text-red-700" title="Eliminar">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                            </button>
+                            <div x-ref="bankList" class="space-y-3 min-h-[200px]">
+                                <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $this->diasSinFecha; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dia): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                    <div wire:key="bank-dia-<?php echo e($dia->id); ?>"
+                                         data-id="<?php echo e($dia->id); ?>"
+                                         class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded p-3 cursor-move hover:shadow-md transition-shadow group"
+                                    >
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <input type="text" 
+                                                       value="<?php echo e($dia->nombre_dia); ?>" 
+                                                       wire:change="updateDiaNombre(<?php echo e($dia->id); ?>, $event.target.value)"
+                                                       class="font-semibold text-sm text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 w-full"
+                                                />
+                                                <div class="text-xs text-gray-500 mt-1"><?php echo e($dia->rutinaEjercicios->count()); ?> ejercicios</div>
+                                            </div>
+                                            <div class="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <a href="<?php echo e(route('admin.rutinas.dia', $dia->id)); ?>" class="text-indigo-500 hover:text-indigo-700" title="Editar">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                                </a>
+                                                <button wire:click="duplicateDia(<?php echo e($dia->id); ?>)" class="text-blue-500 hover:text-blue-700" title="Duplicar">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                                </button>
+                                                <button wire:click="confirmDeleteDia(<?php echo e($dia->id); ?>)" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
-                                <div class="text-xs text-gray-400 text-center py-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded">
-                                    No hay días en el banco.
-                                </div>
-                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                                    <div class="text-xs text-gray-400 text-center py-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded">
+                                        No hay días en el banco.
+                                    </div>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            </div>
                             
                             <div class="text-xs text-gray-400 mt-4 text-center">
                                 <p>Arrastra los días al calendario para programarlos.</p>
@@ -200,13 +223,32 @@
                                 ?>
 
                                 <div class="bg-white dark:bg-gray-900 min-h-[120px] p-2 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 relative group/cell"
-                                     x-data
-                                     @dragover.prevent="$el.classList.add('bg-indigo-50', 'dark:bg-indigo-900/30')"
-                                     @dragleave="$el.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/30')"
-                                     @drop.prevent="
-                                        $el.classList.remove('bg-indigo-50', 'dark:bg-indigo-900/30');
-                                        $wire.assignFecha($event.dataTransfer.getData('diaId'), '<?php echo e($dateStr); ?>')
-                                     "
+                                     data-date="<?php echo e($dateStr); ?>"
+                                     x-data="{
+                                        initSortableCell() {
+                                            let el = this.$refs.list;
+                                            window.Sortable.create(el, {
+                                                group: {
+                                                    name: 'shared',
+                                                    pull: true,
+                                                    put: true
+                                                },
+                                                animation: 150,
+                                                ghostClass: 'bg-indigo-50',
+                                                onAdd: (evt) => {
+                                                    let diaId = evt.item.dataset.id;
+                                                    let date = '<?php echo e($dateStr); ?>';
+                                                    $wire.assignFecha(diaId, date);
+                                                    // Eliminar el elemento clonado visualmente para evitar duplicados momentáneos
+                                                    // antes de que Livewire refresque, o dejarlo si queremos feedback inmediato.
+                                                    // Con Livewire, a veces es mejor dejarlo y que el refresh lo arregle.
+                                                    // Pero si viene del banco (clon), el ID podría duplicarse en el DOM si no tenemos cuidado.
+                                                    // Sortable lo inserta. Livewire luego re-renderiza.
+                                                }
+                                            });
+                                        }
+                                     }"
+                                     x-init="initSortableCell()"
                                 >
                                     <div class="flex justify-between items-start mb-2">
                                         <span class="text-sm font-medium <?php echo e($isToday ? 'bg-indigo-600 text-white w-6 h-6 rounded-full flex items-center justify-center' : 'text-gray-700 dark:text-gray-300'); ?>">
@@ -216,23 +258,25 @@
                                     </div>
 
                                     
-                                    <div class="space-y-2">
+                                    <div x-ref="list" class="space-y-2 min-h-[80px]">
                                         <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $diasDelDia; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $dia): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <div draggable="true"
-                                                 @dragstart="$event.dataTransfer.setData('diaId', <?php echo e($dia->id); ?>)"
-                                                 class="bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-700 rounded p-2 text-xs cursor-move group"
+                                            <div wire:key="cal-dia-<?php echo e($dia->id); ?>-<?php echo e($dateStr); ?>"
+                                                 data-id="<?php echo e($dia->id); ?>"
+                                                 class="relative group cursor-move"
                                             >
-                                                <div class="font-semibold text-indigo-800 dark:text-indigo-200 truncate">
-                                                    <?php echo e($dia->nombre_dia); ?>
+                                                
+                                                <div class="bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-700 rounded p-2 text-xs">
+                                                    <div class="font-semibold text-indigo-800 dark:text-indigo-200 truncate pr-2">
+                                                        <?php echo e($dia->nombre_dia); ?>
 
-                                                </div>
-                                                <div class="text-indigo-600 dark:text-indigo-400 text-[10px]">
-                                                    <?php echo e($dia->rutinaEjercicios->count()); ?> ejercicios
+                                                    </div>
+                                                    <div class="text-indigo-600 dark:text-indigo-400 text-[10px]">
+                                                        <?php echo e($dia->rutinaEjercicios->count()); ?> ejercicios
+                                                    </div>
                                                 </div>
 
                                                 
-                                                <div class="absolute right-1 hidden group-hover/cell:flex gap-1 bg-white dark:bg-gray-800 rounded shadow-sm p-0.5 z-10 border border-gray-200 dark:border-gray-700"
-                                                     style="top: <?php echo e(4 + ($loop->index * 28)); ?>px">
+                                                <div class="absolute right-0 top-0 hidden group-hover/cell:flex gap-1 bg-white dark:bg-gray-800 rounded-bl-md shadow-sm p-0.5 z-10 border-b border-l border-gray-200 dark:border-gray-700">
                                                     
                                                     <a href="<?php echo e(route('admin.rutinas.dia', $dia->id)); ?>" class="p-1 text-gray-500 hover:text-indigo-600" title="Editar">
                                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>

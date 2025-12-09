@@ -1,6 +1,9 @@
 import './bootstrap';
 
 import Alpine from 'alpinejs';
+import Sortable from 'sortablejs';
+
+window.Sortable = Sortable;
 
 // ✅ Solución final: Control total sobre Alpine
 // Ahora que desactivamos inject_assets de Livewire, nosotros controlamos Alpine
