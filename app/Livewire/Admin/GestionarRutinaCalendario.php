@@ -24,6 +24,9 @@ class GestionarRutinaCalendario extends Component
     public $currentMonth;
     public $currentYear;
 
+    public $rutinasAtleta;
+    public $atletas_list;
+
     public function mount($id)
     {
         $this->rutina = Rutina::with('atleta')->findOrFail($id);
@@ -31,6 +34,49 @@ class GestionarRutinaCalendario extends Component
         
         $this->currentMonth = now()->month;
         $this->currentYear = now()->year;
+
+        // Cargar todas las rutinas del atleta para el selector
+        if ($this->rutina->atleta_id) {
+            $this->rutinasAtleta = Rutina::where('atleta_id', $this->rutina->atleta_id)
+                ->select('id', 'nombre', 'estado')
+                ->get();
+        } else {
+            $this->rutinasAtleta = collect();
+        }
+
+        // Cargar lista de atletas para navegación rápida
+        if (auth()->user()->esEntrenador()) {
+            $this->atletas_list = \App\Models\User::where('entrenador_id', auth()->id())->get();
+        } else {
+            $this->atletas_list = \App\Models\User::where('tipo_usuario_id', 3)->get();
+        }
+    }
+
+    public function switchAthlete($athleteId)
+    {
+        if (!$athleteId) return;
+
+        // Buscar rutina activa del atleta seleccionado
+        $activeRoutine = Rutina::where('atleta_id', $athleteId)
+            ->where('estado', 1)
+            ->first();
+
+        if ($activeRoutine) {
+            return redirect()->route('admin.rutinas.calendario', $activeRoutine->id);
+        }
+
+        // Si no tiene activa, buscar la última modificada
+        $lastRoutine = Rutina::where('atleta_id', $athleteId)
+            ->latest('updated_at')
+            ->first();
+
+        if ($lastRoutine) {
+            return redirect()->route('admin.rutinas.calendario', $lastRoutine->id);
+        }
+
+        // Si no tiene rutinas, volver al listado general
+        // Idealmente pasaríamos el filtro, pero por ahora al listado base
+        return redirect()->route('admin.rutinas');
     }
 
     #[Computed]

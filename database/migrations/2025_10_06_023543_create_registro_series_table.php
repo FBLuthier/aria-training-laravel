@@ -11,11 +11,13 @@ return new class extends Migration
         Schema::create('registro_series', function (Blueprint $table) {
             $table->id();
             $table->foreignId('rutina_ejercicio_id')->constrained('rutina_ejercicios')->onDelete('cascade');
-            $table->foreignId('unidad_medida_id')->constrained('unidades_medida');
-            $table->integer('numero_serie');
-            $table->decimal('valor_registrado', 10, 2);
-            $table->integer('repeticiones_realizadas');
-            $table->text('observaciones')->nullable();
+            $table->integer('serie_numero');
+            $table->decimal('peso', 8, 2)->nullable();
+            $table->integer('reps')->nullable();
+            $table->decimal('rpe', 3, 1)->nullable();
+            $table->integer('rir')->nullable();
+            $table->text('notas')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
     }

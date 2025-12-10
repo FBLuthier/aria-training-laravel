@@ -43,6 +43,7 @@ class GestionarEjercicios extends BaseCrudComponent
     public $equipos_seleccionados = []; 
 
     public $equipos_urls = []; // Array para URLs específicas por equipo
+    public $equipos_descripciones = []; // Array para descripciones específicas por equipo
 
     // Para Edición (Único)
     #[Rule('required|exists:equipos,id')]
@@ -103,7 +104,7 @@ class GestionarEjercicios extends BaseCrudComponent
     public function closeFormModal(): void
     {
         $this->showFormModal = false;
-        $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'editingId', 'is_bulk_create', 'equipos_urls']);
+        $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'editingId', 'is_bulk_create', 'equipos_urls', 'equipos_descripciones']);
         $this->url_video = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'; // Reset al default
         $this->resetValidation();
     }
@@ -111,7 +112,7 @@ class GestionarEjercicios extends BaseCrudComponent
     public function updatedShowFormModal($value): void
     {
         if (!$value) {
-            $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'editingId', 'is_bulk_create', 'equipos_urls']);
+            $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'editingId', 'is_bulk_create', 'equipos_urls', 'equipos_descripciones']);
             $this->url_video = 'https://youtu.be/TOOb6fSvlnM'; // Reset al default
             $this->resetValidation();
         }
@@ -119,7 +120,7 @@ class GestionarEjercicios extends BaseCrudComponent
 
     public function create(): void
     {
-        $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'equipos_urls']);
+        $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'equipos_urls', 'equipos_descripciones']);
         $this->url_video = 'https://youtu.be/TOOb6fSvlnM'; // Default
         $this->is_bulk_create = true;
         $this->showFormModal = true;
@@ -127,7 +128,7 @@ class GestionarEjercicios extends BaseCrudComponent
 
     public function edit(int $id): void
     {
-        $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'equipos_urls']);
+        $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'equipos_urls', 'equipos_descripciones']);
         $this->url_video = 'https://youtu.be/TOOb6fSvlnM'; // Default inicial
         $this->is_bulk_create = false;
         
@@ -180,10 +181,16 @@ class GestionarEjercicios extends BaseCrudComponent
                 if (!empty($this->equipos_urls[$eqId])) {
                     $videoFinal = $this->equipos_urls[$eqId];
                 }
+
+                // Prioridad: Descripción específica > Descripción global
+                $descripcionFinal = $this->descripcion;
+                if (!empty($this->equipos_descripciones[$eqId])) {
+                    $descripcionFinal = $this->equipos_descripciones[$eqId];
+                }
                 
                 $ejercicio = Ejercicio::create([
                     'nombre' => $nombreFinal,
-                    'descripcion' => $this->descripcion,
+                    'descripcion' => $descripcionFinal,
                     'url_video' => $videoFinal,
                     'grupo_muscular_id' => $this->grupo_muscular_id,
                     'equipo_id' => $eqId,

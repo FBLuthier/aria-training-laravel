@@ -1,23 +1,26 @@
 <div x-data="{ showCreateModal: @entangle('showCreateEjercicioModal') }">
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                    Editando:
-                </h2>
-                <input type="text" 
-                       value="{{ $dia->nombre_dia }}" 
-                       wire:change="updateNombreDia($event.target.value)"
-                       class="font-bold text-lg text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 transition-colors"
-                />
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="{{ route('admin.rutinas.calendario', $dia->rutina_id) }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-                    &larr; Volver al Calendario
-                </a>
+    {{-- Header simulado dentro del componente para evitar múltiples raíces --}}
+    <div class="bg-white dark:bg-gray-800 shadow">
+        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                        Editando:
+                    </h2>
+                    <input type="text" 
+                           value="{{ $dia->nombre_dia }}" 
+                           wire:change="updateNombreDia($event.target.value)"
+                           class="font-bold text-lg text-gray-800 dark:text-gray-200 bg-transparent border-none focus:ring-0 p-0 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 rounded px-2 transition-colors"
+                    />
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="{{ route('admin.rutinas.calendario', $dia->rutina_id) }}" class="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
+                        &larr; Volver al Calendario
+                    </a>
+                </div>
             </div>
         </div>
-    </x-slot>
+    </div>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-6">
@@ -251,6 +254,8 @@
 
                     <div class="relative">
                         <input type="text" 
+                               x-ref="searchInput"
+                               @focus-search.window="$nextTick(() => $refs.searchInput.focus())"
                                wire:model.live.debounce.300ms="search"
                                placeholder="Buscar ejercicio..." 
                                class="w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 focus:ring-indigo-500"

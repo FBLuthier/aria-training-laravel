@@ -82,6 +82,8 @@ class RutinaEjercicio extends Model
         'unidad_peso',
         'track_rpe',
         'track_rir',
+        'unidad_repeticiones',
+        'is_unilateral',
     ];
 
     protected $casts = [

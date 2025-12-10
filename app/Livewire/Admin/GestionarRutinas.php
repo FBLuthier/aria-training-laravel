@@ -27,6 +27,7 @@ class GestionarRutinas extends BaseCrudComponent
     public \App\Livewire\Forms\RutinaForm $form;
 
     public $atletas_list = [];
+    public $selectedAthlete = '';
 
     // =======================================================================
     //  MÉTODOS BASE
@@ -58,6 +59,11 @@ class GestionarRutinas extends BaseCrudComponent
             $query->where('atleta_id', auth()->id());
         }
 
+        // Filtro por Atleta (Dropdown)
+        if ($this->selectedAthlete) {
+            $query->where('atleta_id', $this->selectedAthlete);
+        }
+
         // Filtros estándar
         if ($this->search) {
             $query->where('nombre', 'like', '%' . $this->search . '%');
@@ -83,6 +89,29 @@ class GestionarRutinas extends BaseCrudComponent
         } else {
             // Admin ve todos los atletas (o lógica a definir)
             $this->atletas_list = User::where('tipo_usuario_id', 3)->get();
+        }
+    }
+
+    public function toggleActive($rutinaId)
+    {
+        $rutina = Rutina::find($rutinaId);
+        
+        if (!$rutina) return;
+
+        // Si ya está activa, no hacemos nada (o podríamos desactivarla si se permite ninguna activa)
+        // El requerimiento dice "que esa rutina activa sea la que vea el atleta", implicando que siempre debe haber una (o ninguna).
+        // Vamos a permitir desactivar si se hace click en la activa.
+        
+        if ($rutina->estado) {
+            $rutina->update(['estado' => 0]);
+        } else {
+            // Desactivar todas las otras rutinas de este atleta
+            Rutina::where('atleta_id', $rutina->atleta_id)
+                  ->where('id', '!=', $rutinaId)
+                  ->update(['estado' => 0]);
+
+            // Activar esta
+            $rutina->update(['estado' => 1]);
         }
     }
 }

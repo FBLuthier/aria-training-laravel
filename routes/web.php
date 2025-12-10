@@ -24,6 +24,26 @@ Route::get('/', function () {
 // --- RUTA DEL DASHBOARD PRINCIPAL ---
 // Requiere que el usuario esté autenticado y su email verificado.
 Route::get('/dashboard', function () {
+    $user = Auth::user();
+
+    if ($user->esAtleta()) {
+        // Lógica para Atleta: Buscar rutina activa y día de hoy
+        $rutinaDia = null;
+        $rutina = \App\Models\Rutina::where('atleta_id', $user->id)
+                    ->where('estado', 1)
+                    ->first();
+        
+        if ($rutina) {
+            $rutinaDia = $rutina->dias()
+                        ->whereDate('fecha', \Carbon\Carbon::today())
+                        ->with(['rutina', 'rutinaEjercicios.ejercicio'])
+                        ->first();
+        }
+
+        return view('athlete.dashboard', compact('rutinaDia'));
+    }
+
+    // Lógica para Admin/Entrenador (Dashboard Original)
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -88,6 +108,11 @@ Route::middleware('auth')->group(function () {
          */
         Route::get('auditoria/export', [AuditoriaController::class, 'export'])->name('auditoria.export');
 
+    });
+
+    // --- RUTAS DE ATLETA ---
+    Route::prefix('entrenamiento')->name('athlete.workout.')->group(function () {
+        Route::get('/{rutinaDia}', \App\Livewire\Athlete\WorkoutSession::class)->name('show');
     });
     
 });

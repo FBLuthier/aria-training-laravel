@@ -150,9 +150,6 @@
                     class="mt-1 block w-full" 
                     type="text"
                     placeholder="Ej: Curl de Bíceps" />
-                <p class="text-xs text-gray-500 mt-1">
-                    {{ $is_bulk_create ? 'Se agregará el nombre del equipo automáticamente. Ej: "Curl de Bíceps (Mancuerna)"' : 'Nombre completo del ejercicio.' }}
-                </p>
                 @error('nombre') <x-input-error :messages="$message" class="mt-2" /> @enderror
             </div>
 
@@ -175,17 +172,30 @@
                     <div class="mt-2 border border-gray-200 dark:border-gray-700 rounded-md p-2 space-y-2">
                         @foreach($equipos_list as $equipo)
                             <div class="flex flex-col p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors {{ in_array($equipo->id, $equipos_seleccionados) ? 'bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800' : '' }}">
-                                <label class="flex items-center space-x-3 cursor-pointer">
-                                    <input type="checkbox" wire:model.live="equipos_seleccionados" value="{{ $equipo->id }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-5 h-5">
-                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $equipo->nombre }}</span>
-                                </label>
-                                
+                                {{-- Fila 1: Checkbox + Nombre + URL Video --}}
+                                <div class="flex items-center gap-3 w-full">
+                                    <label class="flex items-center space-x-3 cursor-pointer flex-shrink-0 min-w-[150px]">
+                                        <input type="checkbox" wire:model.live="equipos_seleccionados" value="{{ $equipo->id }}" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-5 h-5">
+                                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ $equipo->nombre }}</span>
+                                    </label>
+                                    
+                                    @if(in_array($equipo->id, $equipos_seleccionados))
+                                        <div class="flex-grow">
+                                            <x-text-input 
+                                                wire:model="equipos_urls.{{ $equipo->id }}" 
+                                                class="w-full text-xs py-1" 
+                                                placeholder="URL Video (Opcional)" />
+                                        </div>
+                                    @endif
+                                </div>
+
+                                {{-- Fila 2: Descripción (Solo si seleccionado) --}}
                                 @if(in_array($equipo->id, $equipos_seleccionados))
-                                    <div class="mt-2 ml-8">
+                                    <div class="mt-2 pl-8 w-full">
                                         <x-text-input 
-                                            wire:model="equipos_urls.{{ $equipo->id }}" 
+                                            wire:model="equipos_descripciones.{{ $equipo->id }}" 
                                             class="w-full text-xs py-1" 
-                                            placeholder="URL específica para {{ $equipo->nombre }} (Opcional)" />
+                                            placeholder="Descripción para {{ $equipo->nombre }} (Opcional)" />
                                     </div>
                                 @endif
                             </div>
@@ -205,6 +215,16 @@
                         @endforeach
                     </select>
                     @error('equipo_id') <x-input-error :messages="$message" class="mt-2" /> @enderror
+                </div>
+            @endif
+
+
+            {{-- Descripción (Solo en Edición) --}}
+            @if(!$is_bulk_create)
+                <div>
+                    <x-input-label for="descripcion" value="Descripción (Opcional)" />
+                    <textarea wire:model="descripcion" id="descripcion" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
+                    @error('descripcion') <x-input-error :messages="$message" class="mt-2" /> @enderror
                 </div>
             @endif
 
@@ -233,13 +253,6 @@
                     </div>
                 </div>
             @endif
-
-            {{-- Descripción --}}
-            <div>
-                <x-input-label for="descripcion" value="Descripción (Opcional)" />
-                <textarea wire:model="descripcion" id="descripcion" rows="3" class="mt-1 block w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"></textarea>
-                @error('descripcion') <x-input-error :messages="$message" class="mt-2" /> @enderror
-            </div>
         </div>
     </x-form-modal>
 

@@ -53,6 +53,7 @@ class GestionarDiaRutina extends Component
                 'repeticiones' => $re->repeticiones,
                 'peso_sugerido' => $re->peso_sugerido,
                 'unidad_peso' => $re->unidad_peso ?? 'kg',
+                'unidad_repeticiones' => $re->unidad_repeticiones ?? 'reps',
                 'descanso_segundos' => $re->descanso_segundos,
                 'indicaciones' => $re->indicaciones,
                 'tempo' => $re->tempo ?? [
@@ -63,6 +64,7 @@ class GestionarDiaRutina extends Component
                 'has_tempo' => !empty($re->tempo),
                 'track_rpe' => (bool) $re->track_rpe,
                 'track_rir' => (bool) $re->track_rir,
+                'is_unilateral' => (bool) $re->is_unilateral,
             ];
         }
     }
@@ -138,6 +140,7 @@ class GestionarDiaRutina extends Component
         $this->search = ''; // Limpiar búsqueda
         
         $this->dispatch('notify', message: 'Ejercicio añadido', type: 'success');
+        $this->dispatch('focus-search');
     }
 
     public function removeEjercicio($rutinaEjercicioId)

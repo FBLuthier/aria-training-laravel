@@ -82,10 +82,41 @@
             
             
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <p><strong>Atleta:</strong> <?php echo e($rutina->atleta?->nombre_1 ?? 'Sin Asignar'); ?> <?php echo e($rutina->atleta?->apellido_1); ?></p>
+                <div class="p-6 text-gray-900 dark:text-gray-100 flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg font-semibold">Atleta:</span>
+                        <select 
+                            wire:change="switchAthlete($event.target.value)"
+                            class="text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                        >
+                            <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $atletas_list; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $atleta): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($atleta->id); ?>" <?php echo e($rutina->atleta_id == $atleta->id ? 'selected' : ''); ?>>
+                                    <?php echo e($atleta->nombre_1); ?> <?php echo e($atleta->apellido_1); ?>
+
+                                </option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                        </select>
+                    </div>
                     <!--[if BLOCK]><![endif]--><?php if($rutina->descripcion): ?>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400"><?php echo e($rutina->descripcion); ?></p>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400"><?php echo e($rutina->descripcion); ?></p>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                    
+                    <!--[if BLOCK]><![endif]--><?php if($rutinasAtleta->count() > 1): ?>
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">Cambiar Rutina:</span>
+                            <select 
+                                onchange="window.location.href = '<?php echo e(route('admin.rutinas.calendario', $rutina->id)); ?>'.replace('/<?php echo e($rutina->id); ?>/calendario', '/' + this.value + '/calendario')"
+                                class="text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm"
+                            >
+                                <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $rutinasAtleta; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($r->id); ?>" <?php echo e($r->id == $rutina->id ? 'selected' : ''); ?>>
+                                        <?php echo e($r->nombre); ?> <?php echo e($r->estado ? '(ACTIVA)' : ''); ?>
+
+                                    </option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
+                            </select>
+                        </div>
                     <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
                 </div>
             </div>
