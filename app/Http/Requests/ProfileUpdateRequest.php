@@ -35,7 +35,7 @@ class ProfileUpdateRequest extends FormRequest
                 'string',   // Debe ser una cadena de texto.
                 'max:255',  // No puede exceder los 255 caracteres.
             ],
-            
+
             // Reglas para el campo 'email':
             'email' => [
                 'required',  // El email es obligatorio.

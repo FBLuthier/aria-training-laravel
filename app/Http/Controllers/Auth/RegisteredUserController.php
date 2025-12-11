@@ -9,18 +9,17 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules;
-use Illuminate\View\View;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\View\View;
 
 /**
  * =======================================================================
  * CONTROLLER: REGISTRO DE NUEVOS USUARIOS
  * =======================================================================
- * 
+ *
  * Maneja el proceso completo de registro de nuevos usuarios en el sistema.
  * Incluye validación robusta, creación de cuenta y auto-login.
- * 
+ *
  * RESPONSABILIDADES:
  * - Mostrar formulario de registro
  * - Validar datos del nuevo usuario
@@ -28,7 +27,7 @@ use Illuminate\Validation\Rules\Password;
  * - Hash de contraseña
  * - Disparar evento Registered
  * - Auto-login del usuario registrado
- * 
+ *
  * VALIDACIONES APLICADAS:
  * - Usuario: 3-15 caracteres, único, sin espacios, lowercase
  * - Contraseña: 8+ caracteres, mayúsculas, minúsculas, números, símbolos, no comprometida
@@ -36,11 +35,11 @@ use Illuminate\Validation\Rules\Password;
  * - Nombres/Apellidos: solo letras, máx 15 caracteres
  * - Teléfono: 7-15 dígitos numéricos
  * - Fecha nacimiento: formato fecha válido
- * 
+ *
  * VALORES POR DEFECTO:
  * - estado: 1 (Activo)
  * - tipo_usuario_id: 3 (Atleta)
- * 
+ *
  * FLUJO DE REGISTRO:
  * 1. Usuario accede a /register
  * 2. Completa formulario
@@ -49,15 +48,14 @@ use Illuminate\Validation\Rules\Password;
  * 5. Evento Registered (puede enviar email de verificación)
  * 6. Auto-login
  * 7. Redirección a dashboard
- * 
- * @package App\Http\Controllers\Auth
+ *
  * @since 1.0
  */
 class RegisteredUserController extends Controller
 {
     /**
      * Muestra el formulario de registro.
-     * 
+     *
      * @return View Vista 'auth.register'
      */
     public function create(): View
@@ -67,7 +65,7 @@ class RegisteredUserController extends Controller
 
     /**
      * Procesa el registro de un nuevo usuario.
-     * 
+     *
      * Este método:
      * 1. Valida todos los campos del formulario
      * 2. Crea el usuario con contraseña hasheada
@@ -75,9 +73,9 @@ class RegisteredUserController extends Controller
      * 4. Dispara evento Registered
      * 5. Hace login automático
      * 6. Redirige al dashboard
-     * 
-     * @param Request $request
+     *
      * @return RedirectResponse Redirige a dashboard
+     *
      * @throws \Illuminate\Validation\ValidationException Si validación falla
      */
     public function store(Request $request): RedirectResponse
@@ -95,7 +93,7 @@ class RegisteredUserController extends Controller
                     ->symbols()
                     ->uncompromised(), // Verifica contra base de datos de contraseñas filtradas
             ],
-            'correo' => ['required', 'string', 'lowercase', 'email', 'max:45', 'unique:usuarios', 'before_or_equal:' . now()->subYears(8)->format('Y-m-d')],
+            'correo' => ['required', 'string', 'lowercase', 'email', 'max:45', 'unique:usuarios', 'before_or_equal:'.now()->subYears(8)->format('Y-m-d')],
             'nombre_1' => ['required', 'string', 'alpha', 'max:15'],
             'nombre_2' => ['nullable', 'string', 'alpha', 'max:15'],
             'apellido_1' => ['required', 'string', 'alpha', 'max:15'],

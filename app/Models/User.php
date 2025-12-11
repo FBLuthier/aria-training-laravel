@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
+use App\Models\Builders\UserQueryBuilder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,12 +15,12 @@ use Illuminate\Notifications\Notifiable;
  * =======================================================================
  * MODELO: USER (USUARIO)
  * =======================================================================
- * 
+ *
  * Representa un usuario del sistema de gestión de gimnasio.
  * Extiende de Authenticatable para integración con el sistema de autenticación.
- * 
+ *
  * TABLA: usuarios
- * 
+ *
  * COLUMNAS PRINCIPALES:
  * - id: int (PK, auto-increment)
  * - usuario: string(255) - Nombre de usuario único para login
@@ -30,28 +32,28 @@ use Illuminate\Notifications\Notifiable;
  * - fecha_nacimiento: date - Fecha de nacimiento
  * - estado: enum - Estado del usuario (activo, inactivo, etc.)
  * - tipo_usuario_id: int (FK) - Tipo de usuario (Admin, Entrenador, Atleta)
- * 
+ *
  * TIPOS DE USUARIO:
  * 1. Administrador (tipo_usuario_id = 1): Acceso total al sistema
  * 2. Entrenador (tipo_usuario_id = 2): Gestión de rutinas y atletas
  * 3. Atleta (tipo_usuario_id = 3): Visualización de rutinas propias
- * 
+ *
  * RELACIONES:
  * - tipoUsuario: BelongsTo - Tipo de usuario (rol)
  * - rutinas: HasMany - Rutinas creadas (si es entrenador)
  * - auditLogs: HasMany - Registros de auditoría de acciones
- * 
+ *
  * CARACTERÍSTICAS:
  * - Autenticación Laravel integrada
  * - Contraseña hasheada automáticamente
  * - Factory para generar datos de prueba
  * - Notificaciones habilitadas
- * 
+ *
  * SEGURIDAD:
  * - Contraseña nunca se expone en JSON (hidden)
  * - Hash automático al guardar
  * - Remember token para "recordarme"
- * 
+ *
  * @property int $id
  * @property string $usuario
  * @property string $correo
@@ -67,12 +69,10 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $remember_token
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * 
  * @property-read TipoUsuario $tipoUsuario
  * @property-read \Illuminate\Database\Eloquent\Collection|Rutina[] $rutinas
  * @property-read \Illuminate\Database\Eloquent\Collection|AuditLog[] $auditLogs
- * 
- * @package App\Models
+ *
  * @since 1.0
  */
 class User extends Authenticatable
@@ -80,10 +80,11 @@ class User extends Authenticatable
     // =======================================================================
     //  TRAITS
     // =======================================================================
-    
+
     /** @var HasFactory Permite usar factories para testing */
     /** @var Notifiable Habilita envío de notificaciones al usuario */
     use HasFactory, Notifiable;
+
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
     // =======================================================================
@@ -96,10 +97,10 @@ class User extends Authenticatable
     public function scopeApplyFilters($query, $search, $showingTrash)
     {
         $query->when($search, function ($q) use ($search) {
-            $q->where('nombre_1', 'like', '%' . $search . '%')
-              ->orWhere('apellido_1', 'like', '%' . $search . '%')
-              ->orWhere('correo', 'like', '%' . $search . '%')
-              ->orWhere('usuario', 'like', '%' . $search . '%');
+            $q->where('nombre_1', 'like', '%'.$search.'%')
+                ->orWhere('apellido_1', 'like', '%'.$search.'%')
+                ->orWhere('correo', 'like', '%'.$search.'%')
+                ->orWhere('usuario', 'like', '%'.$search.'%');
         });
 
         if ($showingTrash) {
@@ -127,7 +128,7 @@ class User extends Authenticatable
 
     /**
      * Campos asignables en masa (mass assignment).
-     * 
+     *
      * Estos campos pueden ser asignados usando User::create() o $user->fill()
      * sin riesgo de asignación masiva maliciosa.
      *
@@ -146,14 +147,15 @@ class User extends Authenticatable
         'estado',               // Estado del usuario
         'tipo_usuario_id',      // Tipo de usuario (FK a tipos_usuarios)
         'entrenador_id',        // ID del entrenador asignado (para atletas)
+        'profile_photo_path',   // Ruta de la foto de perfil
     ];
 
     /**
      * Atributos que deben ocultarse en arrays/JSON.
-     * 
+     *
      * Estos campos NO se incluyen cuando el modelo se serializa
      * (ej: return response()->json($user)).
-     * 
+     *
      * SEGURIDAD: La contraseña NUNCA debe exponerse en APIs.
      *
      * @var array<string>
@@ -169,7 +171,7 @@ class User extends Authenticatable
 
     /**
      * Atributos que deben castearse a tipos nativos.
-     * 
+     *
      * 'hashed' hace que Laravel automáticamente:
      * - Hashee la contraseña al asignar: $user->contrasena = 'plain'
      * - Mantenga el hash al recuperar de BD
@@ -181,6 +183,7 @@ class User extends Authenticatable
         return [
             'contrasena' => 'hashed',  // Hash automático de contraseña
             'fecha_nacimiento' => 'date',
+            'tipo_usuario_id' => UserRole::class,
         ];
     }
 
@@ -190,10 +193,10 @@ class User extends Authenticatable
 
     /**
      * Obtiene la contraseña para autenticación.
-     * 
+     *
      * Laravel espera que el campo se llame 'password', pero en esta
      * aplicación se usa 'contrasena'. Este método mapea el campo correcto.
-     * 
+     *
      * @return string Hash de la contraseña
      */
     public function getAuthPassword()
@@ -207,15 +210,15 @@ class User extends Authenticatable
 
     /**
      * Relación: Un usuario pertenece a un tipo de usuario (rol).
-     * 
+     *
      * Esta es una relación muchos-a-uno (N:1).
      * Múltiples usuarios pueden tener el mismo tipo (ej: varios Entrenadores).
-     * 
+     *
      * TIPOS DE USUARIO:
      * - 1: Administrador (acceso total)
      * - 2: Entrenador (crea rutinas)
      * - 3: Atleta (sigue rutinas)
-     * 
+     *
      * Uso:
      * ```php
      * $user->tipoUsuario->rol; // "Administrador"
@@ -223,8 +226,6 @@ class User extends Authenticatable
      *     // Es administrador
      * }
      * ```
-     * 
-     * @return BelongsTo
      */
     public function tipoUsuario(): BelongsTo
     {
@@ -233,23 +234,21 @@ class User extends Authenticatable
 
     /**
      * Relación: Un usuario puede tener muchas rutinas.
-     * 
+     *
      * Esta relación aplica principalmente a ENTRENADORES.
      * Los entrenadores crean rutinas para los atletas.
-     * 
+     *
      * Uso:
      * ```php
      * // Obtener rutinas creadas por un entrenador
      * $rutinas = $entrenador->rutinas;
-     * 
+     *
      * // Contar rutinas
      * $cantidad = $entrenador->rutinas()->count();
-     * 
+     *
      * // Crear nueva rutina
      * $entrenador->rutinas()->create([...]);
      * ```
-     * 
-     * @return HasMany
      */
     public function rutinas(): HasMany
     {
@@ -258,29 +257,27 @@ class User extends Authenticatable
 
     /**
      * Relación: Un usuario puede tener muchos registros de auditoría.
-     * 
+     *
      * Registra todas las acciones realizadas por el usuario:
      * - Creaciones
      * - Actualizaciones
      * - Eliminaciones
-     * 
+     *
      * Útil para:
      * - Rastreo de cambios
      * - Auditorías de seguridad
      * - Recuperación de datos
-     * 
+     *
      * Uso:
      * ```php
      * // Ver últimas acciones del usuario
      * $acciones = $user->auditLogs()->latest()->take(10)->get();
-     * 
+     *
      * // Buscar cambios en modelo específico
      * $cambios = $user->auditLogs()
      *     ->where('model_type', 'Equipo')
      *     ->get();
      * ```
-     * 
-     * @return HasMany
      */
     public function auditLogs(): HasMany
     {
@@ -289,8 +286,6 @@ class User extends Authenticatable
 
     /**
      * Relación: Un Atleta pertenece a un Entrenador.
-     * 
-     * @return BelongsTo
      */
     public function entrenador(): BelongsTo
     {
@@ -299,8 +294,6 @@ class User extends Authenticatable
 
     /**
      * Relación: Un Entrenador tiene muchos Atletas.
-     * 
-     * @return HasMany
      */
     public function atletas(): HasMany
     {
@@ -316,7 +309,7 @@ class User extends Authenticatable
      */
     public function esAdmin(): bool
     {
-        return $this->tipo_usuario_id === 1;
+        return $this->tipo_usuario_id === UserRole::Admin;
     }
 
     /**
@@ -324,7 +317,7 @@ class User extends Authenticatable
      */
     public function esEntrenador(): bool
     {
-        return $this->tipo_usuario_id === 2;
+        return $this->tipo_usuario_id === UserRole::Entrenador;
     }
 
     /**
@@ -332,6 +325,28 @@ class User extends Authenticatable
      */
     public function esAtleta(): bool
     {
-        return $this->tipo_usuario_id === 3;
+        return $this->tipo_usuario_id === UserRole::Atleta;
+    }
+
+    /**
+     * Create a new Eloquent query builder for the model.
+     *
+     * @param  \Illuminate\Database\Query\Builder  $query
+     */
+    public function newEloquentBuilder($query): UserQueryBuilder
+    {
+        return new UserQueryBuilder($query);
+    }
+
+    /**
+     * Obtiene la URL de la foto de perfil.
+     *
+     * @return string
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        return $this->profile_photo_path
+                    ? asset('storage/' . $this->profile_photo_path)
+                    : 'https://ui-avatars.com/api/?name=' . urlencode($this->nombre_1 . ' ' . $this->apellido_1) . '&color=7F9CF5&background=EBF4FF';
     }
 }

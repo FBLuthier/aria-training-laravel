@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest; // Clase base para las peticiones de
 use Illuminate\Support\Facades\Auth;        // Fachada para interactuar con el sistema de autenticación.
 use Illuminate\Support\Facades\RateLimiter; // Fachada para manejar el límite de intentos (seguridad).
 use Illuminate\Support\Str;                   // Helper para manipulación de strings.
-use Illuminate\Validation\ValidationException;// Excepción que se lanza cuando la validación falla.
+use Illuminate\Validation\ValidationException; // Excepción que se lanza cuando la validación falla.
 
 /**
  * =========================================================================
@@ -26,8 +26,6 @@ class LoginRequest extends FormRequest
      * Determina si el usuario está autorizado para realizar esta petición.
      * En un formulario de login, cualquier usuario (incluso no autenticado)
      * puede intentar iniciar sesión, por lo que siempre devolvemos `true`.
-     *
-     * @return bool
      */
     public function authorize(): bool
     {
@@ -65,7 +63,7 @@ class LoginRequest extends FormRequest
         // Se mapean los campos del formulario ('usuario', 'contrasena') a los que Auth espera ('usuario', 'password').
         // El segundo parámetro, `$this->boolean('remember')`, gestiona la casilla "Recordarme".
         if (! Auth::attempt(['usuario' => $this->usuario, 'password' => $this->contrasena], $this->boolean('remember'))) {
-            
+
             // 3. SI LA AUTENTICACIÓN FALLA:
             //    a) Registramos un intento fallido para este usuario/IP.
             RateLimiter::hit($this->throttleKey());
@@ -115,8 +113,6 @@ class LoginRequest extends FormRequest
     /**
      * Obtiene la clave única para el límite de intentos de esta petición.
      * La clave se genera combinando el email/usuario en minúsculas y la dirección IP.
-     *
-     * @return string
      */
     public function throttleKey(): string
     {

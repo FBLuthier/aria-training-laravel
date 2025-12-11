@@ -5,13 +5,13 @@ namespace App\Livewire\Admin;
 use App\Livewire\BaseCrudComponent;
 use App\Models\Rutina;
 use App\Models\User;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Rule;
+use App\Services\RutinaService;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 
 /**
  * Componente para gestionar Rutinas (Maestro).
- * 
+ *
  * Permite:
  * 1. Listar rutinas (filtradas por atleta si es entrenador).
  * 2. Crear/Editar rutinas (Nombre, Descripción, Atleta asignado).
@@ -27,6 +27,7 @@ class GestionarRutinas extends BaseCrudComponent
     public \App\Livewire\Forms\RutinaForm $form;
 
     public $atletas_list = [];
+
     public $selectedAthlete = '';
 
     // =======================================================================
@@ -66,7 +67,7 @@ class GestionarRutinas extends BaseCrudComponent
 
         // Filtros estándar
         if ($this->search) {
-            $query->where('nombre', 'like', '%' . $this->search . '%');
+            $query->where('nombre', 'like', '%'.$this->search.'%');
         }
 
         if ($this->showingTrash) {
@@ -74,44 +75,34 @@ class GestionarRutinas extends BaseCrudComponent
         }
 
         return $query->orderBy($this->sortField, $this->sortDirection->value)
-                     ->paginate($this->getPerPage());
+            ->paginate($this->getPerPage());
     }
 
     // =======================================================================
     //  CICLO DE VIDA
     // =======================================================================
 
-    public function mount()
+    protected RutinaService $rutinaService;
+
+    public function mount(RutinaService $rutinaService)
     {
-        // Cargar listas
-        if (auth()->user()->esEntrenador()) {
-            $this->atletas_list = User::where('entrenador_id', auth()->id())->get();
-        } else {
-            // Admin ve todos los atletas (o lógica a definir)
-            $this->atletas_list = User::where('tipo_usuario_id', 3)->get();
-        }
+        $this->rutinaService = $rutinaService;
+        
+        // Cargar listas usando el servicio
+        $this->atletas_list = $this->rutinaService->getAvailableAthletes(auth()->user());
     }
 
     public function toggleActive($rutinaId)
     {
         $rutina = Rutina::find($rutinaId);
-        
-        if (!$rutina) return;
 
-        // Si ya está activa, no hacemos nada (o podríamos desactivarla si se permite ninguna activa)
-        // El requerimiento dice "que esa rutina activa sea la que vea el atleta", implicando que siempre debe haber una (o ninguna).
-        // Vamos a permitir desactivar si se hace click en la activa.
-        
-        if ($rutina->estado) {
-            $rutina->update(['estado' => 0]);
-        } else {
-            // Desactivar todas las otras rutinas de este atleta
-            Rutina::where('atleta_id', $rutina->atleta_id)
-                  ->where('id', '!=', $rutinaId)
-                  ->update(['estado' => 0]);
-
-            // Activar esta
-            $rutina->update(['estado' => 1]);
+        if (! $rutina) {
+            return;
         }
+
+        $isActive = $this->rutinaService->toggleActive($rutina);
+        
+        $message = $isActive ? 'Rutina activada correctamente.' : 'Rutina desactivada.';
+        $this->dispatch('notify', message: $message);
     }
 }

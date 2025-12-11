@@ -9,44 +9,43 @@ use Illuminate\Validation\Rule as ValidationRule;
  * =======================================================================
  * FORMULARIO PARA GESTIÓN DE EQUIPOS
  * =======================================================================
- * 
+ *
  * Este formulario maneja la creación y edición de equipos de gimnasio.
  * Extiende de BaseModelForm para heredar toda la lógica común de validación,
  * guardado y manejo de errores.
- * 
+ *
  * FUNCIONALIDADES HEREDADAS:
  * - save(): Guarda o actualiza el modelo
  * - validate(): Valida los datos del formulario
  * - reset(): Resetea el formulario a valores por defecto
  * - setModel(): Carga datos de un modelo existente
- * 
+ *
  * VALIDACIONES:
  * - Nombre: requerido, 3-45 caracteres, único en la tabla
- * 
+ *
  * USO EN COMPONENTE:
  * ```php
  * public EquipoForm $form;
- * 
+ *
  * public function create()
  * {
  *     $this->form->reset();
  *     $this->showFormModal = true;
  * }
- * 
+ *
  * public function edit($id)
  * {
  *     $equipo = Equipo::findOrFail($id);
  *     $this->form->setEquipo($equipo);
  *     $this->showFormModal = true;
  * }
- * 
+ *
  * public function save()
  * {
  *     $this->form->save();
  * }
  * ```
- * 
- * @package App\Livewire\Forms
+ *
  * @since 1.0
  */
 class EquipoForm extends BaseModelForm
@@ -73,8 +72,8 @@ class EquipoForm extends BaseModelForm
                 'string',
                 'min:3',
                 'max:45',
-                ValidationRule::unique('equipos')->ignore($this->model?->id)
-            ]
+                ValidationRule::unique('equipos')->ignore($this->model?->id),
+            ],
         ];
     }
 
@@ -100,11 +99,11 @@ class EquipoForm extends BaseModelForm
     protected function getModelData(): array
     {
         $data = [
-            'nombre' => $this->nombre
+            'nombre' => $this->nombre,
         ];
 
         // Si es creación, asignar usuario actual
-        if (!$this->model->exists) {
+        if (! $this->model->exists) {
             $data['usuario_id'] = auth()->id();
         }
 
@@ -117,9 +116,6 @@ class EquipoForm extends BaseModelForm
 
     /**
      * Método de conveniencia para compatibilidad con código existente.
-     * 
-     * @param Equipo $equipo
-     * @return void
      */
     public function setEquipo(Equipo $equipo): void
     {

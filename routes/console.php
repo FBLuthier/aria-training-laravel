@@ -25,13 +25,13 @@ use Illuminate\Support\Facades\Artisan;
 
 /**
  * Comando de ejemplo que muestra una cita inspiradora.
- * 
+ *
  * Este es un comando simple incluido por defecto en Laravel
  * que demuestra cómo crear comandos basados en closures.
- * 
+ *
  * USO:
  * php artisan inspire
- * 
+ *
  * SALIDA:
  * Muestra una cita aleatoria inspiradora en la consola.
  */

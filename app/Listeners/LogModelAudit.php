@@ -15,9 +15,9 @@ class LogModelAudit
     {
         // Crear una clave única para evitar duplicados
         $uniqueKey = md5(
-            $event->action .
-            get_class($event->model) .
-            $event->model->getKey() .
+            $event->action.
+            get_class($event->model).
+            $event->model->getKey().
             now()->format('Y-m-d H:i:s')
         );
 

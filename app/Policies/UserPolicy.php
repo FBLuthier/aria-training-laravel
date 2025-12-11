@@ -12,7 +12,7 @@ class UserPolicy extends BaseAdminPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $this->isAdmin($user) || $this->isEntrenador($user);
+        return $user->esAdmin() || $user->esEntrenador();
     }
 
     /**
@@ -20,14 +20,16 @@ class UserPolicy extends BaseAdminPolicy
      */
     public function view(User $user, Model $model): bool
     {
-        if ($this->isAdmin($user)) {
+        if ($user->esAdmin()) {
             return true;
         }
-        if ($this->isEntrenador($user)) {
-            // Entrenador solo puede ver a sus atletas
-            return $model->entrenador_id === $user->id;
+
+        if ($user->esEntrenador()) {
+            // Entrenador puede ver a sus atletas o a sí mismo
+            return $model->entrenador_id === $user->id || $model->id === $user->id;
         }
-        return false;
+
+        return $model->id === $user->id;
     }
 
     /**
@@ -35,7 +37,7 @@ class UserPolicy extends BaseAdminPolicy
      */
     public function create(User $user): bool
     {
-        return $this->isAdmin($user) || $this->isEntrenador($user);
+        return $user->esAdmin() || $user->esEntrenador();
     }
 
     /**
@@ -43,13 +45,15 @@ class UserPolicy extends BaseAdminPolicy
      */
     public function update(User $user, Model $model): bool
     {
-        if ($this->isAdmin($user)) {
+        if ($user->esAdmin()) {
             return true;
         }
-        if ($this->isEntrenador($user)) {
-            // Entrenador solo puede editar a sus atletas
+
+        if ($user->esEntrenador()) {
+            // Entrenador puede editar a sus atletas
             return $model->entrenador_id === $user->id;
         }
+
         return false;
     }
 
@@ -69,6 +73,7 @@ class UserPolicy extends BaseAdminPolicy
             // Entrenador solo puede eliminar a sus atletas
             return $model->entrenador_id === $user->id;
         }
+
         return false;
     }
 

@@ -4,11 +4,11 @@
  * =======================================================================
  * MIGRACIÓN: TABLA AUDIT LOGS (AUDITORÍA)
  * =======================================================================
- * 
+ *
  * Crea la tabla de registros de auditoría del sistema.
  * Registra TODAS las acciones críticas realizadas en el sistema para
  * trazabilidad, seguridad y cumplimiento normativo.
- * 
+ *
  * ESTRUCTURA:
  * - id: Identificador único del log
  * - user_id: FK nullable a usuarios (quién realizó la acción)
@@ -20,21 +20,20 @@
  * - ip_address: IP desde donde se hizo la acción (soporte IPv6)
  * - user_agent: Navegador/cliente usado
  * - timestamps: created_at, updated_at
- * 
+ *
  * ÍNDICES:
  * Para optimización de consultas frecuentes:
  * - model_type + model_id: Buscar todos los cambios de un registro
  * - user_id: Buscar todas las acciones de un usuario
  * - action: Filtrar por tipo de acción
  * - created_at: Ordenar cronológicamente
- * 
+ *
  * USOS:
  * - Seguridad: Detectar acciones sospechosas
  * - Compliance: Cumplir con regulaciones (SOX, GDPR)
  * - Debugging: Rastrear cambios inesperados
  * - Recuperación: Restaurar datos borrados
- * 
- * @package Database\Migrations
+ *
  * @since 1.0
  */
 
@@ -46,7 +45,7 @@ return new class extends Migration
 {
     /**
      * Ejecuta la migración.
-     * 
+     *
      * Crea la tabla audit_logs con todos sus campos, constraints e índices.
      */
     public function up(): void
@@ -73,7 +72,7 @@ return new class extends Migration
 
     /**
      * Revierte la migración.
-     * 
+     *
      * Elimina la tabla audit_logs si existe.
      */
     public function down(): void

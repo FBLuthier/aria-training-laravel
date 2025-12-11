@@ -15,10 +15,10 @@ class EquipoSeeder extends Seeder
     {
         // Desactivar verificación de claves foráneas para permitir truncar
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
+
         // Limpiar la tabla antes de poblar
         Equipo::truncate();
-        
+
         // Reactivar verificación
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 

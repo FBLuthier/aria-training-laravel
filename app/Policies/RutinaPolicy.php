@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Models\Rutina;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 

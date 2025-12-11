@@ -2,9 +2,9 @@
 
 namespace App\Livewire\Forms;
 
+use App\Models\Rutina;
 use Livewire\Attributes\Rule;
 use Livewire\Form;
-use App\Models\Rutina;
 
 class RutinaForm extends Form
 {
@@ -40,9 +40,11 @@ class RutinaForm extends Form
 
         if ($this->model && $this->model->exists) {
             $this->model->update($data);
+
             return 'Rutina actualizada correctamente';
         } else {
             $this->model = Rutina::create($data);
+
             return 'Rutina creada correctamente';
         }
     }

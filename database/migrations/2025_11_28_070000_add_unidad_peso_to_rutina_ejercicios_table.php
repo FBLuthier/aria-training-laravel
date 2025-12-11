@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('rutina_ejercicios', function (Blueprint $table) {
-            if (!Schema::hasColumn('rutina_ejercicios', 'unidad_peso')) {
+            if (! Schema::hasColumn('rutina_ejercicios', 'unidad_peso')) {
                 $table->enum('unidad_peso', ['kg', 'lbs'])->default('kg')->after('peso_sugerido');
             }
         });

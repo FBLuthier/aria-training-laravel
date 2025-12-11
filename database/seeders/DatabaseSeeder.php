@@ -20,7 +20,39 @@ class DatabaseSeeder extends Seeder
         // --- SEEDERS SOLO PARA DESARROLLO ---
         // 2. CAMBIAMOS '$this->app' POR 'App'
         if (App::environment('local')) {
-            
+            // 1. Crear Admin Principal
+            User::factory()->create([
+                'usuario' => 'admin',
+                'correo' => 'admin@admin.com',
+                'nombre_1' => 'Super',
+                'apellido_1' => 'Admin',
+                'tipo_usuario_id' => UserRole::Admin,
+                'estado' => 1,
+                'password' => Hash::make('password'),
+            ]);
+
+            // 2. Crear 3 Entrenadores
+            $entrenadores = User::factory(3)->create([
+                'tipo_usuario_id' => UserRole::Entrenador,
+                'estado' => 1,
+            ]);
+
+            // 3. Crear 5 Atletas para cada Entrenador
+            foreach ($entrenadores as $entrenador) {
+                User::factory(5)->create([
+                    'tipo_usuario_id' => UserRole::Atleta,
+                    'entrenador_id' => $entrenador->id,
+                    'estado' => 1,
+                ]);
+            }
+
+            // 4. Crear Atletas sin asignar (opcional)
+            User::factory(5)->create([
+                'tipo_usuario_id' => UserRole::Atleta,
+                'entrenador_id' => null,
+                'estado' => 1,
+            ]);
+
             // Seeders de Datos Maestros (Orden Importante)
             $this->call([
                 EquipoSeeder::class,

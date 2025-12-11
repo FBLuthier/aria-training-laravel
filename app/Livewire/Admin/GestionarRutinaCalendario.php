@@ -4,14 +4,13 @@ namespace App\Livewire\Admin;
 
 use App\Models\Rutina;
 use App\Models\RutinaDia;
-use App\Models\RutinaEjercicio;
-use Livewire\Component;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 /**
  * Componente para gestionar el Calendario/Semana de una Rutina.
- * 
+ *
  * Permite:
  * 1. Visualizar los días de la rutina.
  * 2. Asignar plantillas a días específicos.
@@ -21,17 +20,20 @@ use Livewire\Attributes\Computed;
 class GestionarRutinaCalendario extends Component
 {
     public Rutina $rutina;
+
     public $currentMonth;
+
     public $currentYear;
 
     public $rutinasAtleta;
+
     public $atletas_list;
 
     public function mount($id)
     {
         $this->rutina = Rutina::with('atleta')->findOrFail($id);
         $this->authorize('view', $this->rutina);
-        
+
         $this->currentMonth = now()->month;
         $this->currentYear = now()->year;
 
@@ -54,7 +56,9 @@ class GestionarRutinaCalendario extends Component
 
     public function switchAthlete($athleteId)
     {
-        if (!$athleteId) return;
+        if (! $athleteId) {
+            return;
+        }
 
         // Buscar rutina activa del atleta seleccionado
         $activeRoutine = Rutina::where('atleta_id', $athleteId)
@@ -97,7 +101,7 @@ class GestionarRutinaCalendario extends Component
     #[Computed]
     public function diasProgramados()
     {
-        return $this->dias()->whereNotNull('fecha')->groupBy(function($dia) {
+        return $this->dias()->whereNotNull('fecha')->groupBy(function ($dia) {
             return $dia->fecha->format('Y-m-d');
         });
     }
@@ -113,7 +117,7 @@ class GestionarRutinaCalendario extends Component
     {
         $dia = RutinaDia::findOrFail($diaId);
         $dia->update(['fecha' => $fecha]);
-        
+
         $this->dispatch('notify', message: 'Día programado correctamente', type: 'success');
     }
 
@@ -121,7 +125,7 @@ class GestionarRutinaCalendario extends Component
     {
         $dia = RutinaDia::findOrFail($diaId);
         $dia->update(['fecha' => null]);
-        
+
         $this->dispatch('notify', message: 'Día movido al banco', type: 'success');
     }
 
@@ -137,11 +141,11 @@ class GestionarRutinaCalendario extends Component
     public function addDia()
     {
         $nuevoNumero = $this->rutina->dias()->max('numero_dia') + 1;
-        
+
         RutinaDia::create([
             'rutina_id' => $this->rutina->id,
             'numero_dia' => $nuevoNumero,
-            'nombre_dia' => 'Día ' . $nuevoNumero,
+            'nombre_dia' => 'Día '.$nuevoNumero,
             'fecha' => null, // Por defecto al banco
         ]);
 
@@ -151,9 +155,9 @@ class GestionarRutinaCalendario extends Component
     public function duplicateDia($diaId, $targetDate = null)
     {
         $diaOriginal = RutinaDia::with(['bloques', 'rutinaEjercicios'])->findOrFail($diaId);
-        
+
         $nuevoNumero = $this->rutina->dias()->max('numero_dia') + 1;
-        
+
         // Generar nombre con sufijo
         $nombreBase = $diaOriginal->nombre_dia;
         // Detectar si ya tiene sufijo (N)
@@ -161,7 +165,7 @@ class GestionarRutinaCalendario extends Component
             $sufijo = intval($matches[1]) + 1;
             $nuevoNombre = preg_replace('/\((\d+)\)$/', "($sufijo)", $nombreBase);
         } else {
-            $nuevoNombre = $nombreBase . " (1)";
+            $nuevoNombre = $nombreBase.' (1)';
         }
 
         // Crear nuevo día
@@ -209,6 +213,7 @@ class GestionarRutinaCalendario extends Component
     }
 
     public $deletingDiaId = null;
+
     public $confirmingDiaDeletion = false;
 
     public function confirmDeleteDia($diaId)
@@ -251,7 +256,7 @@ class GestionarRutinaCalendario extends Component
         $dia->rutinaEjercicios()->delete();
         $dia->bloques()->delete(); // También limpiar bloques
         // $dia->update(['plantilla_dia_id' => null]); // Ya no se usa
-        
+
         $this->dispatch('notify', message: 'Día limpiado correctamente', type: 'success');
     }
 

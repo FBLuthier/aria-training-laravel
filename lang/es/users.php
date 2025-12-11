@@ -1,0 +1,47 @@
+<?php
+
+return [
+    'title' => 'Gestión de Usuarios',
+    'create_new' => 'Crear Nuevo Usuario',
+    'edit_user' => 'Editar Usuario',
+    'search_placeholder' => 'Buscar por nombre, correo o usuario...',
+    'filters' => [
+        'all' => 'Todos',
+        'trainers' => 'Entrenadores',
+        'athletes' => 'Atletas',
+        'trash' => 'Papelera',
+    ],
+    'table' => [
+        'user' => 'Usuario',
+        'name' => 'Nombre',
+        'role' => 'Rol',
+        'status' => 'Estado',
+        'actions' => 'Acciones',
+    ],
+    'form' => [
+        'account_data' => 'Datos de Cuenta',
+        'personal_data' => 'Datos Personales',
+        'username' => 'Nombre de Usuario',
+        'email' => 'Correo Electrónico',
+        'role' => 'Rol de Usuario',
+        'trainer' => 'Entrenador Asignado',
+        'select_trainer' => 'Seleccione un Entrenador',
+        'first_name' => 'Primer Nombre',
+        'second_name' => 'Segundo Nombre',
+        'last_name' => 'Primer Apellido',
+        'second_last_name' => 'Segundo Apellido',
+        'phone' => 'Teléfono',
+        'birthdate' => 'Fecha de Nacimiento',
+        'cancel' => 'Cancelar',
+        'save' => 'Guardar',
+        'update' => 'Actualizar',
+        'default_password_note' => 'La contraseña por defecto será "password". El usuario podrá cambiarla después.',
+    ],
+    'messages' => [
+        'created' => 'Usuario creado correctamente. Contraseña temporal: "password"',
+        'updated' => 'Usuario actualizado correctamente.',
+        'deleted' => 'Usuario enviado a la papelera.',
+        'restored' => 'Usuario restaurado correctamente.',
+        'force_deleted' => 'Usuario eliminado permanentemente.',
+    ],
+];

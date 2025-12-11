@@ -3,17 +3,17 @@
 namespace App\Livewire\Admin;
 
 use App\Livewire\BaseCrudComponent;
-use App\Livewire\Forms\EjercicioForm; // Asumiremos que usaremos un Form object o validaremos inline por simplicidad inicial
+// Asumiremos que usaremos un Form object o validaremos inline por simplicidad inicial
 use App\Models\Ejercicio;
 use App\Models\Equipo;
 use App\Models\GrupoMuscular;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Rule;
-use Livewire\Attributes\Computed;
 
 /**
  * Componente para gestionar Ejercicios.
- * 
+ *
  * Implementa la lógica de "Creación Masiva" acordada:
  * - Al crear: Se permite seleccionar múltiples equipos. Se crea un ejercicio por cada equipo.
  * - Al editar: Se edita un solo ejercicio (para mantener integridad de IDs).
@@ -40,9 +40,10 @@ class GestionarEjercicios extends BaseCrudComponent
 
     // Para Creación (Múltiple)
     #[Rule('required|array|min:1')]
-    public $equipos_seleccionados = []; 
+    public $equipos_seleccionados = [];
 
     public $equipos_urls = []; // Array para URLs específicas por equipo
+
     public $equipos_descripciones = []; // Array para descripciones específicas por equipo
 
     // Para Edición (Único)
@@ -55,6 +56,7 @@ class GestionarEjercicios extends BaseCrudComponent
 
     // Colecciones para los Selects
     public $equipos_list = [];
+
     public $grupos_musculares_list = [];
 
     // =======================================================================
@@ -98,7 +100,7 @@ class GestionarEjercicios extends BaseCrudComponent
         // Patrón simple para extraer ID de YouTube (soporta youtu.be y youtube.com)
         preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i', $url, $matches);
 
-        return isset($matches[1]) ? 'https://www.youtube.com/embed/' . $matches[1] : null;
+        return isset($matches[1]) ? 'https://www.youtube.com/embed/'.$matches[1] : null;
     }
 
     public function closeFormModal(): void
@@ -111,7 +113,7 @@ class GestionarEjercicios extends BaseCrudComponent
 
     public function updatedShowFormModal($value): void
     {
-        if (!$value) {
+        if (! $value) {
             $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'editingId', 'is_bulk_create', 'equipos_urls', 'equipos_descripciones']);
             $this->url_video = 'https://youtu.be/TOOb6fSvlnM'; // Reset al default
             $this->resetValidation();
@@ -131,21 +133,21 @@ class GestionarEjercicios extends BaseCrudComponent
         $this->reset(['nombre', 'descripcion', 'grupo_muscular_id', 'equipos_seleccionados', 'equipo_id', 'equipos_urls', 'equipos_descripciones']);
         $this->url_video = 'https://youtu.be/TOOb6fSvlnM'; // Default inicial
         $this->is_bulk_create = false;
-        
+
         $model = Ejercicio::findOrFail($id);
-        
+
         $this->nombre = $model->nombre;
         if ($model->equipo) {
-            $this->nombre = str_replace(' (' . $model->equipo->nombre . ')', '', $this->nombre);
+            $this->nombre = str_replace(' ('.$model->equipo->nombre.')', '', $this->nombre);
         }
 
         $this->descripcion = $model->descripcion;
         $this->url_video = $model->url_video; // Cargar video
         $this->grupo_muscular_id = $model->grupo_muscular_id;
         $this->equipo_id = $model->equipo_id;
-        
-        $this->editingId = $id; 
-        
+
+        $this->editingId = $id;
+
         // Autorización: Verificar si puede editar este ejercicio específico
         $this->authorize('update', $model);
 
@@ -174,20 +176,20 @@ class GestionarEjercicios extends BaseCrudComponent
             $count = 0;
             foreach ($this->equipos_seleccionados as $eqId) {
                 $equipo = Equipo::find($eqId);
-                $nombreFinal = $this->nombre . ' (' . $equipo->nombre . ')';
-                
+                $nombreFinal = $this->nombre.' ('.$equipo->nombre.')';
+
                 // Prioridad: URL específica > URL global > Default
                 $videoFinal = $this->url_video;
-                if (!empty($this->equipos_urls[$eqId])) {
+                if (! empty($this->equipos_urls[$eqId])) {
                     $videoFinal = $this->equipos_urls[$eqId];
                 }
 
                 // Prioridad: Descripción específica > Descripción global
                 $descripcionFinal = $this->descripcion;
-                if (!empty($this->equipos_descripciones[$eqId])) {
+                if (! empty($this->equipos_descripciones[$eqId])) {
                     $descripcionFinal = $this->equipos_descripciones[$eqId];
                 }
-                
+
                 $ejercicio = Ejercicio::create([
                     'nombre' => $nombreFinal,
                     'descripcion' => $descripcionFinal,
@@ -195,12 +197,12 @@ class GestionarEjercicios extends BaseCrudComponent
                     'grupo_muscular_id' => $this->grupo_muscular_id,
                     'equipo_id' => $eqId,
                     'estado' => 1,
-                    'usuario_id' => auth()->id() // Asignar creador
+                    'usuario_id' => auth()->id(), // Asignar creador
                 ]);
-                
+
                 // AUDITORÍA: Registrar creación
                 $this->auditCreate($ejercicio);
-                
+
                 $count++;
             }
             $this->dispatch('notify', message: "$count ejercicios creados correctamente", type: 'success');
@@ -208,13 +210,13 @@ class GestionarEjercicios extends BaseCrudComponent
             // ... (lógica de edición individual sin cambios)
             $model = Ejercicio::findOrFail($this->editingId);
             $equipo = Equipo::find($this->equipo_id);
-            
+
             // Capturar valores anteriores para auditoría
             $oldValues = $model->toArray();
-            
+
             $nombreFinal = $this->nombre;
-            if (!str_contains($nombreFinal, '(' . $equipo->nombre . ')')) {
-                 $nombreFinal = $this->nombre . ' (' . $equipo->nombre . ')';
+            if (! str_contains($nombreFinal, '('.$equipo->nombre.')')) {
+                $nombreFinal = $this->nombre.' ('.$equipo->nombre.')';
             }
 
             $model->update([
@@ -224,10 +226,10 @@ class GestionarEjercicios extends BaseCrudComponent
                 'grupo_muscular_id' => $this->grupo_muscular_id,
                 'equipo_id' => $this->equipo_id,
             ]);
-            
+
             // AUDITORÍA: Registrar actualización
             $this->auditUpdate($model, $oldValues);
-            
+
             $this->dispatch('notify', message: 'Ejercicio actualizado correctamente', type: 'success');
         }
 

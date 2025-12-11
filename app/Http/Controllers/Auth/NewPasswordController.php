@@ -17,10 +17,10 @@ use Illuminate\View\View;
  * =======================================================================
  * CONTROLLER: NUEVA CONTRASEÑA (RECUPERACIÓN)
  * =======================================================================
- * 
+ *
  * Maneja el proceso de establecer una nueva contraseña después de
  * que el usuario solicitó recuperación por email.
- * 
+ *
  * RESPONSABILIDADES:
  * - Mostrar formulario de nueva contraseña
  * - Validar token de recuperación
@@ -28,7 +28,7 @@ use Illuminate\View\View;
  * - Resetear contraseña del usuario
  * - Invalidar token usado
  * - Generar nuevo remember_token
- * 
+ *
  * FLUJO DE RECUPERACIÓN:
  * 1. Usuario solicita recuperación (PasswordResetLinkController)
  * 2. Recibe email con link + token
@@ -37,25 +37,24 @@ use Illuminate\View\View;
  * 5. Valida token y email (método store())
  * 6. Establece nueva contraseña
  * 7. Redirige a login con mensaje de éxito
- * 
+ *
  * SEGURIDAD:
  * - Token de un solo uso (se invalida al usar)
  * - Token con expiración (default: 60 minutos)
  * - Hash seguro de contraseña
  * - Regenera remember_token
  * - Valida que email coincida con token
- * 
- * @package App\Http\Controllers\Auth
+ *
  * @since 1.0
  */
 class NewPasswordController extends Controller
 {
     /**
      * Muestra el formulario para establecer nueva contraseña.
-     * 
+     *
      * Recibe token y email desde el link del correo.
-     * 
-     * @param Request $request Contiene token y email
+     *
+     * @param  Request  $request  Contiene token y email
      * @return View Vista 'auth.reset-password'
      */
     public function create(Request $request): View
@@ -65,7 +64,7 @@ class NewPasswordController extends Controller
 
     /**
      * Procesa el establecimiento de nueva contraseña.
-     * 
+     *
      * Este método:
      * 1. Valida token, email y nueva contraseña
      * 2. Verifica que el token sea válido y no haya expirado
@@ -74,9 +73,9 @@ class NewPasswordController extends Controller
      * 5. Dispara evento PasswordReset
      * 6. Invalida el token usado
      * 7. Redirige según resultado
-     * 
-     * @param Request $request
+     *
      * @return RedirectResponse Redirige a login si éxito, o back con error
+     *
      * @throws \Illuminate\Validation\ValidationException Si validación falla
      */
     public function store(Request $request): RedirectResponse

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Crear tabla rutina_bloques
-        if (!Schema::hasTable('rutina_bloques')) {
+        if (! Schema::hasTable('rutina_bloques')) {
             Schema::create('rutina_bloques', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('rutina_dia_id')->constrained('rutina_dias')->onDelete('cascade');
@@ -25,12 +25,12 @@ return new class extends Migration
 
         // 2. Añadir FK a rutina_ejercicios
         Schema::table('rutina_ejercicios', function (Blueprint $table) {
-            if (!Schema::hasColumn('rutina_ejercicios', 'rutina_bloque_id')) {
+            if (! Schema::hasColumn('rutina_ejercicios', 'rutina_bloque_id')) {
                 $table->foreignId('rutina_bloque_id')
-                      ->nullable()
-                      ->after('rutina_dia_id')
-                      ->constrained('rutina_bloques')
-                      ->onDelete('set null'); // Si se borra el bloque, los ejercicios quedan "huerfanos" de bloque pero no se borran del día (seguridad)
+                    ->nullable()
+                    ->after('rutina_dia_id')
+                    ->constrained('rutina_bloques')
+                    ->onDelete('set null'); // Si se borra el bloque, los ejercicios quedan "huerfanos" de bloque pero no se borran del día (seguridad)
             }
         });
     }

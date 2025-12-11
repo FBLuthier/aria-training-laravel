@@ -6,11 +6,11 @@ namespace App\Livewire\Traits;
  * =======================================================================
  * TRAIT PARA GESTIÓN DE FORMULARIOS MODALES
  * =======================================================================
- * 
+ *
  * Este trait maneja todo el ciclo de vida de formularios en modales:
  * crear, editar, guardar y cerrar. Es el corazón de las operaciones
  * CRUD con modales.
- * 
+ *
  * FUNCIONALIDADES:
  * - create(): Abre modal vacío para crear nuevo registro
  * - edit($id): Abre modal con datos para editar
@@ -18,7 +18,7 @@ namespace App\Livewire\Traits;
  * - closeFormModal(): Cierra modal y resetea formulario
  * - Auditoría automática de cambios
  * - Marcado de registros recién creados
- * 
+ *
  * FLUJO DE CREACIÓN:
  * 1. Usuario hace clic en "Crear" → create()
  * 2. Se abre modal vacío
@@ -26,7 +26,7 @@ namespace App\Livewire\Traits;
  * 4. Usuario hace clic en "Guardar" → save()
  * 5. Se valida, crea registro y cierra modal
  * 6. Se muestra notificación de éxito
- * 
+ *
  * FLUJO DE EDICIÓN:
  * 1. Usuario hace clic en "Editar" → edit($id)
  * 2. Se carga registro y abre modal con datos
@@ -34,7 +34,7 @@ namespace App\Livewire\Traits;
  * 4. Usuario hace clic en "Guardar" → save()
  * 5. Se valida, actualiza registro y cierra modal
  * 6. Se muestra notificación de éxito
- * 
+ *
  * REQUISITOS DEL COMPONENTE:
  * - Propiedad pública $form (BaseModelForm)
  * - Implementar getModelClass(): string
@@ -42,8 +42,7 @@ namespace App\Livewire\Traits;
  * - Implementar markAsRecentlyCreated($model): void
  * - Implementar clearRecentlyCreated(): void
  * - Implementar auditFormSave($oldValues): void
- * 
- * @package App\Livewire\Traits
+ *
  * @since 1.0
  */
 trait HasFormModal
@@ -51,10 +50,10 @@ trait HasFormModal
     // =======================================================================
     //  PROPIEDADES
     // =======================================================================
-    
+
     /** @var bool Controla si el modal de formulario está visible */
     public bool $showFormModal = false;
-    
+
     // =======================================================================
     //  LIFECYCLE HOOKS
     // =======================================================================
@@ -64,7 +63,7 @@ trait HasFormModal
      */
     public function updatedShowFormModal($value): void
     {
-        if (!$value) {
+        if (! $value) {
             $this->form->reset();
             $this->clearRecentlyCreated();
         }
@@ -77,7 +76,7 @@ trait HasFormModal
     {
         $modelClass = $this->getModelClass();
         $this->authorize('create', $modelClass);
-        
+
         $this->form->reset();
         $this->showFormModal = true;
         $this->clearRecentlyCreated();
@@ -91,7 +90,7 @@ trait HasFormModal
         $modelClass = $this->getModelClass();
         $model = $modelClass::findOrFail($id);
         $this->authorize('update', $model);
-        
+
         $this->setFormModel($model);
         $this->showFormModal = true;
         $this->clearRecentlyCreated(); // Limpiar item resaltado
@@ -110,9 +109,9 @@ trait HasFormModal
         } else {
             $this->authorize('create', $this->getModelClass());
         }
-        
+
         // Guardar valores anteriores para auditoría en caso de actualización
-        $oldValues = $isUpdating 
+        $oldValues = $isUpdating
             ? $this->form->model->toArray()
             : null;
 
@@ -162,6 +161,7 @@ trait HasFormModal
     protected function getFormModelProperty(): string
     {
         $modelClass = $this->getModelClass();
+
         return strtolower(class_basename($modelClass));
     }
 

@@ -63,6 +63,16 @@
         {{-- Contenedor principal que abarca toda la altura de la pantalla y define los colores de fondo para modo claro y oscuro. --}}
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
             
+            {{-- Banner de Impersonation --}}
+            @if(session()->has('impersonator_id'))
+            <div class="bg-red-600 text-white px-4 py-2 text-center text-sm font-bold shadow-md relative z-50">
+                Estás navegando como: {{ Auth::user()->nombre_1 }} {{ Auth::user()->apellido_1 }}
+                <a href="{{ route('admin.impersonate.stop') }}" class="ml-4 underline hover:text-red-100 bg-red-700 px-3 py-1 rounded transition-colors">
+                    Volver a mi cuenta
+                </a>
+            </div>
+            @endif
+
             {{-- Inclusión de la barra de navegación: Carga la vista parcial que contiene el menú de navegación. --}}
             @include('layouts.navigation')
 
@@ -91,13 +101,15 @@
             {{-- BLOQUE 5: CONTENIDO PRINCIPAL DE LA PÁGINA (SLOT) --}}
             <main>
                 {{-- Esta es la parte más importante del layout. La variable `$slot` es donde Laravel inyectará --}}
-                {{-- todo el contenido de la vista específica que está usando este layout (ej. el contenido de 'dashboard.blade.php' o nuestro componente Livewire). --}}
+                {{-- todo el contenido de la vista específica que está usando este layout (ej. el contenido de 'dashboard.blade.php' --}}
                 {{ $slot }}
             </main>
         </div>
+        
+        <x-toast />
 
-        {{-- BLOQUE 6: CONTENEDOR DE NOTIFICACIONES TOAST --}}
-        <x-toast-container />
+        {{-- Command Palette --}}
+        <livewire:components.command-palette />
 
         {{-- Scripts de Livewire (necesarios para componentes Livewire) --}}
         @livewireScripts

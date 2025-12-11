@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Builder;
  * =======================================================================
  * QUERY BUILDER PERSONALIZADO PARA EQUIPOS
  * =======================================================================
- * 
+ *
  * Este Query Builder personaliza las consultas al modelo Equipo,
  * agregando métodos específicos del dominio y heredando funcionalidad
  * común del trait BaseQueryBuilder.
- * 
+ *
  * MÉTODOS HEREDADOS DE BaseQueryBuilder:
  * - search($search): Busca en campos configurables
  * - trash($showTrash): Filtra por eliminados o activos
@@ -21,12 +21,12 @@ use Illuminate\Database\Eloquent\Builder;
  * - active(): Solo registros activos
  * - dateRange(): Filtra por rango de fechas
  * - recent(): Registros recientes
- * 
+ *
  * MÉTODOS PROPIOS:
  * - withEjercicios(): Equipos que tienen ejercicios
  * - withoutEjercicios(): Equipos sin ejercicios
  * - whereEjerciciosCount(): Filtra por cantidad de ejercicios
- * 
+ *
  * USO EN MODELO:
  * ```php
  * // En Equipo.php
@@ -35,25 +35,24 @@ use Illuminate\Database\Eloquent\Builder;
  *     return new EquipoQueryBuilder($query);
  * }
  * ```
- * 
+ *
  * USO EN CONSULTAS:
  * ```php
  * // Búsqueda con filtros
  * Equipo::query()->filtered('Mancuernas', false, 'nombre', 'asc')->get();
- * 
+ *
  * // Equipos sin usar
  * Equipo::query()->withoutEjercicios()->get();
- * 
+ *
  * // Equipos populares (con muchos ejercicios)
  * Equipo::query()->whereEjerciciosCount('>=', 5)->get();
  * ```
- * 
+ *
  * BENEFICIOS:
  * - Código más legible y expresivo
  * - Queries reutilizables
  * - Búsqueda consistente en toda la app
- * 
- * @package App\Models\Builders
+ *
  * @since 1.0
  */
 class EquipoQueryBuilder extends Builder
@@ -66,10 +65,10 @@ class EquipoQueryBuilder extends Builder
 
     /**
      * Campos en los que se realizarán las búsquedas.
-     * 
+     *
      * El método search() heredado de BaseQueryBuilder busca en estos campos
      * usando LIKE '%término%'.
-     * 
+     *
      * @var array<string> Lista de nombres de columnas
      */
     protected array $searchableFields = ['nombre'];
@@ -80,8 +79,6 @@ class EquipoQueryBuilder extends Builder
 
     /**
      * Filtra equipos que tienen al menos un ejercicio asociado.
-     * 
-     * @return self
      */
     public function withEjercicios(): self
     {
@@ -91,8 +88,6 @@ class EquipoQueryBuilder extends Builder
     /**
      * Filtra equipos que NO tienen ejercicios asociados.
      * Útil para identificar equipos sin usar.
-     * 
-     * @return self
      */
     public function withoutEjercicios(): self
     {
@@ -101,8 +96,6 @@ class EquipoQueryBuilder extends Builder
 
     /**
      * Carga la relación de ejercicios con el equipo.
-     * 
-     * @return self
      */
     public function withEjerciciosRelation(): self
     {
@@ -111,10 +104,9 @@ class EquipoQueryBuilder extends Builder
 
     /**
      * Filtra equipos con un número específico de ejercicios.
-     * 
-     * @param string $operator Operador de comparación ('=', '>', '<', etc.)
-     * @param int $count Número de ejercicios
-     * @return self
+     *
+     * @param  string  $operator  Operador de comparación ('=', '>', '<', etc.)
+     * @param  int  $count  Número de ejercicios
      */
     public function whereEjerciciosCount(string $operator, int $count): self
     {

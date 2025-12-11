@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * =======================================================================
  * MODELO: AUDIT LOG (REGISTRO DE AUDITORÍA)
  * =======================================================================
- * 
+ *
  * Registra TODAS las operaciones críticas del sistema para trazabilidad,
  * seguridad y cumplimiento de normativas. Cada cambio queda documentado.
- * 
+ *
  * TABLA: audit_logs
- * 
+ *
  * COLUMNAS:
  * - id: int (PK, auto-increment)
  * - user_id: int (FK) - Usuario que realizó la acción
@@ -27,21 +27,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * - ip_address: string - IP desde donde se hizo la acción
  * - user_agent: string - Navegador/cliente usado
  * - created_at, updated_at: timestamps
- * 
+ *
  * ACCIONES REGISTRADAS:
  * - create: Creación de nuevo registro
  * - update: Modificación de registro existente
  * - delete: Eliminación suave (soft delete)
  * - restore: Restauración desde papelera
  * - force_delete: Eliminación permanente (⚠️ irreversible)
- * 
+ *
  * USOS:
  * - **Seguridad**: Detectar acciones maliciosas
  * - **Auditoría**: Cumplir normativas (SOX, GDPR, etc.)
  * - **Debugging**: Rastrear cambios inesperados
  * - **Recuperación**: Restaurar datos borrados accidentalmente
  * - **Análisis**: Entender patrones de uso
- * 
+ *
  * EJEMPLO DE REGISTRO:
  * ```
  * user_id: 1 (Admin)
@@ -54,7 +54,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * user_agent: Mozilla/5.0...
  * created_at: 2025-10-17 01:30:00
  * ```
- * 
+ *
  * @property int $id
  * @property int $user_id
  * @property string $action
@@ -66,10 +66,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $user_agent
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * 
  * @property-read User $user
- * 
- * @package App\Models
+ *
  * @since 1.0
  */
 class AuditLog extends Model
@@ -77,7 +75,7 @@ class AuditLog extends Model
     // =======================================================================
     //  TRAITS
     // =======================================================================
-    
+
     /** @var HasFactory Permite usar factories para testing */
     use HasFactory;
 
@@ -102,9 +100,9 @@ class AuditLog extends Model
 
     /**
      * Casts de atributos a tipos nativos.
-     * 
+     *
      * Los valores JSON se convierten automáticamente a arrays de PHP.
-     * 
+     *
      * @var array<string, string>
      */
     protected $casts = [
@@ -120,8 +118,6 @@ class AuditLog extends Model
 
     /**
      * Relación: Usuario que realizó la acción auditada.
-     * 
-     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -130,10 +126,10 @@ class AuditLog extends Model
 
     /**
      * Relación polimórfica al modelo auditado.
-     * 
+     *
      * Permite acceder al registro original que fue modificado.
      * IMPORTANTE: Puede retornar null si el registro fue eliminado permanentemente.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
     public function auditable()
@@ -147,9 +143,9 @@ class AuditLog extends Model
 
     /**
      * Filtra logs por tipo de acción.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $action create, update, delete, restore, force_delete
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $action  create, update, delete, restore, force_delete
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeAction($query, string $action)
@@ -159,9 +155,9 @@ class AuditLog extends Model
 
     /**
      * Filtra logs por tipo de modelo.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $modelType Clase completa (App\Models\Equipo)
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $modelType  Clase completa (App\Models\Equipo)
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeModelType($query, string $modelType)
@@ -171,9 +167,9 @@ class AuditLog extends Model
 
     /**
      * Filtra logs por usuario específico.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $userId ID del usuario
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  int  $userId  ID del usuario
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeByUser($query, int $userId)
@@ -183,10 +179,10 @@ class AuditLog extends Model
 
     /**
      * Filtra logs en un rango de fechas.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $startDate Fecha inicial
-     * @param string $endDate Fecha final
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $startDate  Fecha inicial
+     * @param  string  $endDate  Fecha final
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeDateRange($query, $startDate, $endDate)
@@ -196,8 +192,8 @@ class AuditLog extends Model
 
     /**
      * Carga relaciones con eager loading.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWithRelations($query)
@@ -211,16 +207,15 @@ class AuditLog extends Model
 
     /**
      * Método base para crear un registro de auditoría.
-     * 
+     *
      * Captura automáticamente usuario, IP y user agent del request actual.
-     * 
-     * @param string $action Tipo de acción
-     * @param Model $model Modelo afectado
-     * @param array|null $oldValues Valores anteriores
-     * @param array|null $newValues Valores nuevos
-     * @return self
+     *
+     * @param  string  $action  Tipo de acción
+     * @param  Model  $model  Modelo afectado
+     * @param  array|null  $oldValues  Valores anteriores
+     * @param  array|null  $newValues  Valores nuevos
      */
-    public static function log(string $action, Model $model, array $oldValues = null, array $newValues = null): self
+    public static function log(string $action, Model $model, ?array $oldValues = null, ?array $newValues = null): self
     {
         return static::create([
             'user_id' => auth()->id(),
@@ -236,9 +231,6 @@ class AuditLog extends Model
 
     /**
      * Registra creación de un modelo.
-     * 
-     * @param Model $model
-     * @return self
      */
     public static function logCreate(Model $model): self
     {
@@ -247,10 +239,8 @@ class AuditLog extends Model
 
     /**
      * Registra actualización de un modelo.
-     * 
-     * @param Model $model
-     * @param array $oldValues Valores antes del cambio
-     * @return self
+     *
+     * @param  array  $oldValues  Valores antes del cambio
      */
     public static function logUpdate(Model $model, array $oldValues): self
     {
@@ -259,9 +249,6 @@ class AuditLog extends Model
 
     /**
      * Registra eliminación suave de un modelo.
-     * 
-     * @param Model $model
-     * @return self
      */
     public static function logDelete(Model $model): self
     {
@@ -270,9 +257,6 @@ class AuditLog extends Model
 
     /**
      * Registra restauración de un modelo.
-     * 
-     * @param Model $model
-     * @return self
      */
     public static function logRestore(Model $model): self
     {
@@ -281,9 +265,6 @@ class AuditLog extends Model
 
     /**
      * Registra eliminación permanente de un modelo.
-     * 
-     * @param Model $model
-     * @return self
      */
     public static function logForceDelete(Model $model): self
     {

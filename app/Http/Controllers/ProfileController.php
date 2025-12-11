@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,28 +13,27 @@ use Illuminate\View\View;
  * =======================================================================
  * CONTROLLER: PERFIL DE USUARIO
  * =======================================================================
- * 
+ *
  * Maneja todas las operaciones relacionadas con el perfil del usuario
  * autenticado: visualización, actualización y eliminación de cuenta.
- * 
+ *
  * RESPONSABILIDADES:
  * - Mostrar formulario de edición de perfil
  * - Actualizar información del usuario
  * - Eliminar cuenta del usuario
  * - Gestionar verificación de email al cambiar
- * 
+ *
  * RUTAS ASOCIADAS:
  * - GET /profile - Formulario de edición
  * - PATCH /profile - Actualizar datos
  * - DELETE /profile - Eliminar cuenta
- * 
+ *
  * SEGURIDAD:
  * - Requiere autenticación
  * - Validación de contraseña para eliminación
  * - Invalidación de sesión al eliminar cuenta
  * - Regeneración de token CSRF
- * 
- * @package App\Http\Controllers
+ *
  * @since 1.0
  */
 class ProfileController extends Controller
@@ -43,7 +41,7 @@ class ProfileController extends Controller
     /**
      * Muestra el formulario para editar el perfil del usuario.
      *
-     * @param  Request  $request La petición HTTP actual.
+     * @param  Request  $request  La petición HTTP actual.
      * @return View La vista 'profile.edit' con los datos del usuario.
      */
     public function edit(Request $request): View
@@ -58,7 +56,7 @@ class ProfileController extends Controller
     /**
      * Actualiza la información del perfil del usuario.
      *
-     * @param  ProfileUpdateRequest  $request Petición personalizada que ya contiene la validación de los datos.
+     * @param  ProfileUpdateRequest  $request  Petición personalizada que ya contiene la validación de los datos.
      * @return RedirectResponse Redirige de vuelta a la página de edición de perfil.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
@@ -86,7 +84,7 @@ class ProfileController extends Controller
     /**
      * Elimina permanentemente la cuenta del usuario.
      *
-     * @param  Request  $request La petición HTTP actual.
+     * @param  Request  $request  La petición HTTP actual.
      * @return RedirectResponse Redirige a la página de inicio.
      */
     public function destroy(Request $request): RedirectResponse

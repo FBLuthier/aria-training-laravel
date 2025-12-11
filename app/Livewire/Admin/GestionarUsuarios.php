@@ -2,195 +2,221 @@
 
 namespace App\Livewire\Admin;
 
-use App\Livewire\BaseCrudComponent;
-use App\Models\User;
+use App\Enums\SortDirection;
+use App\Enums\UserRole;
+use App\Livewire\Forms\UserForm;
 use App\Models\TipoUsuario;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
+use App\Models\User;
+use App\Services\UserService;
 use Livewire\Attributes\Computed;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse; // Assuming Livewire\Component is the new base class
 
-class GestionarUsuarios extends BaseCrudComponent
+class GestionarUsuarios extends Component
 {
-    // Propiedades del formulario
-    public $usuario;
-    public $correo;
-    public $nombre_1;
-    public $nombre_2;
-    public $apellido_1;
-    public $apellido_2;
-    public $telefono;
-    public $fecha_nacimiento;
-    public $tipo_usuario_id;
-    public $entrenador_id; // Para asignar entrenador a un atleta
+    use WithPagination;
+    use WithFileUploads;
+    use AuthorizesRequests;
+
+    // Form Object
+    public UserForm $form;
 
     // Estado de edición
     public $isEditing = false;
+
     public $editingId = null;
+    public $deletingId = null;
+    public $restoringId = null;
+    public $forceDeletingId = null;
+    public $resettingPasswordId = null;
+    public $newPassword = '';
+    
+    // Papelera
+    public $showingTrash = false;
+
+    // Búsqueda y Ordenamiento
+    public $search = '';
+    public $sortField = 'id';
+    public SortDirection $sortDirection = SortDirection::DESC;
+    public $perPage = 10;
 
     // Filtros
     public $filtroRol = null; // null = Todos, 1 = Admin, 2 = Entrenador, 3 = Atleta
 
     // Listas para selects
     public $tipos_usuario_list = [];
+
     public $entrenadores_list = [];
 
-    public function mount()
+    // Assuming these are needed for modal management, based on the diff's `openModal` and `closeModal`
+    public $showFormModal = false;
+    public $showDeleteModal = false;
+
+    public function mount(UserService $userService)
     {
-        $this->tipos_usuario_list = TipoUsuario::where('id', '!=', 1)->get();
-        
+        $this->userService = $userService;
+        $this->tipos_usuario_list = TipoUsuario::where('id', '!=', UserRole::Admin->value)->get();
+
         if (auth()->user()->esEntrenador()) {
-            $this->filtroRol = 3; // Forzar filtro a Atletas
+            $this->filtroRol = UserRole::Atleta->value; // Forzar filtro a Atletas
         }
-        
+
         $this->cargarEntrenadores();
     }
+
+    protected UserService $userService;
 
     public function cargarEntrenadores()
     {
         // Cargar usuarios con rol de Entrenador (ID 2)
-        $this->entrenadores_list = User::where('tipo_usuario_id', 2)->get();
+        $this->entrenadores_list = User::where('tipo_usuario_id', UserRole::Entrenador->value)->get();
     }
 
-    protected function getModelClass(): string
-    {
-        return User::class;
-    }
+    // Removed getModelClass() as it's not in the diff's context for the new structure
 
-    protected function getViewName(): string
+    public function render()
     {
-        return 'livewire.admin.gestionar-usuarios';
+        $this->authorize('viewAny', User::class);
+
+        return view('livewire.admin.gestionar-usuarios');
     }
 
     #[Computed]
     public function items()
     {
-        $query = User::query()->where('tipo_usuario_id', '!=', 1);
-
-        // Si es Entrenador, solo ver sus propios atletas
-        if (auth()->user()->esEntrenador()) {
-            $query->where('entrenador_id', auth()->id());
-            $this->filtroRol = 3; // Asegurar que el filtro visual también sea Atletas
-        }
-
-        // Búsqueda
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('nombre_1', 'like', '%' . $this->search . '%')
-                  ->orWhere('apellido_1', 'like', '%' . $this->search . '%')
-                  ->orWhere('correo', 'like', '%' . $this->search . '%')
-                  ->orWhere('usuario', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        // Filtro por Rol
-        if ($this->filtroRol) {
-            $query->where('tipo_usuario_id', $this->filtroRol);
-        }
-
-        // Ordenamiento
-        $query->orderBy($this->sortField, $this->sortDirection->value);
-
-        // Soft Deletes
-        if ($this->showingTrash) {
-            $query->onlyTrashed();
-        }
-
-        return $query->paginate($this->getPerPage());
+        return User::query()
+            ->withoutAdmins()
+            ->visibleTo(auth()->user())
+            ->byRole($this->filtroRol)
+            ->search($this->search)
+            ->trash($this->showingTrash) // Assuming $this->showingTrash and $this->search still exist
+            ->sortBy($this->sortField, $this->sortDirection->value) // Assuming these still exist
+            ->paginate($this->getPerPage()); // Assuming getPerPage() still exists
     }
 
     public function create(): void
     {
+        $this->authorize('create', User::class); // Added authorization
         $this->resetInputFields();
-        $this->showFormModal = true;
+        $this->openModal(); // Changed to openModal
     }
 
-    public function edit(int $id): void
+    public function edit($id) // Changed signature and logic
     {
-        $this->resetInputFields();
-        $this->editingId = $id;
-        $this->isEditing = true;
-
         $user = User::findOrFail($id);
-        
-        $this->usuario = $user->usuario;
-        $this->correo = $user->correo;
-        $this->nombre_1 = $user->nombre_1;
-        $this->nombre_2 = $user->nombre_2;
-        $this->apellido_1 = $user->apellido_1;
-        $this->apellido_2 = $user->apellido_2;
-        $this->telefono = $user->telefono;
-        $this->fecha_nacimiento = $user->fecha_nacimiento ? $user->fecha_nacimiento->format('Y-m-d') : null;
-        $this->tipo_usuario_id = $user->tipo_usuario_id;
-        $this->entrenador_id = $user->entrenador_id;
+        $this->authorize('update', $user);
 
-        $this->showFormModal = true;
+        $this->form->setUser($user);
+        $this->isEditing = true;
+        $this->editingId = $id; // Keep editingId for consistency if needed elsewhere
+        $this->openModal();
     }
 
-    public function save(): void
+    public function save() // Changed signature and logic
     {
-        // Reglas de validación
-        $rules = [
-            'usuario' => ['required', 'string', 'max:15', Rule::unique('usuarios')->ignore($this->editingId)],
-            'correo' => ['required', 'email', 'max:45', Rule::unique('usuarios')->ignore($this->editingId)],
-            'nombre_1' => 'required|string|max:15',
-            'apellido_1' => 'required|string|max:15',
-            'telefono' => 'required|string|max:15',
-            'fecha_nacimiento' => 'required|date',
-            'tipo_usuario_id' => 'required|exists:tipo_usuarios,id',
-            'entrenador_id' => 'nullable|exists:usuarios,id',
-        ];
+        if ($this->isEditing) {
+            $this->authorize('update', $this->form->userModel);
+            $updatedUser = $this->form->update();
 
-        // Validación condicional: Si es atleta, se recomienda entrenador (aunque es nullable en BD)
-        // Aquí podríamos forzarlo si quisiéramos, pero lo dejaremos opcional por ahora.
+            // AUDITORÍA AUTOMÁTICA POR OBSERVER
 
-        $validatedData = $this->validate($rules);
-
-        // Datos adicionales automáticos
-        $validatedData['estado'] = 1; // Activo por defecto
-
-        // Asegurar que entrenador_id sea null si no es atleta
-        if ($validatedData['tipo_usuario_id'] != 3) {
-            $validatedData['entrenador_id'] = null;
-        }
-
-        // Lógica para Entrenadores: Forzar rol Atleta y asignarse a sí mismo
-        if (auth()->user()->esEntrenador()) {
-            $validatedData['tipo_usuario_id'] = 3;
-            $validatedData['entrenador_id'] = auth()->id();
-        }
-
-        if (!$this->editingId) {
-            // Creación: Asignar contraseña por defecto
-            $validatedData['contrasena'] = Hash::make('password'); // Default password
-        }
-
-        // Guardar/Actualizar
-        if ($this->editingId) {
-            $user = User::find($this->editingId);
-            
-            // Capturar valores anteriores
-            $oldValues = $user->toArray();
-            
-            $user->update($validatedData);
-            
-            // AUDITORÍA
-            $this->auditUpdate($user, $oldValues);
-            
-            $this->dispatch('notify', message: 'Usuario actualizado correctamente.');
+            $this->dispatch('notify', message: __('users.messages.updated'));
         } else {
-            $user = User::create($validatedData);
-            
-            // AUDITORÍA
-            $this->auditCreate($user);
-            
-            $this->dispatch('notify', message: 'Usuario creado correctamente. Contraseña temporal: "password"');
+            $this->authorize('create', User::class);
+            $newUser = $this->form->store();
+
+            // AUDITORÍA AUTOMÁTICA POR OBSERVER
+
+            $this->dispatch('notify', message: __('users.messages.created'));
         }
 
-        $this->closeFormModal();
+        $this->closeModal();
         $this->cargarEntrenadores(); // Recargar lista por si se creó un nuevo entrenador
     }
 
-    public function closeFormModal(): void
+    public function delete($id)
+    {
+        $this->deletingId = $id;
+    }
+
+    public function performDelete()
+    {
+        $user = User::findOrFail($this->deletingId);
+        $this->authorize('delete', $user);
+
+        $this->userService->delete($user);
+        $this->deletingId = null;
+        $this->dispatch('notify', message: __('users.messages.deleted'));
+    }
+
+    public function restore($id)
+    {
+        $this->restoringId = $id;
+    }
+
+    public function performRestore()
+    {
+        $user = User::withTrashed()->findOrFail($this->restoringId);
+        $this->authorize('restore', $user);
+        
+        $this->userService->restore($user);
+        $this->restoringId = null;
+        $this->dispatch('notify', message: __('users.messages.restored'));
+    }
+
+    public function forceDelete($id)
+    {
+        $this->forceDeletingId = $id;
+    }
+
+    public function performForceDelete()
+    {
+        $user = User::withTrashed()->findOrFail($this->forceDeletingId);
+        $this->authorize('forceDelete', $user);
+        
+        $this->userService->forceDelete($user);
+        $this->forceDeletingId = null;
+        $this->dispatch('notify', message: __('users.messages.force_deleted'));
+    }
+
+    public function confirmPasswordReset($id)
+    {
+        $this->resettingPasswordId = $id;
+        $this->newPassword = '';
+    }
+
+    public function generatePassword()
+    {
+        $this->newPassword = $this->userService->generateSecurePassword(10);
+    }
+
+    public function performPasswordReset()
+    {
+        $this->validate([
+            'newPassword' => 'required|min:8',
+        ]);
+
+        $user = User::findOrFail($this->resettingPasswordId);
+        $this->userService->resetPassword($user, $this->newPassword);
+
+        $this->resettingPasswordId = null;
+        $this->newPassword = '';
+        $this->dispatch('notify', message: 'Contraseña restablecida correctamente.');
+    }
+
+
+
+    // Assuming these methods are part of the new modal management
+    public function openModal()
+    {
+        $this->showFormModal = true;
+    }
+
+    public function closeModal(): void
     {
         $this->showFormModal = false;
         $this->resetInputFields();
@@ -198,29 +224,19 @@ class GestionarUsuarios extends BaseCrudComponent
 
     public function updatedShowFormModal($value): void
     {
-        if (!$value) {
+        if (! $value) {
             $this->resetInputFields();
         }
     }
 
     public function resetInputFields(): void
     {
-        $this->usuario = '';
-        $this->correo = '';
-        $this->nombre_1 = '';
-        $this->nombre_2 = '';
-        $this->apellido_1 = '';
-        $this->apellido_2 = '';
-        $this->telefono = '';
-        $this->fecha_nacimiento = '';
-        
+        $this->form->reset();
+
         if (auth()->user()->esEntrenador()) {
-            $this->tipo_usuario_id = 3; // Entrenadores solo crean atletas
-        } else {
-            $this->tipo_usuario_id = '';
+            $this->form->tipo_usuario_id = UserRole::Atleta->value; // Entrenadores solo crean atletas
         }
-        
-        $this->entrenador_id = null;
+
         $this->editingId = null;
         $this->isEditing = false;
         $this->resetErrorBag();
@@ -228,8 +244,38 @@ class GestionarUsuarios extends BaseCrudComponent
 
     public function setFiltroRol($rolId)
     {
-        if ($rolId == 1) return; // Seguridad: No permitir filtrar por admin
+        if ($rolId == UserRole::Admin->value) {
+            return;
+        } // Seguridad: No permitir filtrar por admin
         $this->filtroRol = $rolId;
+        $this->resetPage();
+    }
+
+    public function toggleTrash()
+    {
+        $this->showingTrash = !$this->showingTrash;
+        $this->resetPage();
+    }
+
+    public function getPerPage()
+    {
+        return $this->perPage;
+    }
+
+    public function sortBy($field)
+    {
+        if ($this->sortField === $field) {
+            $this->sortDirection = $this->sortDirection === SortDirection::ASC 
+                ? SortDirection::DESC 
+                : SortDirection::ASC;
+        } else {
+            $this->sortField = $field;
+            $this->sortDirection = SortDirection::ASC;
+        }
+    }
+
+    public function updatedSearch()
+    {
         $this->resetPage();
     }
 }

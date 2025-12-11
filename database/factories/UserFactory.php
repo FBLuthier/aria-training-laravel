@@ -37,7 +37,6 @@ class UserFactory extends Factory
             'tipo_usuario_id' => 3, // Por defecto, crea Atletas
             'remember_token' => Str::random(10), // <-- AÑADE ESTA LÍNEA DE NUEVO
 
-            
         ];
     }
 }

@@ -6,10 +6,10 @@ namespace App\Policies;
  * =======================================================================
  * POLICY DE AUTORIZACIÓN PARA EQUIPOS
  * =======================================================================
- * 
+ *
  * Esta Policy controla quién puede realizar operaciones sobre Equipos.
  * Extiende de BaseAdminPolicy, que implementa el patrón "solo administradores".
- * 
+ *
  * AUTORIZACIÓN ACTUAL:
  * - viewAny (ver lista): Solo administradores ✓
  * - view (ver detalle): Solo administradores ✓
@@ -19,19 +19,19 @@ namespace App\Policies;
  * - restore (restaurar): Solo administradores ✓
  * - forceDelete (eliminar permanente): Solo administradores ✓
  * - export (exportar): Solo administradores ✓
- * 
+ *
  * CÓMO FUNCIONA:
  * Laravel automáticamente verifica estas policies en:
  * - Gates: Gate::allows('update', $equipo)
  * - Middleware: Route::middleware('can:update,equipo')
  * - Controllers: $this->authorize('update', $equipo)
  * - Livewire: $this->authorize('update', $equipo)
- * 
+ *
  * ESTA CLASE ESTÁ VACÍA INTENCIONALMENTE:
  * Toda la lógica viene de BaseAdminPolicy. La mantenemos porque:
  * 1. Es la convención de Laravel (1 Policy por modelo)
  * 2. Permite agregar lógica personalizada en el futuro
- * 
+ *
  * EJEMPLO DE PERSONALIZACIÓN FUTURA:
  * ```php
  * public function update(User $user, Model $model): bool
@@ -40,12 +40,11 @@ namespace App\Policies;
  *     if ($user->isEntrenador()) {
  *         return true; // Validar campos en el Form
  *     }
- *     
+ *
  *     return $this->isAdmin($user);
  * }
  * ```
- * 
- * @package App\Policies
+ *
  * @since 1.0
  */
 class EquipoPolicy extends BaseAdminPolicy

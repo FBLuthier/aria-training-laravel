@@ -4,25 +4,25 @@ namespace App\Models\Builders;
 
 /**
  * Trait que proporciona funcionalidad común para todos los Query Builders personalizados.
- * 
+ *
  * Este trait elimina duplicación de código proporcionando métodos estándar
  * para búsqueda, filtrado de papelera, ordenamiento y operaciones comunes.
- * 
+ *
  * MODO DE USO:
  * 1. Tu Query Builder debe extender de Illuminate\Database\Eloquent\Builder
  * 2. Usa este trait: use BaseQueryBuilder;
  * 3. Define la propiedad $searchableFields con los campos buscables
  * 4. Opcionalmente sobrescribe métodos si necesitas lógica especial
- * 
+ *
  * EJEMPLO:
  * ```php
  * class EquipoQueryBuilder extends Builder {
  *     use BaseQueryBuilder;
- *     
+ *
  *     protected array $searchableFields = ['nombre', 'descripcion'];
  * }
  * ```
- * 
+ *
  * IMPORTANTE: La clase que usa este trait DEBE definir la propiedad $searchableFields.
  * El trait NO la define para evitar conflictos.
  */
@@ -37,10 +37,9 @@ trait BaseQueryBuilder
 
     /**
      * Busca en los campos especificados usando LIKE.
-     * 
-     * @param string|null $search Término de búsqueda
-     * @param array|null $fields Campos específicos (si es null usa $searchableFields)
-     * @return self
+     *
+     * @param  string|null  $search  Término de búsqueda
+     * @param  array|null  $fields  Campos específicos (si es null usa $searchableFields)
      */
     public function search(?string $search, ?array $fields = null): self
     {
@@ -77,9 +76,8 @@ trait BaseQueryBuilder
 
     /**
      * Aplica filtro de papelera basado en una condición.
-     * 
-     * @param bool $showTrash Si debe mostrar solo registros eliminados
-     * @return self
+     *
+     * @param  bool  $showTrash  Si debe mostrar solo registros eliminados
      */
     public function trash(bool $showTrash = false): self
     {
@@ -88,8 +86,6 @@ trait BaseQueryBuilder
 
     /**
      * Incluye solo registros activos (no eliminados).
-     * 
-     * @return self
      */
     public function active(): self
     {
@@ -102,16 +98,15 @@ trait BaseQueryBuilder
 
     /**
      * Ordena por campo y dirección de forma segura.
-     * 
-     * @param string $field Campo por el que ordenar
-     * @param string $direction Dirección ('asc' o 'desc')
-     * @return self
+     *
+     * @param  string  $field  Campo por el que ordenar
+     * @param  string  $direction  Dirección ('asc' o 'desc')
      */
     public function sortBy(string $field = 'id', string $direction = 'asc'): self
     {
         // Validar dirección
         $direction = strtolower($direction);
-        if (!in_array($direction, ['asc', 'desc'])) {
+        if (! in_array($direction, ['asc', 'desc'])) {
             $direction = 'asc';
         }
 
@@ -120,9 +115,8 @@ trait BaseQueryBuilder
 
     /**
      * Ordena por múltiples campos.
-     * 
-     * @param array $sorts Array de ['campo' => 'direccion']
-     * @return self
+     *
+     * @param  array  $sorts  Array de ['campo' => 'direccion']
      */
     public function sortByMultiple(array $sorts): self
     {
@@ -140,10 +134,9 @@ trait BaseQueryBuilder
     /**
      * Aplica filtros comunes de búsqueda y papelera.
      * Método de conveniencia que combina search() y trash().
-     * 
-     * @param string|null $search Término de búsqueda
-     * @param bool $showTrash Si debe mostrar papelera
-     * @return self
+     *
+     * @param  string|null  $search  Término de búsqueda
+     * @param  bool  $showTrash  Si debe mostrar papelera
      */
     public function applyFilters(?string $search = null, bool $showTrash = false): self
     {
@@ -153,12 +146,11 @@ trait BaseQueryBuilder
     /**
      * Aplica filtros, ordenamiento y devuelve query lista para paginar.
      * Método todo-en-uno para casos típicos de listados.
-     * 
-     * @param string|null $search Término de búsqueda
-     * @param bool $showTrash Si debe mostrar papelera
-     * @param string $sortField Campo de ordenamiento
-     * @param string $sortDirection Dirección de ordenamiento
-     * @return self
+     *
+     * @param  string|null  $search  Término de búsqueda
+     * @param  bool  $showTrash  Si debe mostrar papelera
+     * @param  string  $sortField  Campo de ordenamiento
+     * @param  string  $sortDirection  Dirección de ordenamiento
      */
     public function filtered(
         ?string $search = null,
@@ -179,20 +171,16 @@ trait BaseQueryBuilder
     /**
      * Obtiene los IDs de los registros actuales como array de strings.
      * Útil para selecciones masivas con Livewire.
-     * 
-     * @return array
      */
     public function getIds(): array
     {
         return $this->pluck($this->getModel()->getKeyName())
-            ->map(fn($id) => (string) $id)
+            ->map(fn ($id) => (string) $id)
             ->toArray();
     }
 
     /**
      * Cuenta registros que coinciden con los filtros actuales.
-     * 
-     * @return int
      */
     public function countFiltered(): int
     {
@@ -201,8 +189,6 @@ trait BaseQueryBuilder
 
     /**
      * Verifica si existen registros que coincidan con los filtros.
-     * 
-     * @return bool
      */
     public function hasResults(): bool
     {
@@ -215,11 +201,10 @@ trait BaseQueryBuilder
 
     /**
      * Filtra por rango de fechas.
-     * 
-     * @param string $field Campo de fecha
-     * @param string|null $from Fecha desde (Y-m-d)
-     * @param string|null $to Fecha hasta (Y-m-d)
-     * @return self
+     *
+     * @param  string  $field  Campo de fecha
+     * @param  string|null  $from  Fecha desde (Y-m-d)
+     * @param  string|null  $to  Fecha hasta (Y-m-d)
      */
     public function dateRange(string $field, ?string $from = null, ?string $to = null): self
     {
@@ -236,10 +221,9 @@ trait BaseQueryBuilder
 
     /**
      * Filtra registros creados en los últimos N días.
-     * 
-     * @param int $days Número de días
-     * @param string $field Campo de fecha (por defecto 'created_at')
-     * @return self
+     *
+     * @param  int  $days  Número de días
+     * @param  string  $field  Campo de fecha (por defecto 'created_at')
      */
     public function recent(int $days = 7, string $field = 'created_at'): self
     {
@@ -249,9 +233,8 @@ trait BaseQueryBuilder
     /**
      * Excluye IDs específicos de los resultados.
      * Útil para selección masiva con excepciones.
-     * 
-     * @param array $ids IDs a excluir
-     * @return self
+     *
+     * @param  array  $ids  IDs a excluir
      */
     public function exceptIds(array $ids): self
     {
@@ -264,9 +247,8 @@ trait BaseQueryBuilder
 
     /**
      * Incluye solo los IDs especificados.
-     * 
-     * @param array $ids IDs a incluir
-     * @return self
+     *
+     * @param  array  $ids  IDs a incluir
      */
     public function onlyIds(array $ids): self
     {

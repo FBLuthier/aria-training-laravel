@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -14,7 +12,7 @@ return new class extends Migration
     {
         // Modificar columna en rutina_ejercicios
         DB::statement("ALTER TABLE rutina_ejercicios MODIFY COLUMN unidad_peso ENUM('kg', 'lbs', 'bw') DEFAULT 'kg'");
-        
+
         // Modificar columna en plantilla_dia_ejercicios
         DB::statement("ALTER TABLE plantilla_dia_ejercicios MODIFY COLUMN unidad_peso ENUM('kg', 'lbs', 'bw') DEFAULT 'kg'");
     }

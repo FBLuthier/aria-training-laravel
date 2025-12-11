@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
 use App\Models\Equipo;
 use App\Models\TipoUsuario;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -72,7 +72,7 @@ class GestionEquiposTest extends TestCase
         $admin = User::factory()->create(['tipo_usuario_id' => 1]);
 
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => 'Mancuernas 10kg'
+            'nombre' => 'Mancuernas 10kg',
         ]);
 
         $response->assertRedirect();
@@ -84,7 +84,7 @@ class GestionEquiposTest extends TestCase
         $admin = User::factory()->create(['tipo_usuario_id' => 1]);
 
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => ''
+            'nombre' => '',
         ]);
 
         $response->assertSessionHasErrors(['nombre']);
@@ -96,7 +96,7 @@ class GestionEquiposTest extends TestCase
         $admin = User::factory()->create(['tipo_usuario_id' => 1]);
 
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => '   '
+            'nombre' => '   ',
         ]);
 
         $response->assertSessionHasErrors(['nombre']);
@@ -113,12 +113,12 @@ class GestionEquiposTest extends TestCase
 
         // Crear primer equipo
         $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => 'Mancuernas 10kg'
+            'nombre' => 'Mancuernas 10kg',
         ]);
 
         // Intentar crear duplicado
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => 'Mancuernas 10kg'
+            'nombre' => 'Mancuernas 10kg',
         ]);
 
         $response->assertSessionHasErrors(['nombre']);
@@ -129,12 +129,12 @@ class GestionEquiposTest extends TestCase
         $admin = User::factory()->create(['tipo_usuario_id' => 1]);
 
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => 'Equipo con números 123 y símbolos @#$%'
+            'nombre' => 'Equipo con números 123 y símbolos @#$%',
         ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('equipos', [
-            'nombre' => 'Equipo con números 123 y símbolos @#$%'
+            'nombre' => 'Equipo con números 123 y símbolos @#$%',
         ]);
     }
 
@@ -148,7 +148,7 @@ class GestionEquiposTest extends TestCase
         $equipo = Equipo::factory()->create(['nombre' => 'Equipo viejo']);
 
         $response = $this->actingAs($admin)->put("/admin/equipos/{$equipo->id}", [
-            'nombre' => 'Equipo nuevo'
+            'nombre' => 'Equipo nuevo',
         ]);
 
         $response->assertRedirect();
@@ -180,12 +180,12 @@ class GestionEquiposTest extends TestCase
         $admin = User::factory()->create(['tipo_usuario_id' => 1]);
 
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => 'Equipo con ñ, á, é, í, ó, ú'
+            'nombre' => 'Equipo con ñ, á, é, í, ó, ú',
         ]);
 
         $response->assertRedirect();
         $this->assertDatabaseHas('equipos', [
-            'nombre' => 'Equipo con ñ, á, é, í, ó, ú'
+            'nombre' => 'Equipo con ñ, á, é, í, ó, ú',
         ]);
     }
 
@@ -196,7 +196,7 @@ class GestionEquiposTest extends TestCase
         $nombreLargo = str_repeat('a', 46); // Más de 45 caracteres
 
         $response = $this->actingAs($admin)->post('/admin/equipos', [
-            'nombre' => $nombreLargo
+            'nombre' => $nombreLargo,
         ]);
 
         $response->assertSessionHasErrors(['nombre']);

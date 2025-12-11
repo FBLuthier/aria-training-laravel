@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('plantilla_dia_ejercicios', function (Blueprint $table) {
-            if (!Schema::hasColumn('plantilla_dia_ejercicios', 'tempo')) {
+            if (! Schema::hasColumn('plantilla_dia_ejercicios', 'tempo')) {
                 $table->json('tempo')->nullable()->after('descanso_segundos');
             }
-            if (!Schema::hasColumn('plantilla_dia_ejercicios', 'unidad_peso')) {
+            if (! Schema::hasColumn('plantilla_dia_ejercicios', 'unidad_peso')) {
                 $table->enum('unidad_peso', ['kg', 'lbs'])->default('kg')->after('peso_sugerido');
             }
         });

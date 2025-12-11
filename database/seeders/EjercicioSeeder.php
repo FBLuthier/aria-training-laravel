@@ -72,7 +72,7 @@ class EjercicioSeeder extends Seeder
         // Verificando GrupoMuscularSeeder... suele ser 'Pecho', 'Espalda', 'Piernas', 'Hombros', 'Bíceps', 'Tríceps', 'Abdominales'.
         // La propuesta agrupa Bíceps y Tríceps en "Brazos". Necesito desglosarlo o asignar ambos.
         // Voy a asignar "Brazos" a "Bíceps" por defecto y luego ajustar, o mejor, iterar con cuidado.
-        
+
         // REVISIÓN: En GrupoMuscularSeeder tenemos: Pecho, Espalda, Piernas, Hombros, Bíceps, Tríceps, Abdominales, Antebrazo, Trapecio, Pantorrillas, Glúteos.
         // La propuesta agrupa. Voy a ajustar el array $data para que coincida con los nombres de la BD.
 
@@ -127,20 +127,20 @@ class EjercicioSeeder extends Seeder
         foreach ($data_adjusted as $grupoNombre => $ejercicios) {
             $grupoId = $grupos[$grupoNombre] ?? null;
 
-            if (!$grupoId) {
+            if (! $grupoId) {
                 // Fallback o log si no encuentra el grupo (ej: Piernas vs Cuádriceps)
                 // Para este MVP, asumimos que coinciden con el Seeder de Grupos.
-                continue; 
+                continue;
             }
 
             foreach ($ejercicios as $nombreBase => $listaEquipos) {
                 foreach ($listaEquipos as $equipoNombre) {
                     $equipoId = $equipos[$equipoNombre] ?? null;
-                    
+
                     if ($equipoId) {
                         // Construir nombre: "Sentadilla (Barra)"
                         $nombreFinal = "{$nombreBase} ({$equipoNombre})";
-                        
+
                         Ejercicio::create([
                             'nombre' => $nombreFinal,
                             'grupo_muscular_id' => $grupoId,

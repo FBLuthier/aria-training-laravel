@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * =======================================================================
  * MODELO: RUTINA EJERCICIO
  * =======================================================================
- * 
+ *
  * Representa la asignación de un ejercicio específico a un día de rutina.
  * Define cómo se ejecuta el ejercicio (series, repeticiones, orden, etc.).
- * 
+ *
  * TABLA: rutina_ejercicios
- * 
+ *
  * COLUMNAS:
  * - id: int (PK, auto-increment)
  * - rutina_dia_id: int (FK) - Día de la rutina
@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * - orden_en_dia: int - Orden del ejercicio en el día
  * - orden_en_bloque: int|null - Orden dentro del bloque
  * - created_at, updated_at: timestamps
- * 
+ *
  * EJEMPLO:
  * Día 1 - Pecho
  *   1. Press de Banca: 4 series x 8-12 reps (orden_en_dia: 1)
@@ -36,13 +36,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *   3. SUPERSERIE (bloque_id: 1):
  *      - Aperturas: 3 series x 12-15 reps (orden_en_bloque: 1)
  *      - Cruces: 3 series x 12-15 reps (orden_en_bloque: 2)
- * 
+ *
  * RELACIONES:
  * - rutinaDia: BelongsTo - Día al que pertenece
  * - ejercicio: BelongsTo - Ejercicio del catálogo
  * - bloque: BelongsTo - Bloque (superserie, circuito, etc.)
  * - registros: HasMany - Registros de series ejecutadas
- * 
+ *
  * @property int $id
  * @property int $rutina_dia_id
  * @property int $ejercicio_id
@@ -54,13 +54,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $orden_en_bloque
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
- * 
  * @property-read RutinaDia $rutinaDia
  * @property-read Ejercicio $ejercicio
  * @property-read BloqueEjercicioDia|null $bloque
  * @property-read \Illuminate\Database\Eloquent\Collection|RegistroSerie[] $registros
- * 
- * @package App\Models
+ *
  * @since 1.0
  */
 class RutinaEjercicio extends Model
@@ -92,8 +90,6 @@ class RutinaEjercicio extends Model
 
     /**
      * Relación: Un ejercicio de rutina pertenece a un día.
-     * 
-     * @return BelongsTo
      */
     public function rutinaDia(): BelongsTo
     {
@@ -102,12 +98,12 @@ class RutinaEjercicio extends Model
 
     /**
      * Relación: Un ejercicio de rutina referencia a un ejercicio del catálogo.
-     * 
+     *
      * El ejercicio define:
      * - Nombre
      * - Equipo necesario
      * - Grupos musculares trabajados
-     * 
+     *
      * @return BelongsTo
      */
     public function ejercicio()
@@ -117,9 +113,9 @@ class RutinaEjercicio extends Model
 
     /**
      * Relación: Un ejercicio puede pertenecer a un bloque (opcional).
-     * 
+     *
      * Si rutina_bloque_id es NULL, es un ejercicio individual o "General".
-     * 
+     *
      * @return BelongsTo
      */
     public function bloque()
@@ -129,14 +125,12 @@ class RutinaEjercicio extends Model
 
     /**
      * Relación: Un ejercicio tiene registros de series ejecutadas.
-     * 
+     *
      * Los atletas registran cada serie realizada:
      * - Peso usado
      * - Repeticiones completadas
      * - RIR (Reps in Reserve)
      * - Fecha de ejecución
-     * 
-     * @return HasMany
      */
     public function registros(): HasMany
     {
@@ -145,8 +139,8 @@ class RutinaEjercicio extends Model
 
     /**
      * Scope para cargar ejercicio completo con todas sus relaciones.
-     * 
-     * @param \Illuminate\Database\Eloquent\Builder $query
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeWithRelations($query)
@@ -156,7 +150,7 @@ class RutinaEjercicio extends Model
             'ejercicio.equipo',
             'ejercicio.gruposMusculares',
             'bloque.tipoBloque',
-            'registros.unidadMedida'
+            'registros.unidadMedida',
         ]);
     }
 }

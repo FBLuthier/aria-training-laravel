@@ -2,12 +2,12 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\RutinaDia;
 use App\Models\Ejercicio;
+use App\Models\RutinaDia;
 use App\Models\RutinaEjercicio;
-use Livewire\Component;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 /**
  * Componente para gestionar los ejercicios de un día específico.
@@ -17,14 +17,15 @@ use Livewire\Attributes\Computed;
 class GestionarDiaRutina extends Component
 {
     public RutinaDia $dia;
-    
+
     // Buscador
     public $search = '';
-    
+
     // Edición en línea (array indexado por rutina_ejercicio_id)
     public $ejerciciosData = [];
 
     public $bloques = []; // Colección de bloques
+
     public $selectedBloqueId = ''; // Bloque seleccionado para añadir ejercicios
 
     public function mount($diaId)
@@ -32,7 +33,7 @@ class GestionarDiaRutina extends Component
         $this->dia = RutinaDia::with(['rutina.atleta', 'bloques.rutinaEjercicios.ejercicio', 'rutinaEjercicios.ejercicio'])
             ->findOrFail($diaId);
         $this->authorize('view', $this->dia->rutina);
-        
+
         // Inicializar datos de edición
         $this->refreshData();
     }
@@ -41,12 +42,12 @@ class GestionarDiaRutina extends Component
     {
         $this->dia->refresh();
         $this->bloques = $this->dia->bloques;
-        
+
         $this->ejerciciosData = [];
-        
+
         // Cargar datos de ejercicios (tanto los que están en bloques como los sueltos)
         $todosEjercicios = $this->dia->rutinaEjercicios; // Esto trae todos por la relación hasMany directa
-        
+
         foreach ($todosEjercicios as $re) {
             $this->ejerciciosData[$re->id] = [
                 'series' => $re->series,
@@ -61,7 +62,7 @@ class GestionarDiaRutina extends Component
                     'fase2' => ['accion' => 'Mantener', 'tiempo' => ''],
                     'fase3' => ['accion' => 'Subir', 'tiempo' => ''],
                 ],
-                'has_tempo' => !empty($re->tempo),
+                'has_tempo' => ! empty($re->tempo),
                 'track_rpe' => (bool) $re->track_rpe,
                 'track_rir' => (bool) $re->track_rir,
                 'is_unilateral' => (bool) $re->is_unilateral,
@@ -76,8 +77,8 @@ class GestionarDiaRutina extends Component
             return [];
         }
 
-        return Ejercicio::whereRaw('nombre COLLATE utf8mb4_general_ci LIKE ?', ['%' . $this->search . '%'])
-            ->orWhereRaw('descripcion COLLATE utf8mb4_general_ci LIKE ?', ['%' . $this->search . '%'])
+        return Ejercicio::whereRaw('nombre COLLATE utf8mb4_general_ci LIKE ?', ['%'.$this->search.'%'])
+            ->orWhereRaw('descripcion COLLATE utf8mb4_general_ci LIKE ?', ['%'.$this->search.'%'])
             ->take(10)
             ->get();
     }
@@ -87,7 +88,7 @@ class GestionarDiaRutina extends Component
     public function createBloque()
     {
         $maxOrden = $this->dia->bloques()->max('orden') ?? 0;
-        
+
         $this->dia->bloques()->create([
             'nombre' => 'Nuevo Bloque',
             'orden' => $maxOrden + 1,
@@ -110,7 +111,7 @@ class GestionarDiaRutina extends Component
         // Los ejercicios pasarán a rutina_bloque_id = null gracias a onDelete('set null') en la migración
         // O podemos eliminarlos si el usuario prefiere. Por seguridad, mejor mantenerlos.
         $bloque->delete();
-        
+
         $this->refreshData();
         $this->dispatch('notify', message: 'Bloque eliminado', type: 'success');
     }
@@ -121,7 +122,7 @@ class GestionarDiaRutina extends Component
             $bloqueId = null;
         }
         $ejercicio = Ejercicio::findOrFail($ejercicioId);
-        
+
         // Calcular orden
         // Si es en un bloque, orden dentro del bloque? O orden global?
         // Actualmente usamos orden_en_dia global.
@@ -138,7 +139,7 @@ class GestionarDiaRutina extends Component
 
         $this->refreshData();
         $this->search = ''; // Limpiar búsqueda
-        
+
         $this->dispatch('notify', message: 'Ejercicio añadido', type: 'success');
         $this->dispatch('focus-search');
     }
@@ -147,9 +148,9 @@ class GestionarDiaRutina extends Component
     {
         $re = RutinaEjercicio::where('rutina_dia_id', $this->dia->id)->findOrFail($rutinaEjercicioId);
         $re->delete();
-        
+
         $this->refreshData();
-        
+
         $this->dispatch('notify', message: 'Ejercicio eliminado', type: 'success');
     }
 
@@ -157,27 +158,28 @@ class GestionarDiaRutina extends Component
     public function updateEjercicio($rutinaEjercicioId, $field, $value)
     {
         $re = RutinaEjercicio::where('rutina_dia_id', $this->dia->id)->findOrFail($rutinaEjercicioId);
-        
+
         // Manejo especial para campos anidados de tempo (ej: tempo.fase1.tiempo)
         if (str_starts_with($field, 'tempo.')) {
             $parts = explode('.', $field); // tempo, fase1, tiempo
             $tempoData = $this->ejerciciosData[$rutinaEjercicioId]['tempo'];
-            
+
             // Actualizar el valor en el array local
             if (count($parts) === 3) {
                 $tempoData[$parts[1]][$parts[2]] = $value;
             }
-            
+
             // Guardar en BD
             $re->update(['tempo' => $tempoData]);
             $this->ejerciciosData[$rutinaEjercicioId]['tempo'] = $tempoData;
+
             return;
         }
 
         // Manejo del toggle de tempo
         if ($field === 'has_tempo') {
             $this->ejerciciosData[$rutinaEjercicioId]['has_tempo'] = $value;
-            if (!$value) {
+            if (! $value) {
                 $re->update(['tempo' => null]);
                 $this->ejerciciosData[$rutinaEjercicioId]['tempo'] = [
                     'fase1' => ['accion' => 'Bajar', 'tiempo' => ''],
@@ -185,9 +187,10 @@ class GestionarDiaRutina extends Component
                     'fase3' => ['accion' => 'Subir', 'tiempo' => ''],
                 ];
             } else {
-                 // Si se activa y estaba null, guardar el default
-                 $re->update(['tempo' => $this->ejerciciosData[$rutinaEjercicioId]['tempo']]);
+                // Si se activa y estaba null, guardar el default
+                $re->update(['tempo' => $this->ejerciciosData[$rutinaEjercicioId]['tempo']]);
             }
+
             return;
         }
 
@@ -195,29 +198,31 @@ class GestionarDiaRutina extends Component
         if ($field === 'track_rpe') {
             $this->ejerciciosData[$rutinaEjercicioId]['track_rpe'] = $value;
             $re->update(['track_rpe' => $value]);
-            
+
             if ($value) {
                 // Si activa RPE, desactivar RIR
                 $re->update(['track_rir' => false]);
                 $this->ejerciciosData[$rutinaEjercicioId]['track_rir'] = false;
             }
+
             return;
         }
 
         if ($field === 'track_rir') {
             $this->ejerciciosData[$rutinaEjercicioId]['track_rir'] = $value;
             $re->update(['track_rir' => $value]);
-            
+
             if ($value) {
                 // Si activa RIR, desactivar RPE
                 $re->update(['track_rpe' => false]);
                 $this->ejerciciosData[$rutinaEjercicioId]['track_rpe'] = false;
             }
+
             return;
         }
-        
+
         $re->update([$field => $value]);
-        
+
         // Actualizar estado local
         $this->ejerciciosData[$rutinaEjercicioId][$field] = $value;
     }
@@ -231,7 +236,9 @@ class GestionarDiaRutina extends Component
 
     // Creación de Ejercicio
     public $showCreateEjercicioModal = false;
+
     public $newEjercicioNombre = '';
+
     public $newEjercicioGrupoMuscularId = '';
 
     public function openCreateEjercicioModal()
@@ -255,7 +262,7 @@ class GestionarDiaRutina extends Component
 
         $this->showCreateEjercicioModal = false;
         $this->dispatch('notify', message: 'Ejercicio creado correctamente', type: 'success');
-        
+
         // Opcional: Añadirlo automáticamente al día o buscarlo
         $this->search = $ejercicio->nombre; // Para que aparezca en el buscador
     }
@@ -273,7 +280,7 @@ class GestionarDiaRutina extends Component
     public function reorderEjercicio($ejercicioId, $bloqueId, $newOrden)
     {
         $re = RutinaEjercicio::where('rutina_dia_id', $this->dia->id)->findOrFail($ejercicioId);
-        
+
         // Convertir bloqueId vacío a null
         $bloqueId = empty($bloqueId) ? null : $bloqueId;
 
@@ -286,10 +293,10 @@ class GestionarDiaRutina extends Component
         // 1. "Hacer hueco" en la nueva posición
         // 2. Mover el elemento
         // 3. Re-indexar todo el grupo para asegurar consistencia (más costoso pero seguro)
-        
+
         // Opción segura: Re-indexar todo el grupo afectado
         // Primero movemos el elemento temporalmente al final para sacarlo del medio
-        // $re->orden_en_dia = 9999; 
+        // $re->orden_en_dia = 9999;
         // $re->save();
 
         // En realidad, como SortableJS nos da el índice visual final, lo más fácil es:

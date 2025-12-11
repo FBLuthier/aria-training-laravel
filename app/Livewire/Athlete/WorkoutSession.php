@@ -2,20 +2,22 @@
 
 namespace App\Livewire\Athlete;
 
-use Livewire\Component;
 use App\Models\RutinaDia;
+use Livewire\Component;
 
 class WorkoutSession extends Component
 {
     public RutinaDia $rutinaDia;
+
     public $ejercicios = [];
+
     public $logs = []; // Array para guardar los inputs: [ejercicio_id][serie_numero] => ['peso' => ..., 'reps' => ..., 'completed' => ...]
 
     public function mount(RutinaDia $rutinaDia)
     {
         $this->rutinaDia = $rutinaDia->load([
-            'rutinaEjercicios.ejercicio', 
-            'rutinaEjercicios.registros' // Cargar registros previos si existen
+            'rutinaEjercicios.ejercicio',
+            'rutinaEjercicios.registros', // Cargar registros previos si existen
         ]);
 
         // Inicializar logs con datos existentes o vacíos
@@ -24,13 +26,13 @@ class WorkoutSession extends Component
             for ($i = 1; $i <= $re->series; $i++) {
                 // Buscar si ya existe registro
                 $registro = $re->registros->where('serie_numero', $i)->first();
-                
+
                 $this->logs[$re->id][$i] = [
                     'peso' => $registro ? $registro->peso : null,
                     'reps' => $registro ? $registro->reps : null,
                     'rpe' => $registro ? $registro->rpe : null,
                     'rir' => $registro ? $registro->rir : null,
-                    'completed' => $registro ? (bool)$registro->completed_at : false,
+                    'completed' => $registro ? (bool) $registro->completed_at : false,
                     'id' => $registro ? $registro->id : null,
                 ];
             }
@@ -40,7 +42,7 @@ class WorkoutSession extends Component
     public function toggleComplete($ejercicioId, $serieNumero)
     {
         $logData = $this->logs[$ejercicioId][$serieNumero];
-        
+
         // Validar que haya datos antes de marcar como completo
         if (empty($logData['peso']) && empty($logData['reps'])) {
             // Opcional: Mostrar error o toast
@@ -48,7 +50,7 @@ class WorkoutSession extends Component
         }
 
         $now = now();
-        
+
         // Guardar o Actualizar
         $registro = \App\Models\RegistroSerie::updateOrCreate(
             [
@@ -65,7 +67,7 @@ class WorkoutSession extends Component
         );
 
         // Actualizar estado local
-        $this->logs[$ejercicioId][$serieNumero]['completed'] = !$logData['completed'];
+        $this->logs[$ejercicioId][$serieNumero]['completed'] = ! $logData['completed'];
         $this->logs[$ejercicioId][$serieNumero]['id'] = $registro->id;
     }
 

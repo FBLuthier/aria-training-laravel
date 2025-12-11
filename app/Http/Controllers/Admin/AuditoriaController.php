@@ -4,46 +4,44 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\Response;
+use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 /**
  * =======================================================================
  * CONTROLLER: AUDITORÍA - EXPORTACIÓN
  * =======================================================================
- * 
+ *
  * Maneja la exportación de registros de auditoría en múltiples formatos.
  * Permite exportar logs filtrados con campos personalizables.
- * 
+ *
  * RESPONSABILIDADES:
  * - Exportar logs de auditoría en CSV, Excel (XLSX) y PDF
  * - Aplicar filtros de búsqueda y fecha
  * - Parsear User Agent para información de navegador/OS
  * - Generar archivos con campos personalizables
  * - Formato UTF-8 para caracteres especiales
- * 
+ *
  * FORMATOS SOPORTADOS:
  * 1. **CSV** - Archivo delimitado por punto y coma (;)
  *    - Compatible con Excel
  *    - Encoding UTF-8 con BOM
  *    - Ideal para importar a otras herramientas
- * 
+ *
  * 2. **Excel (XLSX)** - Formato nativo de Microsoft Excel
  *    - Usa PhpSpreadsheet
  *    - Formato con headers estilizados
  *    - Auto-ajuste de columnas
  *    - Ideal para análisis
- * 
+ *
  * 3. **PDF** - Documento portable
  *    - Usa DomPDF
  *    - Vista personalizada
  *    - Ideal para reportes oficiales
- * 
+ *
  * CAMPOS EXPORTABLES:
  * - Fecha y hora de la acción
  * - Usuario que realizó la acción
@@ -56,7 +54,7 @@ use PhpOffice\PhpSpreadsheet\Style\Font;
  * - Navegador detectado
  * - Sistema operativo detectado
  * - User agent completo
- * 
+ *
  * FILTROS APLICABLES:
  * - Búsqueda general
  * - Por acción específica
@@ -64,23 +62,22 @@ use PhpOffice\PhpSpreadsheet\Style\Font;
  * - Por usuario
  * - Por rango de fechas
  * - Ordenamiento personalizado
- * 
+ *
  * SEGURIDAD:
  * - Solo accesible por administradores
  * - Usa middleware de autenticación
  * - Aplica políticas de autorización
- * 
- * @package App\Http\Controllers\Admin
+ *
  * @since 1.0
  */
 class AuditoriaController extends Controller
 {
     /**
      * Parsea el User Agent para extraer información resumida.
-     * 
+     *
      * Detecta navegador y sistema operativo del User Agent string.
-     * 
-     * @param string $userAgent String completo del User Agent
+     *
+     * @param  string  $userAgent  String completo del User Agent
      * @return array ['browser' => string, 'os' => string, 'full' => string]
      */
     private function parseUserAgent(string $userAgent): array
@@ -88,29 +85,29 @@ class AuditoriaController extends Controller
         $info = [
             'browser' => 'Desconocido',
             'os' => 'Desconocido',
-            'full' => $userAgent
+            'full' => $userAgent,
         ];
 
         // Detectar navegador
         if (stripos($userAgent, 'Chrome') !== false && stripos($userAgent, 'Edg') === false) {
             $info['browser'] = 'Chrome';
             if (preg_match('/Chrome\/(\d+\.\d+)/', $userAgent, $matches)) {
-                $info['browser'] .= ' ' . $matches[1];
+                $info['browser'] .= ' '.$matches[1];
             }
         } elseif (stripos($userAgent, 'Firefox') !== false) {
             $info['browser'] = 'Firefox';
             if (preg_match('/Firefox\/(\d+\.\d+)/', $userAgent, $matches)) {
-                $info['browser'] .= ' ' . $matches[1];
+                $info['browser'] .= ' '.$matches[1];
             }
         } elseif (stripos($userAgent, 'Safari') !== false && stripos($userAgent, 'Chrome') === false) {
             $info['browser'] = 'Safari';
             if (preg_match('/Version\/(\d+\.\d+)/', $userAgent, $matches)) {
-                $info['browser'] .= ' ' . $matches[1];
+                $info['browser'] .= ' '.$matches[1];
             }
         } elseif (stripos($userAgent, 'Edg') !== false) {
             $info['browser'] = 'Edge';
             if (preg_match('/Edg\/(\d+\.\d+)/', $userAgent, $matches)) {
-                $info['browser'] .= ' ' . $matches[1];
+                $info['browser'] .= ' '.$matches[1];
             }
         }
 
@@ -118,12 +115,12 @@ class AuditoriaController extends Controller
         if (stripos($userAgent, 'Windows') !== false) {
             $info['os'] = 'Windows';
             if (preg_match('/Windows NT (\d+\.\d+)/', $userAgent, $matches)) {
-                $info['os'] .= ' ' . $matches[1];
+                $info['os'] .= ' '.$matches[1];
             }
         } elseif (stripos($userAgent, 'Mac OS X') !== false || stripos($userAgent, 'Macintosh') !== false) {
             $info['os'] = 'macOS';
             if (preg_match('/Mac OS X (\d+[._]\d+)/', $userAgent, $matches)) {
-                $info['os'] .= ' ' . str_replace('_', '.', $matches[1]);
+                $info['os'] .= ' '.str_replace('_', '.', $matches[1]);
             }
         } elseif (stripos($userAgent, 'Linux') !== false) {
             $info['os'] = 'Linux';
@@ -136,12 +133,12 @@ class AuditoriaController extends Controller
 
     /**
      * Genera el contenido CSV para exportación.
-     * 
+     *
      * Crea archivo CSV con encoding UTF-8 y BOM para compatibilidad.
      * Usa punto y coma (;) como delimitador para Excel.
-     * 
-     * @param \Illuminate\Support\Collection $query Logs a exportar
-     * @param array $selectedFields Campos a incluir en exportación
+     *
+     * @param  \Illuminate\Support\Collection  $query  Logs a exportar
+     * @param  array  $selectedFields  Campos a incluir en exportación
      * @return void Escribe directamente a php://output
      */
     private function generateCSV($query, $selectedFields): void
@@ -153,17 +150,39 @@ class AuditoriaController extends Controller
 
         // Construir headers dinámicamente
         $headers = [];
-        if ($selectedFields['fecha']) $headers[] = 'Fecha';
-        if ($selectedFields['usuario']) $headers[] = 'Usuario';
-        if ($selectedFields['accion']) $headers[] = 'Acción';
-        if ($selectedFields['modelo']) $headers[] = 'Modelo';
-        if ($selectedFields['id_registro']) $headers[] = 'ID Registro';
-        if ($selectedFields['ip_address']) $headers[] = 'IP Address';
-        if ($selectedFields['valores_anteriores']) $headers[] = 'Valores Anteriores';
-        if ($selectedFields['valores_nuevos']) $headers[] = 'Valores Nuevos';
-        if ($selectedFields['navegador']) $headers[] = 'Navegador';
-        if ($selectedFields['sistema_operativo']) $headers[] = 'Sistema Operativo';
-        if ($selectedFields['user_agent_completo']) $headers[] = 'User Agent Completo';
+        if ($selectedFields['fecha']) {
+            $headers[] = 'Fecha';
+        }
+        if ($selectedFields['usuario']) {
+            $headers[] = 'Usuario';
+        }
+        if ($selectedFields['accion']) {
+            $headers[] = 'Acción';
+        }
+        if ($selectedFields['modelo']) {
+            $headers[] = 'Modelo';
+        }
+        if ($selectedFields['id_registro']) {
+            $headers[] = 'ID Registro';
+        }
+        if ($selectedFields['ip_address']) {
+            $headers[] = 'IP Address';
+        }
+        if ($selectedFields['valores_anteriores']) {
+            $headers[] = 'Valores Anteriores';
+        }
+        if ($selectedFields['valores_nuevos']) {
+            $headers[] = 'Valores Nuevos';
+        }
+        if ($selectedFields['navegador']) {
+            $headers[] = 'Navegador';
+        }
+        if ($selectedFields['sistema_operativo']) {
+            $headers[] = 'Sistema Operativo';
+        }
+        if ($selectedFields['user_agent_completo']) {
+            $headers[] = 'User Agent Completo';
+        }
 
         // Escribir headers
         fputcsv($file, $headers, ';', '"');
@@ -176,7 +195,7 @@ class AuditoriaController extends Controller
                 $row[] = $log->created_at->format('d/m/Y H:i:s');
             }
             if ($selectedFields['usuario']) {
-                $row[] = $log->user ? $log->user->nombre_1 . ' ' . $log->user->apellido_1 : 'Sistema';
+                $row[] = $log->user ? $log->user->nombre_1.' '.$log->user->apellido_1 : 'Sistema';
             }
             if ($selectedFields['accion']) {
                 $row[] = ucfirst($log->action);
@@ -191,10 +210,10 @@ class AuditoriaController extends Controller
                 $row[] = $log->ip_address;
             }
             if ($selectedFields['valores_anteriores']) {
-                $row[] = $log->old_values ? '"' . addslashes(json_encode($log->old_values, JSON_UNESCAPED_UNICODE)) . '"' : '';
+                $row[] = $log->old_values ? '"'.addslashes(json_encode($log->old_values, JSON_UNESCAPED_UNICODE)).'"' : '';
             }
             if ($selectedFields['valores_nuevos']) {
-                $row[] = $log->new_values ? '"' . addslashes(json_encode($log->new_values, JSON_UNESCAPED_UNICODE)) . '"' : '';
+                $row[] = $log->new_values ? '"'.addslashes(json_encode($log->new_values, JSON_UNESCAPED_UNICODE)).'"' : '';
             }
 
             // Procesar User Agent
@@ -208,12 +227,18 @@ class AuditoriaController extends Controller
                     $row[] = $userAgentInfo['os'];
                 }
                 if ($selectedFields['user_agent_completo']) {
-                    $row[] = '"' . addslashes($log->user_agent) . '"';
+                    $row[] = '"'.addslashes($log->user_agent).'"';
                 }
             } else {
-                if ($selectedFields['navegador']) $row[] = 'Desconocido';
-                if ($selectedFields['sistema_operativo']) $row[] = 'Desconocido';
-                if ($selectedFields['user_agent_completo']) $row[] = '';
+                if ($selectedFields['navegador']) {
+                    $row[] = 'Desconocido';
+                }
+                if ($selectedFields['sistema_operativo']) {
+                    $row[] = 'Desconocido';
+                }
+                if ($selectedFields['user_agent_completo']) {
+                    $row[] = '';
+                }
             }
 
             fputcsv($file, $row, ';', '"');
@@ -235,17 +260,39 @@ class AuditoriaController extends Controller
 
         // Construir headers
         $headers = [];
-        if ($selectedFields['fecha']) $headers[] = 'Fecha';
-        if ($selectedFields['usuario']) $headers[] = 'Usuario';
-        if ($selectedFields['accion']) $headers[] = 'Acción';
-        if ($selectedFields['modelo']) $headers[] = 'Modelo';
-        if ($selectedFields['id_registro']) $headers[] = 'ID Registro';
-        if ($selectedFields['ip_address']) $headers[] = 'IP Address';
-        if ($selectedFields['valores_anteriores']) $headers[] = 'Valores Anteriores';
-        if ($selectedFields['valores_nuevos']) $headers[] = 'Valores Nuevos';
-        if ($selectedFields['navegador']) $headers[] = 'Navegador';
-        if ($selectedFields['sistema_operativo']) $headers[] = 'Sistema Operativo';
-        if ($selectedFields['user_agent_completo']) $headers[] = 'User Agent Completo';
+        if ($selectedFields['fecha']) {
+            $headers[] = 'Fecha';
+        }
+        if ($selectedFields['usuario']) {
+            $headers[] = 'Usuario';
+        }
+        if ($selectedFields['accion']) {
+            $headers[] = 'Acción';
+        }
+        if ($selectedFields['modelo']) {
+            $headers[] = 'Modelo';
+        }
+        if ($selectedFields['id_registro']) {
+            $headers[] = 'ID Registro';
+        }
+        if ($selectedFields['ip_address']) {
+            $headers[] = 'IP Address';
+        }
+        if ($selectedFields['valores_anteriores']) {
+            $headers[] = 'Valores Anteriores';
+        }
+        if ($selectedFields['valores_nuevos']) {
+            $headers[] = 'Valores Nuevos';
+        }
+        if ($selectedFields['navegador']) {
+            $headers[] = 'Navegador';
+        }
+        if ($selectedFields['sistema_operativo']) {
+            $headers[] = 'Sistema Operativo';
+        }
+        if ($selectedFields['user_agent_completo']) {
+            $headers[] = 'User Agent Completo';
+        }
 
         fputcsv($file, $headers, ',', '"');
 
@@ -253,24 +300,52 @@ class AuditoriaController extends Controller
         foreach ($query as $log) {
             $row = [];
 
-            if ($selectedFields['fecha']) $row[] = $log->created_at->format('d/m/Y H:i:s');
-            if ($selectedFields['usuario']) $row[] = $log->user ? $log->user->nombre_1 . ' ' . $log->user->apellido_1 : 'Sistema';
-            if ($selectedFields['accion']) $row[] = ucfirst($log->action);
-            if ($selectedFields['modelo']) $row[] = class_basename($log->model_type);
-            if ($selectedFields['id_registro']) $row[] = $log->model_id;
-            if ($selectedFields['ip_address']) $row[] = $log->ip_address;
-            if ($selectedFields['valores_anteriores']) $row[] = $log->old_values ? json_encode($log->old_values, JSON_UNESCAPED_UNICODE) : '';
-            if ($selectedFields['valores_nuevos']) $row[] = $log->new_values ? json_encode($log->new_values, JSON_UNESCAPED_UNICODE) : '';
+            if ($selectedFields['fecha']) {
+                $row[] = $log->created_at->format('d/m/Y H:i:s');
+            }
+            if ($selectedFields['usuario']) {
+                $row[] = $log->user ? $log->user->nombre_1.' '.$log->user->apellido_1 : 'Sistema';
+            }
+            if ($selectedFields['accion']) {
+                $row[] = ucfirst($log->action);
+            }
+            if ($selectedFields['modelo']) {
+                $row[] = class_basename($log->model_type);
+            }
+            if ($selectedFields['id_registro']) {
+                $row[] = $log->model_id;
+            }
+            if ($selectedFields['ip_address']) {
+                $row[] = $log->ip_address;
+            }
+            if ($selectedFields['valores_anteriores']) {
+                $row[] = $log->old_values ? json_encode($log->old_values, JSON_UNESCAPED_UNICODE) : '';
+            }
+            if ($selectedFields['valores_nuevos']) {
+                $row[] = $log->new_values ? json_encode($log->new_values, JSON_UNESCAPED_UNICODE) : '';
+            }
 
             if ($log->user_agent) {
                 $userAgentInfo = $this->parseUserAgent($log->user_agent);
-                if ($selectedFields['navegador']) $row[] = $userAgentInfo['browser'];
-                if ($selectedFields['sistema_operativo']) $row[] = $userAgentInfo['os'];
-                if ($selectedFields['user_agent_completo']) $row[] = $log->user_agent;
+                if ($selectedFields['navegador']) {
+                    $row[] = $userAgentInfo['browser'];
+                }
+                if ($selectedFields['sistema_operativo']) {
+                    $row[] = $userAgentInfo['os'];
+                }
+                if ($selectedFields['user_agent_completo']) {
+                    $row[] = $log->user_agent;
+                }
             } else {
-                if ($selectedFields['navegador']) $row[] = 'Desconocido';
-                if ($selectedFields['sistema_operativo']) $row[] = 'Desconocido';
-                if ($selectedFields['user_agent_completo']) $row[] = '';
+                if ($selectedFields['navegador']) {
+                    $row[] = 'Desconocido';
+                }
+                if ($selectedFields['sistema_operativo']) {
+                    $row[] = 'Desconocido';
+                }
+                if ($selectedFields['user_agent_completo']) {
+                    $row[] = '';
+                }
             }
 
             fputcsv($file, $row, ',', '"');
@@ -290,10 +365,10 @@ class AuditoriaController extends Controller
         $pdf .= "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
         $pdf .= "3 0 obj\n<< /Type /Page /Parent 2 0 R /Resources << /Font << /F1 4 0 R >> >> /MediaBox [0 0 612 792] /Contents 5 0 R >>\nendobj\n";
         $pdf .= "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
-        
+
         $content = "BT\n/F1 12 Tf\n50 750 Td\n(Reporte de Auditoria) Tj\n0 -20 Td\n";
         $y = 730;
-        
+
         foreach ($query->take(20) as $log) { // Limitar a 20 registros por simplicidad
             $line = sprintf("(%s - %s - %s) Tj\n0 -15 Td\n",
                 $log->created_at->format('d/m/Y'),
@@ -302,33 +377,35 @@ class AuditoriaController extends Controller
             );
             $content .= $line;
             $y -= 15;
-            if ($y < 50) break;
+            if ($y < 50) {
+                break;
+            }
         }
-        
+
         $content .= "ET\n";
         $length = strlen($content);
-        
+
         $pdf .= "5 0 obj\n<< /Length $length >>\nstream\n$content\nendstream\nendobj\n";
         $pdf .= "xref\n0 6\n0000000000 65535 f\n0000000009 00000 n\n0000000056 00000 n\n0000000115 00000 n\n0000000259 00000 n\n0000000339 00000 n\n";
-        $pdf .= "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n" . strlen($pdf) . "\n%%EOF";
-        
+        $pdf .= "trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n".strlen($pdf)."\n%%EOF";
+
         echo $pdf;
     }
 
     /**
      * Exporta los logs de auditoría en el formato seleccionado.
-     * 
+     *
      * Método principal de exportación. Aplica todos los filtros,
      * procesa los datos y genera el archivo en el formato solicitado.
-     * 
+     *
      * FLUJO:
      * 1. Obtener parámetros de filtros y formato
      * 2. Obtener campos a exportar
      * 3. Construir query con filtros aplicados
      * 4. Generar archivo según formato (CSV/Excel/PDF)
      * 5. Retornar archivo para descarga
-     * 
-     * @param Request $request Parámetros de filtros y opciones
+     *
+     * @param  Request  $request  Parámetros de filtros y opciones
      * @return \Symfony\Component\HttpFoundation\StreamedResponse Archivo para descarga
      */
     public function export(Request $request)
@@ -361,29 +438,29 @@ class AuditoriaController extends Controller
             'valores_nuevos' => (bool) $request->get('valores_nuevos', true),
             'navegador' => (bool) $request->get('navegador', true),
             'sistema_operativo' => (bool) $request->get('sistema_operativo', true),
-            'user_agent_completo' => (bool) $request->get('user_agent_completo', false)
+            'user_agent_completo' => (bool) $request->get('user_agent_completo', false),
         ];
 
         // Construir la consulta con los filtros
         $query = AuditLog::query()
             ->withRelations() // Usar scope para eager loading
-            ->when($search, function($q) use ($search) {
-                $q->where(function($query) use ($search) {
-                    $query->where('action', 'like', '%' . $search . '%')
-                          ->orWhere('model_type', 'like', '%' . $search . '%')
-                          ->orWhere('ip_address', 'like', '%' . $search . '%')
-                          ->orWhereHas('user', function($q) use ($search) {
-                              $q->where('nombre_1', 'like', '%' . $search . '%')
-                                ->orWhere('apellido_1', 'like', '%' . $search . '%')
-                                ->orWhere('correo', 'like', '%' . $search . '%');
-                          });
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($query) use ($search) {
+                    $query->where('action', 'like', '%'.$search.'%')
+                        ->orWhere('model_type', 'like', '%'.$search.'%')
+                        ->orWhere('ip_address', 'like', '%'.$search.'%')
+                        ->orWhereHas('user', function ($q) use ($search) {
+                            $q->where('nombre_1', 'like', '%'.$search.'%')
+                                ->orWhere('apellido_1', 'like', '%'.$search.'%')
+                                ->orWhere('correo', 'like', '%'.$search.'%');
+                        });
                 });
             })
-            ->when($actionFilter, fn($q) => $q->where('action', $actionFilter))
-            ->when($modelFilter, fn($q) => $q->where('model_type', 'like', '%' . $modelFilter . '%'))
-            ->when($userFilter, fn($q) => $q->where('user_id', $userFilter))
-            ->when($startDate, fn($q) => $q->whereDate('created_at', '>=', $startDate))
-            ->when($endDate, fn($q) => $q->whereDate('created_at', '<=', $endDate))
+            ->when($actionFilter, fn ($q) => $q->where('action', $actionFilter))
+            ->when($modelFilter, fn ($q) => $q->where('model_type', 'like', '%'.$modelFilter.'%'))
+            ->when($userFilter, fn ($q) => $q->where('user_id', $userFilter))
+            ->when($startDate, fn ($q) => $q->whereDate('created_at', '>=', $startDate))
+            ->when($endDate, fn ($q) => $q->whereDate('created_at', '<=', $endDate))
             ->orderBy($sortField, $sortDirection)
             ->get();
 
@@ -395,70 +472,93 @@ class AuditoriaController extends Controller
         switch ($format) {
             case 'excel':
                 // Generar archivo XLSX nativo
-                return $this->generateNativeExcel($query, $selectedFields, $filename . '.xlsx');
-                
+                return $this->generateNativeExcel($query, $selectedFields, $filename.'.xlsx');
+
             case 'pdf':
                 $pdf = Pdf::loadView('exports.auditoria', [
                     'rows' => $query,
-                    'selectedFields' => $selectedFields
+                    'selectedFields' => $selectedFields,
                 ]);
-                return $pdf->download($filename . '.pdf');
-                
+
+                return $pdf->download($filename.'.pdf');
+
             default:
                 // CSV
                 $headers = [
                     'Content-Type' => 'text/csv; charset=UTF-8',
-                    'Content-Disposition' => 'attachment; filename="' . $filename . '.csv"',
+                    'Content-Disposition' => 'attachment; filename="'.$filename.'.csv"',
                 ];
-                
-                $callback = function() use ($query, $selectedFields) {
+
+                $callback = function () use ($query, $selectedFields) {
                     $this->generateCSV($query, $selectedFields);
                 };
-                
+
                 return response()->stream($callback, 200, $headers);
         }
     }
 
     /**
      * Genera archivo Excel XLSX nativo usando PhpSpreadsheet.
-     * 
+     *
      * Crea archivo Excel con formato profesional:
      * - Headers con fondo gris y texto bold
      * - Auto-ajuste de ancho de columnas
      * - Formato UTF-8 nativo
      * - Encoding correcto de caracteres especiales
-     * 
-     * @param \Illuminate\Support\Collection $query Logs a exportar
-     * @param array $selectedFields Campos a incluir
-     * @param string $filename Nombre del archivo con extensión
+     *
+     * @param  \Illuminate\Support\Collection  $query  Logs a exportar
+     * @param  array  $selectedFields  Campos a incluir
+     * @param  string  $filename  Nombre del archivo con extensión
      * @return \Symfony\Component\HttpFoundation\StreamedResponse Descarga del archivo
      */
     private function generateNativeExcel($query, $selectedFields, $filename)
     {
-        $spreadsheet = new Spreadsheet();
+        $spreadsheet = new Spreadsheet;
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Auditoría');
 
         // Configurar headers
         $headers = [];
-        if ($selectedFields['fecha']) $headers[] = 'Fecha';
-        if ($selectedFields['usuario']) $headers[] = 'Usuario';
-        if ($selectedFields['accion']) $headers[] = 'Acción';
-        if ($selectedFields['modelo']) $headers[] = 'Modelo';
-        if ($selectedFields['id_registro']) $headers[] = 'ID Registro';
-        if ($selectedFields['ip_address']) $headers[] = 'IP Address';
-        if ($selectedFields['valores_anteriores']) $headers[] = 'Valores Anteriores';
-        if ($selectedFields['valores_nuevos']) $headers[] = 'Valores Nuevos';
-        if ($selectedFields['navegador']) $headers[] = 'Navegador';
-        if ($selectedFields['sistema_operativo']) $headers[] = 'Sistema Operativo';
-        if ($selectedFields['user_agent_completo']) $headers[] = 'User Agent Completo';
+        if ($selectedFields['fecha']) {
+            $headers[] = 'Fecha';
+        }
+        if ($selectedFields['usuario']) {
+            $headers[] = 'Usuario';
+        }
+        if ($selectedFields['accion']) {
+            $headers[] = 'Acción';
+        }
+        if ($selectedFields['modelo']) {
+            $headers[] = 'Modelo';
+        }
+        if ($selectedFields['id_registro']) {
+            $headers[] = 'ID Registro';
+        }
+        if ($selectedFields['ip_address']) {
+            $headers[] = 'IP Address';
+        }
+        if ($selectedFields['valores_anteriores']) {
+            $headers[] = 'Valores Anteriores';
+        }
+        if ($selectedFields['valores_nuevos']) {
+            $headers[] = 'Valores Nuevos';
+        }
+        if ($selectedFields['navegador']) {
+            $headers[] = 'Navegador';
+        }
+        if ($selectedFields['sistema_operativo']) {
+            $headers[] = 'Sistema Operativo';
+        }
+        if ($selectedFields['user_agent_completo']) {
+            $headers[] = 'User Agent Completo';
+        }
 
         // Escribir headers
         $col = 'A';
         foreach ($headers as $header) {
-            $sheet->setCellValue($col . '1', $header);
-            $sheet->getStyle($col . '1')->getFont()->setBold(true);
-            $sheet->getStyle($col . '1')->getFill()
+            $sheet->setCellValue($col.'1', $header);
+            $sheet->getStyle($col.'1')->getFont()->setBold(true);
+            $sheet->getStyle($col.'1')->getFill()
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFE2E8F0');
             $col++;
@@ -468,50 +568,56 @@ class AuditoriaController extends Controller
         $row = 2;
         foreach ($query as $log) {
             $col = 'A';
-            
+
             if ($selectedFields['fecha']) {
-                $sheet->setCellValue($col++ . $row, $log->created_at->format('d/m/Y H:i:s'));
+                $sheet->setCellValue($col++.$row, $log->created_at->format('d/m/Y H:i:s'));
             }
             if ($selectedFields['usuario']) {
-                $usuario = $log->user ? $log->user->nombre_1 . ' ' . $log->user->apellido_1 : 'Sistema';
-                $sheet->setCellValue($col++ . $row, $usuario);
+                $usuario = $log->user ? $log->user->nombre_1.' '.$log->user->apellido_1 : 'Sistema';
+                $sheet->setCellValue($col++.$row, $usuario);
             }
             if ($selectedFields['accion']) {
-                $sheet->setCellValue($col++ . $row, ucfirst($log->action));
+                $sheet->setCellValue($col++.$row, ucfirst($log->action));
             }
             if ($selectedFields['modelo']) {
-                $sheet->setCellValue($col++ . $row, class_basename($log->model_type));
+                $sheet->setCellValue($col++.$row, class_basename($log->model_type));
             }
             if ($selectedFields['id_registro']) {
-                $sheet->setCellValue($col++ . $row, $log->model_id);
+                $sheet->setCellValue($col++.$row, $log->model_id);
             }
             if ($selectedFields['ip_address']) {
-                $sheet->setCellValue($col++ . $row, $log->ip_address);
+                $sheet->setCellValue($col++.$row, $log->ip_address);
             }
             if ($selectedFields['valores_anteriores']) {
                 $value = $log->old_values ? json_encode($log->old_values, JSON_UNESCAPED_UNICODE) : '';
-                $sheet->setCellValue($col++ . $row, $value);
+                $sheet->setCellValue($col++.$row, $value);
             }
             if ($selectedFields['valores_nuevos']) {
                 $value = $log->new_values ? json_encode($log->new_values, JSON_UNESCAPED_UNICODE) : '';
-                $sheet->setCellValue($col++ . $row, $value);
+                $sheet->setCellValue($col++.$row, $value);
             }
 
             if ($log->user_agent) {
                 $userAgentInfo = $this->parseUserAgent($log->user_agent);
                 if ($selectedFields['navegador']) {
-                    $sheet->setCellValue($col++ . $row, $userAgentInfo['browser']);
+                    $sheet->setCellValue($col++.$row, $userAgentInfo['browser']);
                 }
                 if ($selectedFields['sistema_operativo']) {
-                    $sheet->setCellValue($col++ . $row, $userAgentInfo['os']);
+                    $sheet->setCellValue($col++.$row, $userAgentInfo['os']);
                 }
                 if ($selectedFields['user_agent_completo']) {
-                    $sheet->setCellValue($col++ . $row, $log->user_agent);
+                    $sheet->setCellValue($col++.$row, $log->user_agent);
                 }
             } else {
-                if ($selectedFields['navegador']) $sheet->setCellValue($col++ . $row, 'Desconocido');
-                if ($selectedFields['sistema_operativo']) $sheet->setCellValue($col++ . $row, 'Desconocido');
-                if ($selectedFields['user_agent_completo']) $sheet->setCellValue($col++ . $row, '');
+                if ($selectedFields['navegador']) {
+                    $sheet->setCellValue($col++.$row, 'Desconocido');
+                }
+                if ($selectedFields['sistema_operativo']) {
+                    $sheet->setCellValue($col++.$row, 'Desconocido');
+                }
+                if ($selectedFields['user_agent_completo']) {
+                    $sheet->setCellValue($col++.$row, '');
+                }
             }
 
             $row++;
@@ -524,8 +630,8 @@ class AuditoriaController extends Controller
 
         // Generar y descargar archivo
         $writer = new Xlsx($spreadsheet);
-        
-        return response()->streamDownload(function() use ($writer) {
+
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
         }, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

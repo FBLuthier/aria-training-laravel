@@ -4,10 +4,10 @@
  * =======================================================================
  * MIGRACIÓN: TABLA USUARIOS
  * =======================================================================
- * 
+ *
  * Crea la tabla principal de usuarios del sistema.
  * Almacena información de todos los tipos de usuarios (Admin, Entrenador, Atleta).
- * 
+ *
  * ESTRUCTURA:
  * - id: Identificador único del usuario
  * - usuario: Nombre de usuario (3-15 caracteres, único)
@@ -21,16 +21,15 @@
  * - fecha_eliminacion: Fecha de eliminación lógica
  * - id_tipo_usuario: FK a tipo_usuarios (rol del usuario)
  * - timestamps: created_at, updated_at
- * 
+ *
  * ÍNDICES:
  * - usuario: Único, para login
  * - correo: Único, para recuperación de contraseña
- * 
+ *
  * RELACIONES:
  * - Pertenece a: tipo_usuarios (FK: id_tipo_usuario)
  * - Tiene muchas: rutinas, audit_logs
- * 
- * @package Database\Migrations
+ *
  * @since 1.0
  */
 
@@ -42,7 +41,7 @@ return new class extends Migration
 {
     /**
      * Ejecuta la migración.
-     * 
+     *
      * Crea la tabla usuarios con todos sus campos y constraints.
      */
     public function up(): void
@@ -67,7 +66,7 @@ return new class extends Migration
 
     /**
      * Revierte la migración.
-     * 
+     *
      * Elimina la tabla usuarios si existe.
      */
     public function down(): void

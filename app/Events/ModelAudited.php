@@ -11,8 +11,11 @@ class ModelAudited
     use Dispatchable, SerializesModels;
 
     public string $action;
+
     public Model $model;
+
     public ?array $oldValues;
+
     public ?array $newValues;
 
     /**

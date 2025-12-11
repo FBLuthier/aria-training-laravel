@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Trait para manejar auditoría de operaciones en modelos.
- * 
+ *
  * Este trait proporciona métodos helper para disparar eventos de auditoría
  * de forma consistente en toda la aplicación.
- * 
+ *
  * Simplifica la auditoría de operaciones CRUD:
  * - create
  * - update
@@ -23,8 +23,7 @@ trait WithAuditLogging
     /**
      * Audita una operación de creación.
      *
-     * @param Model $model El modelo creado
-     * @return void
+     * @param  Model  $model  El modelo creado
      */
     protected function auditCreate(Model $model): void
     {
@@ -34,9 +33,8 @@ trait WithAuditLogging
     /**
      * Audita una operación de actualización.
      *
-     * @param Model $model El modelo actualizado
-     * @param array $oldValues Los valores anteriores del modelo
-     * @return void
+     * @param  Model  $model  El modelo actualizado
+     * @param  array  $oldValues  Los valores anteriores del modelo
      */
     protected function auditUpdate(Model $model, array $oldValues): void
     {
@@ -46,9 +44,8 @@ trait WithAuditLogging
     /**
      * Audita una operación de eliminación (soft delete).
      *
-     * @param Model $model El modelo eliminado
-     * @param array $modelValues Los valores del modelo antes de eliminar
-     * @return void
+     * @param  Model  $model  El modelo eliminado
+     * @param  array  $modelValues  Los valores del modelo antes de eliminar
      */
     protected function auditDelete(Model $model, array $modelValues): void
     {
@@ -58,9 +55,8 @@ trait WithAuditLogging
     /**
      * Audita una operación de restauración.
      *
-     * @param Model $model El modelo restaurado
-     * @param array $modelValues Los valores del modelo al momento de restaurar
-     * @return void
+     * @param  Model  $model  El modelo restaurado
+     * @param  array  $modelValues  Los valores del modelo al momento de restaurar
      */
     protected function auditRestore(Model $model, array $modelValues): void
     {
@@ -70,9 +66,8 @@ trait WithAuditLogging
     /**
      * Audita una operación de eliminación permanente.
      *
-     * @param Model $model El modelo eliminado permanentemente
-     * @param array $modelValues Los valores del modelo antes de eliminar
-     * @return void
+     * @param  Model  $model  El modelo eliminado permanentemente
+     * @param  array  $modelValues  Los valores del modelo antes de eliminar
      */
     protected function auditForceDelete(Model $model, array $modelValues): void
     {
@@ -81,10 +76,9 @@ trait WithAuditLogging
 
     /**
      * Audita automáticamente una operación create o update basándose en el estado del modelo.
-     * 
-     * @param Model $model El modelo a auditar
-     * @param array|null $oldValues Los valores anteriores (para updates)
-     * @return void
+     *
+     * @param  Model  $model  El modelo a auditar
+     * @param  array|null  $oldValues  Los valores anteriores (para updates)
      */
     protected function auditSave(Model $model, ?array $oldValues = null): void
     {
@@ -97,34 +91,34 @@ trait WithAuditLogging
 
     /**
      * Ejecuta una operación y la audita automáticamente.
-     * 
+     *
      * Este es un método helper que:
      * 1. Captura valores anteriores si es necesario
      * 2. Ejecuta la operación
      * 3. Dispara el evento de auditoría
-     * 
-     * @param Model $model El modelo a operar
-     * @param string $action La acción (create, update, delete, restore, force_delete)
-     * @param callable $operation La operación a ejecutar sobre el modelo
+     *
+     * @param  Model  $model  El modelo a operar
+     * @param  string  $action  La acción (create, update, delete, restore, force_delete)
+     * @param  callable  $operation  La operación a ejecutar sobre el modelo
      * @return mixed El resultado de la operación
      */
     protected function performAndAudit(Model $model, string $action, callable $operation)
     {
         // Capturar valores antes de la operación (excepto para create)
         $oldValues = $action !== 'create' ? $model->toArray() : null;
-        
+
         // Ejecutar la operación
         $result = $operation($model);
-        
+
         // Determinar valores nuevos según la acción
-        $newValues = match($action) {
+        $newValues = match ($action) {
             'create', 'restore', 'update' => $model->fresh()?->toArray() ?? $model->toArray(),
             default => null,
         };
-        
+
         // Disparar evento de auditoría
         ModelAudited::dispatch($action, $model, $oldValues, $newValues);
-        
+
         return $result;
     }
 }

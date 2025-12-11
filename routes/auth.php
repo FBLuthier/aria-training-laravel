@@ -31,7 +31,7 @@ use Illuminate\Support\Facades\Route;
 // para usuarios que NO han iniciado sesión. Si un usuario autenticado
 // intenta acceder a ellas, será redirigido al dashboard.
 Route::middleware('guest')->group(function () {
-    
+
     // --- Registro de Nuevos Usuarios ---
     Route::get('register', [RegisteredUserController::class, 'create'])->name('register'); // Muestra el formulario de registro.
     Route::post('register', [RegisteredUserController::class, 'store']); // Procesa los datos del formulario de registro.
@@ -49,14 +49,13 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store'); // Procesa y guarda la nueva contraseña.
 });
 
-
 // =========================================================================
 //  GRUPO DE RUTAS PARA USUARIOS AUTENTICADOS
 // =========================================================================
 // El middleware 'auth' asegura que estas rutas solo sean accesibles
 // para usuarios que SÍ han iniciado sesión.
 Route::middleware('auth')->group(function () {
-    
+
     // --- Verificación de Email ---
     // Muestra una página pidiendo al usuario que verifique su email si aún no lo ha hecho.
     Route::get('verify-email', EmailVerificationPromptController::class)->name('verification.notice');

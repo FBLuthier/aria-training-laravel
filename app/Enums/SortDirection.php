@@ -17,7 +17,7 @@ enum SortDirection: string
      */
     public function opposite(): self
     {
-        return match($this) {
+        return match ($this) {
             self::ASC => self::DESC,
             self::DESC => self::ASC,
         };
@@ -28,7 +28,7 @@ enum SortDirection: string
      */
     public function icon(): string
     {
-        return match($this) {
+        return match ($this) {
             self::ASC => '↑',
             self::DESC => '↓',
         };

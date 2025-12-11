@@ -2,12 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-use App\Models\Equipo;
 use App\Models\AuditLog;
-use App\Policies\EquipoPolicy;
+use App\Models\Equipo;
 use App\Policies\AuditLogPolicy;
+use App\Policies\EquipoPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {

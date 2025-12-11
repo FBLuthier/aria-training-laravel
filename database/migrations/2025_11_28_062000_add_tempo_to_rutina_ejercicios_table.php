@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('rutina_ejercicios', function (Blueprint $table) {
-            if (!Schema::hasColumn('rutina_ejercicios', 'tempo')) {
+            if (! Schema::hasColumn('rutina_ejercicios', 'tempo')) {
                 $table->json('tempo')->nullable()->after('descanso_segundos');
             }
         });

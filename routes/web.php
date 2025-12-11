@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Admin\AuditoriaController;
 use App\Http\Controllers\ProfileController;
-use App\Livewire\Admin\GestionarEquipos;
 use App\Livewire\Admin\GestionarAuditoria;
+use App\Livewire\Admin\GestionarEquipos;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,14 +30,14 @@ Route::get('/dashboard', function () {
         // Lógica para Atleta: Buscar rutina activa y día de hoy
         $rutinaDia = null;
         $rutina = \App\Models\Rutina::where('atleta_id', $user->id)
-                    ->where('estado', 1)
-                    ->first();
-        
+            ->where('estado', 1)
+            ->first();
+
         if ($rutina) {
             $rutinaDia = $rutina->dias()
-                        ->whereDate('fecha', \Carbon\Carbon::today())
-                        ->with(['rutina', 'rutinaEjercicios.ejercicio'])
-                        ->first();
+                ->whereDate('fecha', \Carbon\Carbon::today())
+                ->with(['rutina', 'rutinaEjercicios.ejercicio'])
+                ->first();
         }
 
         return view('athlete.dashboard', compact('rutinaDia'));
@@ -47,25 +47,24 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-
 // --- GRUPO DE RUTAS PROTEGIDAS POR AUTENTICACIÓN ---
 // Todas las rutas dentro de este grupo requieren que el usuario haya iniciado sesión.
 Route::middleware('auth')->group(function () {
-    
+
     // Rutas para la gestión del perfil de usuario (proveídas por Laravel Breeze)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // --- GRUPO DE RUTAS DE ADMINISTRACIÓN ---
     // Protegido por el middleware 'admin.role', asegurando que solo los administradores puedan acceder.
     // Todas las rutas aquí tendrán el prefijo 'admin/' en la URL y 'admin.' en el nombre de la ruta.
     Route::prefix('admin')->name('admin.')->middleware('admin.role')->group(function () {
-    
+
         // =======================================================================
         //  CRUD DE EQUIPOS (MIGRADO A LIVEWIRE)
         // =======================================================================
-        
+
         /**
          * ESTA ÚNICA LÍNEA AHORA MANEJA TODO EL CRUD DE EQUIPOS.
          * Antes, necesitábamos múltiples rutas (index, create, store, edit, update, destroy,
@@ -108,13 +107,19 @@ Route::middleware('auth')->group(function () {
          */
         Route::get('auditoria/export', [AuditoriaController::class, 'export'])->name('auditoria.export');
 
+        // =======================================================================
+        //  IMPERSONATION (SUPLANTACIÓN)
+        // =======================================================================
+        Route::get('impersonate/stop', [\App\Http\Controllers\Admin\ImpersonationController::class, 'stop'])->name('impersonate.stop')->withoutMiddleware('admin.role');
+        Route::get('impersonate/{user}', [\App\Http\Controllers\Admin\ImpersonationController::class, 'impersonate'])->name('impersonate');
+
     });
 
     // --- RUTAS DE ATLETA ---
     Route::prefix('entrenamiento')->name('athlete.workout.')->group(function () {
         Route::get('/{rutinaDia}', \App\Livewire\Athlete\WorkoutSession::class)->name('show');
     });
-    
+
 });
 
 // --- ARCHIVO DE RUTAS DE AUTENTICACIÓN ---

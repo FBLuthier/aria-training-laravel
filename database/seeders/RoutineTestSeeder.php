@@ -2,21 +2,22 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Objetivo;
 use App\Models\Rutina;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class RoutineTestSeeder extends Seeder
 {
     public function run(): void
     {
         $objetivo = Objetivo::firstOrCreate(['nombre' => 'Hipertrofia']);
-        
+
         $usuario = User::where('tipo_usuario_id', 3)->first();
-        
-        if (!$usuario) {
+
+        if (! $usuario) {
             $this->command->error('No athlete found!');
+
             return;
         }
 
@@ -27,6 +28,6 @@ class RoutineTestSeeder extends Seeder
             'estado' => 1,
         ]);
 
-        $this->command->info('Rutina created with ID: ' . $rutina->id);
+        $this->command->info('Rutina created with ID: '.$rutina->id);
     }
 }

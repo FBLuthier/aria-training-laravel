@@ -6,18 +6,18 @@ use App\Livewire\BaseCrudComponent;
 use App\Livewire\Forms\EquipoForm;
 use App\Livewire\Traits\WithExport;
 use App\Models\Equipo;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 
 /**
  * Componente para gestionar Equipos.
- * 
+ *
  * Extiende de BaseCrudComponent para heredar toda la funcionalidad común de CRUD.
  * Solo define la configuración específica del modelo Equipo.
- * 
+ *
  * ANTES: 321 líneas de código
  * AHORA: ~70 líneas (reducción del 78%)
- * 
+ *
  * FUNCIONALIDADES:
  * - CRUD completo (heredado de BaseCrudComponent)
  * - Exportación Excel/CSV/PDF (WithExport trait)
@@ -32,23 +32,23 @@ class GestionarEquipos extends BaseCrudComponent
     // =======================================================================
     //  PROPIEDADES ESPECÍFICAS
     // =======================================================================
-    
+
     /** @var EquipoForm Formulario para crear/editar equipos */
     public EquipoForm $form;
-    
+
     /** @var ?Equipo Equipo recién creado (para resaltado en UI) */
     public ?Equipo $equipoRecienCreado = null;
-    
+
     /** @var array Listeners de eventos específicos */
     protected $listeners = [
         'equipoDeleted' => '$refresh',
-        'equipoRestored' => '$refresh'
+        'equipoRestored' => '$refresh',
     ];
-    
+
     // =======================================================================
     //  IMPLEMENTACIÓN DE MÉTODOS ABSTRACTOS
     // =======================================================================
-    
+
     /**
      * Retorna la clase del modelo.
      */
@@ -56,7 +56,7 @@ class GestionarEquipos extends BaseCrudComponent
     {
         return Equipo::class;
     }
-    
+
     /**
      * Retorna el nombre de la vista.
      */
@@ -64,11 +64,11 @@ class GestionarEquipos extends BaseCrudComponent
     {
         return 'livewire.admin.gestionar-equipos';
     }
-    
+
     // =======================================================================
     //  MÉTODOS ESPECÍFICOS (OPCIONAL)
     // =======================================================================
-    
+
     /**
      * Sobrescribe setFormModel para usar el método específico setEquipo.
      * NOTA: Esto es opcional, solo si tu Form tiene un método específico.
@@ -77,11 +77,11 @@ class GestionarEquipos extends BaseCrudComponent
     {
         $this->form->setEquipo($model);
     }
-    
+
     // =======================================================================
     //  CONFIGURACIÓN DE EXPORTACIÓN
     // =======================================================================
-    
+
     /**
      * Columnas a exportar.
      */
@@ -94,18 +94,18 @@ class GestionarEquipos extends BaseCrudComponent
             'updated_at' => 'Última Actualización',
         ];
     }
-    
+
     /**
      * Formato de valores para exportación.
      */
     protected function formatExportValue($item, string $column): mixed
     {
-        return match($column) {
+        return match ($column) {
             'created_at', 'updated_at' => formatDateTime($item->$column),
             default => parent::formatExportValue($item, $column),
         };
     }
-    
+
     /**
      * Título del PDF.
      */
@@ -113,7 +113,7 @@ class GestionarEquipos extends BaseCrudComponent
     {
         return 'Reporte de Equipos de Gimnasio';
     }
-    
+
     // NOTA: Los siguientes métodos ahora se heredan de BaseCrudComponent:
     // - clearSelections()
     // - updatingSearch()
