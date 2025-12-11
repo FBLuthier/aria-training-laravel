@@ -204,6 +204,35 @@ class GestionarModelo extends Component
 
 ---
 
+### WithExport
+
+**Ubicación:** `app/Livewire/Traits/WithExport.php`
+
+**Propósito:** Gestionar la lógica de exportación de datos (Excel, CSV, PDF) con selección de columnas.
+
+**Uso:**
+```php
+use App\Livewire\Traits\WithExport;
+
+class GestionarAuditoria extends Component
+{
+    use WithExport;
+
+    public function export()
+    {
+        // Lógica de exportación usando PhpSpreadsheet
+        return $this->exportToExcel($query, $columns);
+    }
+}
+```
+
+**Características:**
+- Manejo de formatos múltiples.
+- Integración con filtros de Livewire.
+- Descarga asíncrona sin bloquear la UI.
+
+---
+
 ## 🔍 Query Builders Personalizados
 
 Los Query Builders proporcionan métodos fluidos para construir queries complejas de forma legible.

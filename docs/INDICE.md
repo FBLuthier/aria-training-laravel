@@ -55,6 +55,9 @@ Guías prácticas para desarrollar nuevas funcionalidades.
 
 Documentación de funcionalidades principales del sistema.
 
+- **[Gestión de Rutinas](funcionalidades/gestion_rutinas.md)** - ⭐ **v1.6:** Arquitectura, Bloques y Drag & Drop
+- **[Vista de Atleta](funcionalidades/vista_atleta.md)** - ⭐ **v1.6:** Dashboard Mobile-First y Ejecución
+- **[Modo Oscuro](funcionalidades/modo_oscuro.md)** - ⭐ **v1.6:** Implementación y Guía de Estilos
 - **[Selección Masiva](funcionalidades/seleccion_masiva.md)** - Sistema optimizado para operar sobre miles de registros
 - **[Carga Anticipada](funcionalidades/carga_anticipada.md)** - Prevención de problemas N+1 con eager loading
 - **[Exportación de Auditoría](funcionalidades/sistema_exportacion_auditoria.md)** - Sistema avanzado de exportación con filtros
@@ -66,8 +69,8 @@ Documentación de funcionalidades principales del sistema.
 Flujos de usuario por rol.
 
 - **[Casos del Administrador](casos_de_uso/casos_administrador.md)**
-- **[Casos del Entrenador](casos_de_uso/casos_entrenador.md)**
-- **[Casos del Atleta](casos_de_uso/casos_atleta.md)**
+- **[Casos del Entrenador](casos_de_uso/casos_entrenador.md)** - Actualizado v1.6
+- **[Casos del Atleta](casos_de_uso/casos_atleta.md)** - Actualizado v1.6
 
 ---
 
@@ -138,7 +141,7 @@ Métricas de calidad y rendimiento del sistema.
 ```
 docs/
 ├── INDICE.md                    (este archivo)
-├── definicion_proyecto.md       (documento maestro v1.5)
+├── definicion_proyecto.md       (documento maestro v1.6)
 ├── arquitectura/                (estructura del sistema)
 ├── desarrollo/                  (guías de desarrollo)
 │   └── guias/                  (guías específicas)
@@ -185,20 +188,18 @@ docs/
 
 ## 🔄 Última Actualización
 
-**Fecha:** 2025-10-17  
-**Versión de la documentación:** 2.2  
-**Versión del proyecto:** 1.5
+**Fecha:** 2025-12-11
+**Versión de la documentación:** 2.3
+**Versión del proyecto:** 1.6
 
-**Cambios recientes v1.5:**
-- ⭐ **Sistema completo de Loading States:** 3 componentes nuevos (spinner, loading-overlay, loading-state)
-- ⭐ **Sistema de Notificaciones Toast:** 2 componentes nuevos (toast-container, toast-trigger)
-- ✅ Actualizado documento maestro definicion_proyecto.md con historial v1.5
-- ✅ Documentados 5 nuevos componentes Blade de UX (total: 18 componentes reutilizables)
-- ✅ Agregada sección "Paso 6: Mejorar UX" en guía de crear CRUD
-- ✅ Guías técnicas completas: loading_states.md (483 líneas) y toast_notifications.md (629 líneas)
-- ✅ Actualizado CHANGELOG.md con entrada consolidada v1.5
-- ✅ Componentes de botones mejorados con prop `loadingTarget`
-- ✅ Helpers globales JavaScript disponibles en toda la aplicación
+**Cambios recientes v1.6:**
+- ⭐ **Modo Oscuro Nativo:** Documentación completa de implementación y estilos.
+- ⭐ **Gestión de Rutinas:** Guía de arquitectura, bloques y editor Drag & Drop.
+- ⭐ **Vista de Atleta:** Documentación del dashboard mobile-first y sesión de entrenamiento.
+- ✅ Actualizado `modelo_datos.md` con las 13 tablas del sistema.
+- ✅ Actualizados Casos de Uso de Entrenador y Atleta.
+- ✅ Agregado Trait `WithExport` a componentes reutilizables.
+- ✅ Actualizado documento maestro `definicion_proyecto.md`.
 
 **Impacto medible:**
 - ✅ 5 nuevos componentes Blade para UX profesional
