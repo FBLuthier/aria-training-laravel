@@ -73,6 +73,86 @@ $result = app(ForceDeleteModelAction::class)->execute($modelo);
 
 ---
 
+## 🏗️ Services (Capa de Servicios) - v1.7
+
+Los Services encapsulan lógica de negocio compleja para mejorar testabilidad y reutilización.
+
+### UserService
+
+**Ubicación:** `app/Services/UserService.php`
+
+**Propósito:** Centralizar operaciones de usuarios (CRUD, password reset, queries).
+
+**Métodos disponibles:**
+```php
+use App\Services\UserService;
+
+class MiComponente extends Component
+{
+    protected UserService $userService;
+    
+    public function mount(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+    
+    // CRUD
+    $this->userService->create($userData);        // Crear usuario
+    $this->userService->update($user, $userData); // Actualizar
+    $this->userService->delete($user);            // Soft delete
+    $this->userService->restore($user);           // Restaurar
+    $this->userService->forceDelete($user);       // Eliminar permanente
+    
+    // Password Management
+    $this->userService->generateSecurePassword(12);     // Generar password
+    $this->userService->resetPassword($user, $password); // Reset password
+    
+    // Queries
+    $this->userService->getVisibleUsers($viewer, $search, $role, $trash);
+}
+```
+
+**Beneficios:**
+- Lógica reutilizable desde cualquier contexto (Livewire, Controller, Job, Command)
+- Fácil de testear unitariamente
+- Código del componente más limpio y enfocado en UI
+
+---
+
+### RutinaService
+
+**Ubicación:** `app/Services/RutinaService.php`
+
+**Propósito:** Centralizar operaciones de rutinas (estado, queries, CRUD).
+
+**Métodos disponibles:**
+```php
+use App\Services\RutinaService;
+
+// Estado
+$this->rutinaService->toggleActive($rutina);              // Activar/desactivar
+$this->rutinaService->getActiveRutinaForAthlete($user);  // Rutina activa
+
+// Queries
+$this->rutinaService->getVisibleRutinas($viewer, $athlete, $search, $trash);
+$this->rutinaService->getAvailableAthletes($viewer);
+
+// CRUD
+$this->rutinaService->delete($rutina);
+$this->rutinaService->restore($rutina);
+$this->rutinaService->forceDelete($rutina);
+```
+
+**Cuándo usar Services vs Actions:**
+| Escenario | Usar |
+|-----------|------|
+| Operación simple y única | Action |
+| Lógica que afecta múltiples modelos | Service |
+| Necesitas reutilizar desde API/Job | Service |
+| Operación con muchos efectos secundarios | Service |
+
+---
+
 ## 🧩 Traits (Funcionalidad Compartida)
 
 Los Traits proporcionan funcionalidad común que puede incluirse en cualquier componente Livewire.

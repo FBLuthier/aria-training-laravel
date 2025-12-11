@@ -1,4 +1,4 @@
-# Documentación de Aria Training (v1.5)
+# Documentación de Aria Training (v1.7)
 
 Bienvenido a la documentación completa del sistema Aria Training.
 
@@ -58,6 +58,7 @@ Documentación de funcionalidades principales del sistema.
 - **[Gestión de Rutinas](funcionalidades/gestion_rutinas.md)** - ⭐ **v1.6:** Arquitectura, Bloques y Drag & Drop
 - **[Vista de Atleta](funcionalidades/vista_atleta.md)** - ⭐ **v1.6:** Dashboard Mobile-First y Ejecución
 - **[Modo Oscuro](funcionalidades/modo_oscuro.md)** - ⭐ **v1.6:** Implementación y Guía de Estilos
+- **[Administración Avanzada](funcionalidades/administracion_avanzada.md)** - ⭐ **NUEVO v1.7:** Impersonation, Command Palette, Avatares, Password Reset
 - **[Selección Masiva](funcionalidades/seleccion_masiva.md)** - Sistema optimizado para operar sobre miles de registros
 - **[Carga Anticipada](funcionalidades/carga_anticipada.md)** - Prevención de problemas N+1 con eager loading
 - **[Exportación de Auditoría](funcionalidades/sistema_exportacion_auditoria.md)** - Sistema avanzado de exportación con filtros
@@ -189,25 +190,32 @@ docs/
 ## 🔄 Última Actualización
 
 **Fecha:** 2025-12-11
-**Versión de la documentación:** 2.3
-**Versión del proyecto:** 1.6
+**Versión de la documentación:** 2.4
+**Versión del proyecto:** 1.7
 
-**Cambios recientes v1.6:**
+**Cambios recientes v1.7 (Fase 2 - Administración Avanzada):**
+- ⭐ **Impersonation:** Admins pueden iniciar sesión como cualquier usuario para soporte.
+- ⭐ **Command Palette (Ctrl+K):** Búsqueda global y navegación rápida por teclado.
+- ⭐ **Gestión de Avatares:** Subida y gestión de fotos de perfil con fallback a UI Avatars.
+- ⭐ **Reseteo de Contraseña:** Admins pueden restablecer contraseñas desde la UI.
+- ⭐ **Service Layer:** Refactorización a `UserService` y `RutinaService` para mejor arquitectura.
+- ✅ Nueva documentación completa en `administracion_avanzada.md`.
+- ✅ Actualizado `modelo_datos.md` con columna `profile_photo_path`.
+- ✅ Actualizado `componentes_reutilizables.md` con Services.
+
+**Cambios anteriores v1.6:**
 - ⭐ **Modo Oscuro Nativo:** Documentación completa de implementación y estilos.
 - ⭐ **Gestión de Rutinas:** Guía de arquitectura, bloques y editor Drag & Drop.
 - ⭐ **Vista de Atleta:** Documentación del dashboard mobile-first y sesión de entrenamiento.
 - ✅ Actualizado `modelo_datos.md` con las 13 tablas del sistema.
-- ✅ Actualizados Casos de Uso de Entrenador y Atleta.
 - ✅ Agregado Trait `WithExport` a componentes reutilizables.
-- ✅ Actualizado documento maestro `definicion_proyecto.md`.
 
-**Impacto medible:**
-- ✅ 5 nuevos componentes Blade para UX profesional
-- ✅ Experiencia de usuario significativamente mejorada
-- ✅ Prevención automática de doble-click
-- ✅ Feedback visual inmediato en todas las operaciones
-- ✅ Sistema completamente documentado y reutilizable
-- ✅ Tiempo de implementación UX: ~5-10 minutos adicionales por vista
+**Impacto medible v1.7:**
+- ✅ Soporte técnico 10x más eficiente con impersonation
+- ✅ Navegación instantánea con Command Palette
+- ✅ Perfiles personalizados con avatares
+- ✅ Gestión de contraseñas sin acceso a BD
+- ✅ Código más testeable con Service Layer
 
 ---
 

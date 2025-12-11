@@ -3,7 +3,7 @@
 ## 🗄️ Diseño del Modelo de Datos
 
 ### Información General
-**Versión del esquema:** 1.6 (Actualizado Diciembre 2025)
+**Versión del esquema:** 1.7 (Actualizado Diciembre 2025)
 **Motor de BD:** MariaDB 10.6+
 **Arquitectura:** Relacional con relaciones Eloquent
 **Convenciones:** Nombres en minúsculas, singular
@@ -23,6 +23,7 @@
 | `contrasena` | varchar(255) | Hash Bcrypt |
 | `nombre_1` | varchar(255) | |
 | `apellido_1` | varchar(255) | |
+| `profile_photo_path` | varchar(2048) | Nullable, ruta avatar |
 | `estado` | tinyint | 1=Activo, 0=Inactivo |
 | `deleted_at` | timestamp | Soft Delete |
 
@@ -140,7 +141,7 @@ erDiagram
     RUTINA_EJERCICIOS ||--o{ REGISTRO_SERIES : "registra"
 ```
 
-## 📈 Optimizaciones (v1.6)
+## 📈 Optimizaciones (v1.7)
 
 ### Índices Estratégicos
 - `rutinas(atleta_id, estado)`: Para dashboard de atleta.
@@ -149,3 +150,7 @@ erDiagram
 
 ### Eager Loading
 Todos los modelos principales implementan `scopeWithRelations` para cargar jerarquías completas (Rutina -> Días -> Bloques -> Ejercicios) en una sola consulta optimizada.
+
+### Service Layer (v1.7)
+- `UserService`: Centraliza lógica de usuarios (CRUD, password reset, queries).
+- `RutinaService`: Centraliza lógica de rutinas (toggle active, queries, CRUD).
