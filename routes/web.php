@@ -27,20 +27,8 @@ Route::get('/dashboard', function () {
     $user = Auth::user();
 
     if ($user->esAtleta()) {
-        // Lógica para Atleta: Buscar rutina activa y día de hoy
-        $rutinaDia = null;
-        $rutina = \App\Models\Rutina::where('atleta_id', $user->id)
-            ->where('estado', 1)
-            ->first();
-
-        if ($rutina) {
-            $rutinaDia = $rutina->dias()
-                ->whereDate('fecha', \Carbon\Carbon::today())
-                ->with(['rutina', 'rutinaEjercicios.ejercicio'])
-                ->first();
-        }
-
-        return view('athlete.dashboard', compact('rutinaDia'));
+        // Atleta: Redirigir al dashboard específico de atletas
+        return redirect()->route('athlete.dashboard');
     }
 
     // Lógica para Admin/Entrenador (Dashboard Original)
@@ -116,8 +104,12 @@ Route::middleware('auth')->group(function () {
     });
 
     // --- RUTAS DE ATLETA ---
-    Route::prefix('entrenamiento')->name('athlete.workout.')->group(function () {
-        Route::get('/{rutinaDia}', \App\Livewire\Athlete\WorkoutSession::class)->name('show');
+    Route::prefix('atleta')->name('athlete.')->group(function () {
+        // Dashboard del atleta con calendario compacto
+        Route::get('/dashboard', \App\Livewire\Athlete\AthleteDashboard::class)->name('dashboard');
+        
+        // Sesión de entrenamiento
+        Route::get('/entrenamiento/{rutinaDia}', \App\Livewire\Athlete\WorkoutSession::class)->name('workout.show');
     });
 
 });

@@ -73,6 +73,7 @@ class RutinaEjercicio extends Model
         'ejercicio_id',
         'series',
         'repeticiones',
+        'peso_sugerido',
         'indicaciones',
         'orden_en_dia',
         'orden_en_bloque',

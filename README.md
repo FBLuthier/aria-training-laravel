@@ -8,7 +8,7 @@ Aria Training es una aplicación web que permite a entrenadores crear y gestiona
 
 ## 🚀 Stack Tecnológico
 
-- **Backend:** Laravel 11
+- **Backend:** Laravel 12
 - **Frontend:** Livewire 3, Alpine.js, TailwindCSS
 - **Base de datos:** MySQL 8.0
 - **PHP:** 8.2+
